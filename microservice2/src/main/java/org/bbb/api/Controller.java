@@ -2,7 +2,7 @@ package org.bbb.api;
 
 import lombok.RequiredArgsConstructor;
 import org.bbb.models.Response;
-import org.bbb.service.Service;
+import org.bbb.service.MyService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public final class Controller {
 
-	private final Service service;
+	private final MyService service;
 
 
 	@GetMapping("/hello")
