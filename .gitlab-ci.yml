@@ -1,0 +1,37 @@
+stages:
+  - build
+  - test
+  - package
+
+variables:
+  MAVEN_CLI_OPTS: "-B -e -V"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+image: maven:3.9.6-eclipse-temurin-17
+
+cache:
+  paths:
+    - .m2/repository
+
+before_script:
+  - java -version
+  - mvn --version
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
+test:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+
+package:
+  stage: package
+  script:
+    - mvn $MAVEN_CLI_OPTS package
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
