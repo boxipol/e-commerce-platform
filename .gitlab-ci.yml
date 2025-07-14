@@ -6,10 +6,8 @@ stages:
 variables:
   MAVEN_CLI_OPTS: "-B -e -V"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-  JAVA_HOME: "/usr/lib/jvm/java-17-openjdk"
-  PATH: "$JAVA_HOME/bin:$PATH"
 
-image: maven:3.8.8-openjdk-17
+image: maven:3.9.6-eclipse-temurin-17
 
 cache:
   paths:
