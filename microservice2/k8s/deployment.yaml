@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-2-app
+  labels:
+    app: microservice-2-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-2-app
+  template:
+    metadata:
+      labels:
+        app: microservice-2-app
+    spec:
+      containers:
+        - name: microservice-2-container
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 8081
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-2-app
+  labels:
+    app: microservice-2-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: microservice-2-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
