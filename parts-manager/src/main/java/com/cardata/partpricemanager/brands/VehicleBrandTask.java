@@ -21,10 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -38,44 +36,41 @@ import java.util.zip.GZIPOutputStream;
  * Created by Dobrev-DAT on 2.2.2016 г..
  */
 @Slf4j
+@Getter
 public abstract class VehicleBrandTask implements Runnable {
+
+	public static final LocalDate CURRENT_DATE = LocalDate.now();
+	public static final String WORKING_DIR = String.format("%s/parts-manager/PriceLists/%s/%s/", System.getProperty("user.dir"), CURRENT_DATE.getYear(), CURRENT_DATE.getMonthValue());
 
 	private static final Pattern PART_NO_PATTERN = Pattern.compile("[a-zA-Z0-9/]+");
 	private static final Pattern PART_PRICE_PATTERN = Pattern.compile("[0-9., ]+");
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy_MM_dd");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd");
 	private static final CurrencyUnit BG_CCY_UNIT = Monetary.getCurrency("BGN");
 	private static final MonetaryAmountFormat MONETARY_AMOUNT_FORMAT = MonetaryFormats.getAmountFormat(AmountFormatQueryBuilder
-		.of(Locale.ENGLISH) // todo test remove
-//		.set(CurrencyStyle.NAME) // todo test remove
+		.of(Locale.ENGLISH)
+		.set(CurrencyUnit.class, BG_CCY_UNIT)
 		.set("pattern", "0.00")
 		.build());
 
 	private final Map<String, MonetaryAmount> partPricesMap;
 
 	protected static final Charset DEFAULT_OUTPUT_ENCODING = StandardCharsets.US_ASCII;
-	// todo configure location with date
-	protected static final String BASE_DIRECTORY = String.format("/Users/user/IdeaProjects/spare-parts/PriceLists/%s/PriceLists/", LocalDate.now().getYear());
+	protected static final String CURRENT_DATE_STR = DATE_TIME_FORMATTER.format(CURRENT_DATE);
 	protected static final String ARCHIVE_EXT = ".csv.gz";
-	protected static final String CURRENT_DATE = DATE_FORMAT.format(new Date()); // todo remove Date
 	protected static final String TAB = "\\t";
 
 	protected final Brand brand;
-	protected final String inputFile;
-
-	@Getter
-	protected final String outputFile;
-
-	@Getter
-	protected final String zipFile;
-	protected final String logFile;
+	protected final Path inputFile;
+	protected final Path outputFile;
+	protected final Path zipFile;
+	protected final Path logFile;
 
 	protected int errorLines = 0;
 
 
 	public VehicleBrandTask(final Brand brand) throws Exception {
 		this.brand = brand;
-
-		Path sourceFolderPath = Paths.get(String.format("%s/%s", BASE_DIRECTORY, brand));
+		Path sourceFolderPath = Paths.get(String.format("%s/%s", WORKING_DIR, brand));
 
 		try (Stream<Path> files = Files.list(sourceFolderPath)) {
 			List<Path> paths = files
@@ -92,13 +87,12 @@ public abstract class VehicleBrandTask implements Runnable {
 				.toLowerCase()
 				.endsWith(brand.getSourceType().getExtension()))
 				.findFirst()
-				.orElseThrow(() -> new IOException("Source file not found: " + brand))
-				.toString();
+				.orElseThrow(() -> new IOException("Source file not found: " + brand));
 		}
 
-		outputFile = String.format("%s%s/%s_output.txt", BASE_DIRECTORY, brand, brand);
-		zipFile = String.format("%s%s/DAT.BG_%s_%s_retail_exvat_%s%s", BASE_DIRECTORY, brand, brand, brand.getBrandCode(), CURRENT_DATE, ARCHIVE_EXT);
-		logFile = String.format("%s%s/%s_log.txt", BASE_DIRECTORY, brand, brand);
+		outputFile = Path.of(String.format("%s%s/%s_output.txt", WORKING_DIR, brand, brand));
+		zipFile = Path.of(String.format("%s%s/DAT.BG_%s_%s_retail_exvat_%s%s", WORKING_DIR, brand, brand, brand.getBrandCode(), CURRENT_DATE_STR, ARCHIVE_EXT));
+		logFile = Path.of(String.format("%s%s/%s_log.txt", WORKING_DIR, brand, brand));
 		partPricesMap = new HashMap<>(brand.getAverageRecords());
 	}
 
@@ -126,11 +120,11 @@ public abstract class VehicleBrandTask implements Runnable {
 		}
 	}
 
-	public void writeOutputFile(final String outputFile) throws IOException {
+	public void writeOutputFile(final Path outputFile) throws IOException {
 		log.info("Writing file: {}", outputFile);
 
 		try (
-			FileOutputStream outputStream = new FileOutputStream(outputFile);
+			FileOutputStream outputStream = new FileOutputStream(outputFile.toString());
 			Writer writer = new OutputStreamWriter(outputStream, DEFAULT_OUTPUT_ENCODING)
 		){
 			writer.write("\"ETN\";\"NVKPR\"\n");
@@ -147,13 +141,13 @@ public abstract class VehicleBrandTask implements Runnable {
 		log.info("Finished writing file: {}", outputFile);
 	}
 
-	public void compress(final String inputFilePath, final String gzipFilePath) throws IOException {
+	public void compress(final Path inputFilePath, final Path gzipFilePath) throws IOException {
 		byte[] buffer = new byte[8192];
 		int bytesRead;
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFilePath);
-			FileOutputStream outputStream = new FileOutputStream(gzipFilePath);
+			FileInputStream inputStream = new FileInputStream(inputFilePath.toString());
+			FileOutputStream outputStream = new FileOutputStream(gzipFilePath.toString());
 			GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)
 		){
 			while ((bytesRead = inputStream.read(buffer)) != -1) {

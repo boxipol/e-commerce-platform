@@ -12,13 +12,13 @@ import static com.cardata.partpricemanager.models.SourceType.TXT;
 public enum Brand {
 
 	BMW(BMW.class, 130, TXT, false, 366_000),
-	FORD(FORD.class, 285, TXT, false, 100_000),
-	JAGUAR(JAGUAR.class, 285, TXT, false, 100_000),
+	FORD(FORD.class, 285, TXT, false, 60_000),
+	JAGUAR(JAGUAR.class, 285, TXT, false, 11_000),
 	OPEL(OPEL.class, 650, TXT, true, 750_000),
 	PORSCHE(PORSCHE.class, 710, EXEL, false, 370_000),
 	RENAULT(RENAULT.class, 720, TXT, false, 566_000),
-	ROVER(RENAULT.class, 730, TXT, false, 100_000),
-	VOLVO(VOLVO.class, 910, TXT, false, 100_000),
+	ROVER(ROVER.class, 730, TXT, false, 25_000),
+	VOLVO(VOLVO.class, 910, TXT, false, 32_000),
 	SKODA(SKODA.class, 800, EXEL, false, 112_000),
 	TOYOTA(TOYOTA.class, 860, TXT, false, 4_000_000);
 

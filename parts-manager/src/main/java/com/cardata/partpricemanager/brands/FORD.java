@@ -14,41 +14,44 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /*
- * Input file name: stock_pricesDaruCar.txt
- * Input format for BMW 01.2016
- * OEM Number       |  Description       |  Price
- * 01402913924      \t Owner's Manu      \t 88.71
+ * Input format for Ford 02.2016
+ * CodeOE    |Price
+ * 6001541928;22.07000000000000000000
  */
 
 /**
- * Created by Dobrev-DAT on 29.1.2023 г..
+ * Created by Dobrev-DAT on 11.2.2016 г..
  */
 @Slf4j
-public final class BMW extends VehicleBrandTask {
+public final class FORD extends VehicleBrandTask {
 
-	private static final Charset FIAT_INPUT_ENCODING = StandardCharsets.UTF_8;
-	private static final byte NUMBER_COLUMN = 0;
-	private static final byte PRICE_COLUMN = 2;
+	private static final Charset FORD_INPUT_ENCODING = StandardCharsets.UTF_8;
 
-	public BMW() throws Exception { // todo temporary until VehicleBrandTask process all and not abstract
-		super(Brand.BMW);
+	private static final String SPLITTER = ";";
+
+	private static final int NUMBER_COLUMN = 0;
+	private static final int PRICE_COLUMN = 1;
+
+
+	public FORD() throws Exception {
+		super(Brand.FORD);
 	}
 
 	public void run() {
 		log.info("Starting {} process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
-			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, FIAT_INPUT_ENCODING))
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, FORD_INPUT_ENCODING));
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
+			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING)
 		){
 			String inputLine;
 
 			while ((inputLine = reader.readLine()) != null) {
-				String[] lineStrings = inputLine.split(TAB);
+				String[] lineStrings = inputLine.split(SPLITTER);
 
-				if (lineStrings.length >= 4) {
+				if (lineStrings.length == 2) {
 					addPart(lineStrings[NUMBER_COLUMN], lineStrings[PRICE_COLUMN], logWriter);
 				}
 			}
@@ -56,7 +59,7 @@ public final class BMW extends VehicleBrandTask {
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);
 		} catch (IOException e) {

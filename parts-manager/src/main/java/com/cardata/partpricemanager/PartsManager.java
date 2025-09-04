@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Microservice1 {
+public class PartsManager {
 	public static void main(String[] args) {
-		SpringApplication.run(Microservice1.class, args);
+		SpringApplication.run(PartsManager.class, args);
 	}
 }

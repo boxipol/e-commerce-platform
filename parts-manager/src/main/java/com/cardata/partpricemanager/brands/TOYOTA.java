@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public final class TOYOTA extends VehicleBrandTask {
 
-	private static final String LEXUS_ZIP = BASE_DIRECTORY + "/LEXUS/DAT.BG_LEXUS_487_retail_exvat_" + CURRENT_DATE + ".csv" + ".gz";
+	private static final String LEXUS_ZIP = WORKING_DIR + "/LEXUS/DAT.BG_LEXUS_487_retail_exvat_" + CURRENT_DATE_STR + ".csv" + ".gz";
 	private static final String SPLITTER = "\\|";
 
 	private static final Charset TOYOTA_INPUT_ENCODING = StandardCharsets.UTF_8;
@@ -45,8 +45,8 @@ public final class TOYOTA extends VehicleBrandTask {
 		log.info("Starting {} and Lexus process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, TOYOTA_INPUT_ENCODING));
 		){
@@ -62,9 +62,9 @@ public final class TOYOTA extends VehicleBrandTask {
 
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
-			FileUtils.copyFile(new File(zipFile), new File(LEXUS_ZIP));
+			FileUtils.copyFile(new File(zipFile.toString()), new File(LEXUS_ZIP));
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 			log.info(LEXUS_ZIP);
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);

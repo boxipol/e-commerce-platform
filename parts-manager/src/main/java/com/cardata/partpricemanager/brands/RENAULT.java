@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public final class RENAULT extends VehicleBrandTask {
 
-	private static final String DACIA_ZIP_FILE_PATH = BASE_DIRECTORY + "DACIA/DAT.BG_DACIA_194_retail_exvat_" + CURRENT_DATE + ARCHIVE_EXT;
+	private static final String DACIA_ZIP_FILE_PATH = WORKING_DIR + "DACIA/DAT.BG_DACIA_194_retail_exvat_" + CURRENT_DATE_STR + ARCHIVE_EXT;
 	private static final String SPLITTER = ";";
 
 	private static final Charset INPUT_ENCODING = StandardCharsets.UTF_8;
@@ -44,8 +44,8 @@ public final class RENAULT extends VehicleBrandTask {
 		log.info("Starting {} and Dacia process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, INPUT_ENCODING))
 		){
@@ -61,9 +61,9 @@ public final class RENAULT extends VehicleBrandTask {
 
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
-			FileUtils.copyFile(new File(zipFile), new File(DACIA_ZIP_FILE_PATH));
+			FileUtils.copyFile(new File(zipFile.toString()), new File(DACIA_ZIP_FILE_PATH));
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 			log.info(DACIA_ZIP_FILE_PATH);
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);

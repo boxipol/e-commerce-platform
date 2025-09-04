@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public final class OPEL extends VehicleBrandTask {
 
-	private static final String CHEVY_ZIP_FILE_PATH = BASE_DIRECTORY + "/CHEVROLET/DAT.BG_CHEVROLET_160_retail_exvat_" + CURRENT_DATE + ARCHIVE_EXT;
+	private static final String CHEVY_ZIP_FILE_PATH = WORKING_DIR + "/CHEVROLET/DAT.BG_CHEVROLET_160_retail_exvat_" + CURRENT_DATE_STR + ARCHIVE_EXT;
 
 	private static final Charset OPEL_INPUT_ENCODING = StandardCharsets.UTF_8;
 
@@ -45,9 +45,9 @@ public final class OPEL extends VehicleBrandTask {
 		log.info("Starting {} and Chevrolet process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, OPEL_INPUT_ENCODING));
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING)
 		){
 			String inputLine;
@@ -62,9 +62,9 @@ public final class OPEL extends VehicleBrandTask {
 
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
-			FileUtils.copyFile(new File(zipFile), new File(CHEVY_ZIP_FILE_PATH));
+			FileUtils.copyFile(new File(zipFile.toUri()), new File(CHEVY_ZIP_FILE_PATH));
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 			log.info(CHEVY_ZIP_FILE_PATH);
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);

@@ -41,9 +41,9 @@ public final class JAGUAR extends VehicleBrandTask {
 		log.info("Starting {} process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, JAGUAR_INPUT_ENCODING));
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING)
 		){
 			String inputLine;
@@ -59,7 +59,7 @@ public final class JAGUAR extends VehicleBrandTask {
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);
 		} catch (IOException e) {

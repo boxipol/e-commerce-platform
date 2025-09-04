@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /*
- * Input format for Rover 02.2016
+ * Input format for Volvo 02.2016
  * CodeOE    |Price
  * 6001541928;22.07000000000000000000
  */
@@ -23,9 +23,9 @@ import java.nio.charset.StandardCharsets;
  * Created by Dobrev-DAT on 11.2.2016 г..
  */
 @Slf4j
-public final class ROVER extends VehicleBrandTask {
+public final class VOLVO extends VehicleBrandTask {
 
-	private static final Charset ROVER_INPUT_ENCODING = StandardCharsets.UTF_8;
+	private static final Charset VOLVO_INPUT_ENCODING = StandardCharsets.UTF_8;
 
 	private static final String SPLITTER = ";";
 
@@ -33,17 +33,17 @@ public final class ROVER extends VehicleBrandTask {
 	private static final int PRICE_COLUMN = 1;
 
 
-	public ROVER() throws Exception {
-		super(Brand.ROVER);
+	public VOLVO() throws Exception {
+		super(Brand.VOLVO);
 	}
 
 	public void run() {
 		log.info("Starting {} process...", brand);
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFile);
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, ROVER_INPUT_ENCODING));
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileInputStream inputStream = new FileInputStream(inputFile.toString());
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, VOLVO_INPUT_ENCODING));
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING)
 		){
 			String inputLine;
@@ -59,7 +59,7 @@ public final class ROVER extends VehicleBrandTask {
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);
 		} catch (IOException e) {

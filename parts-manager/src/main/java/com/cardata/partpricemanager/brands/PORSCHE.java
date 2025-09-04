@@ -36,8 +36,8 @@ public final class PORSCHE extends VehicleBrandTask {
 		log.info("Starting {} process...", brand);
 
 		try (
-			FileInputStream fileInputStream = new FileInputStream(inputFile);
-			FileOutputStream logOutputStream = new FileOutputStream(logFile);
+			FileInputStream fileInputStream = new FileInputStream(inputFile.toString());
+			FileOutputStream logOutputStream = new FileOutputStream(logFile.toString());
 			Writer logWriter = new OutputStreamWriter(logOutputStream, DEFAULT_OUTPUT_ENCODING);
 			XSSFWorkbook xssfWorkbook = new XSSFWorkbook(fileInputStream)
 		){
@@ -58,7 +58,7 @@ public final class PORSCHE extends VehicleBrandTask {
 			writeOutputFile(outputFile);
 			compress(outputFile, zipFile);
 
-			log.info(zipFile);
+			log.info(zipFile.toString());
 		} catch (FileNotFoundException e) {
 			log.error("{} file not found!", brand);
 		} catch (IOException e) {
