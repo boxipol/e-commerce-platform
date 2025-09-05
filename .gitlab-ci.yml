@@ -33,6 +33,6 @@ package:
     - mvn $MAVEN_CLI_OPTS package
   artifacts:
     paths:
-      - part-manager/target/*.jar
+      - parts-manager/target/*.jar
       - microservice2/target/*.jar
     expire_in: 1 week
