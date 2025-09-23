@@ -1,8 +1,11 @@
 package com.cardata.partpricemanager.service;
 
 import com.cardata.partpricemanager.brands.VehicleBrandTask;
+import com.cardata.partpricemanager.config.FtpProperties;
 import com.cardata.partpricemanager.models.Brand;
+import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.files.FileMetadata;
+import com.dropbox.core.v2.sharing.SharedFolderMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,12 @@ import java.util.concurrent.Future;
 @Slf4j
 @Service
 public final class PartsServiceImpl implements PartsService {
+
+	@Autowired
+	private FtpProperties ftpProperties;
+
+	@Autowired
+	private FtpService ftpService;
 
 	@Autowired
 	private DropboxUploader uploader;
@@ -51,6 +60,12 @@ public final class PartsServiceImpl implements PartsService {
 			}
 		}
 
+		if (brand.equals(Brand.RENAULT)) {
+			Path destination = Path.of(String.format("%s/%s/%s", VehicleBrandTask.WORKING_DIR, brand, "Renault_CarData.txt"));
+			FtpProperties.ServerConfig serverConfig = ftpProperties.getConfig(Brand.RENAULT);
+			ftpService.downloadFile(serverConfig.getHost(), serverConfig.getPort(), serverConfig.getUser(), serverConfig.getPassword(), "Renault_CarData.txt", destination.toString());
+		}
+
 		VehicleBrandTask task = brand.getTaskClass()
 			.getDeclaredConstructor()
 			.newInstance();
@@ -61,5 +76,15 @@ public final class PartsServiceImpl implements PartsService {
 		String dropBoxDestination = String.format("/Parts %s %s/%s", VehicleBrandTask.CURRENT_DATE.getMonth(), VehicleBrandTask.CURRENT_DATE.getYear(), task.getZipFile().getFileName());
 
 		return uploader.uploadFile(task.getZipFile(), dropBoxDestination);
+	}
+
+	@Override
+	public SharedFolderMetadata shareFolder() throws DbxException {
+		String mail = "grozdanov@car-data.bg";
+		SharedFolderMetadata metadata = uploader.shareFolderByMail(mail);
+
+		log.info("Invitation sent to {}", mail);
+
+		return metadata;
 	}
 }
