@@ -10,7 +10,12 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>parts-manager</module>
-		<module>microservice2</module>
+		<module>microservice-template</module>
+		<module>auth-service</module>
+		<module>catalog-service</module>
+		<module>order-service</module>
+		<module>payment-service</module>
+		<module>notification-service</module>
 	</modules>
 
 	<properties>
