@@ -11,7 +11,7 @@ import java.io.OutputStream;
 public final class FtpService {
 
 	public void downloadFile(String server, int port, String user, String pass, String remoteFilePath, String localFilePath) throws IOException {
-		FTPClient ftpClient = new FTPClient();
+		var ftpClient = new FTPClient();
 
 		try {
 			ftpClient.connect(server, port);

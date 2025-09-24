@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -44,16 +43,16 @@ public final class PartsServiceImpl implements PartsService {
 
 		// todo temp
 		if (brand.equals(Brand.BMW) || brand.equals(Brand.OPEL)) {
-			String fileUrl = switch (brand) {
+			var fileUrl = switch (brand) {
 				case BMW -> "http://www.bdsoftltd.com/Daru/stock_pricesDaruCar.txt";
 				case OPEL -> "http://opelcar.info/bulvaria/prlist.txt";
 				default -> "";
 			};
 
-			Path destination = Path.of(String.format("%s/%s/%s", VehicleBrandTask.WORKING_DIR, brand, fileUrl.substring(fileUrl.lastIndexOf('/') + 1)));
+			var destination = Path.of(String.format("%s/%s/%s", VehicleBrandTask.WORKING_DIR, brand, fileUrl.substring(fileUrl.lastIndexOf('/') + 1)));
 
-			try (InputStream in = new URL(fileUrl).openStream()) {
-				Files.copy(in, destination);
+			try (var input = new URL(fileUrl).openStream()) {
+				Files.copy(input, destination);
 			} catch (IOException e) {
 				log.error("Unable to download source file for {}: {}", brand, e.getMessage());
 				throw e;
@@ -66,7 +65,7 @@ public final class PartsServiceImpl implements PartsService {
 			ftpService.downloadFile(serverConfig.getHost(), serverConfig.getPort(), serverConfig.getUser(), serverConfig.getPassword(), "Renault_CarData.txt", destination.toString());
 		}
 
-		VehicleBrandTask task = brand.getTaskClass()
+		var task = brand.getTaskClass()
 			.getDeclaredConstructor()
 			.newInstance();
 
@@ -80,7 +79,7 @@ public final class PartsServiceImpl implements PartsService {
 
 	@Override
 	public SharedFolderMetadata shareFolder() throws DbxException {
-		String mail = "grozdanov@car-data.bg";
+		var mail = "grozdanov@car-data.bg";
 		SharedFolderMetadata metadata = uploader.shareFolderByMail(mail);
 
 		log.info("Invitation sent to {}", mail);

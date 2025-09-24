@@ -3,7 +3,6 @@ package com.cardata.partpricemanager.models;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
 @RequiredArgsConstructor
 @Getter
 public enum SourceType {

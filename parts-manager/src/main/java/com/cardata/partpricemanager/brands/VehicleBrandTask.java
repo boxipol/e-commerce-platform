@@ -28,9 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
-
 
 /**
  * Created by Dobrev-DAT on 2.2.2016 г..
@@ -70,9 +68,9 @@ public abstract class VehicleBrandTask implements Runnable {
 
 	public VehicleBrandTask(final Brand brand) throws Exception {
 		this.brand = brand;
-		Path sourceFolderPath = Paths.get(String.format("%s/%s", WORKING_DIR, brand));
+		var sourceFolderPath = Paths.get(String.format("%s/%s", WORKING_DIR, brand));
 
-		try (Stream<Path> files = Files.list(sourceFolderPath)) {
+		try (var files = Files.list(sourceFolderPath)) {
 			List<Path> paths = files
 				.filter(path -> !path.toString().contains(".DS_Store"))
 				.toList();
@@ -124,8 +122,8 @@ public abstract class VehicleBrandTask implements Runnable {
 		log.info("Writing file: {}", outputFile);
 
 		try (
-			FileOutputStream outputStream = new FileOutputStream(outputFile.toString());
-			Writer writer = new OutputStreamWriter(outputStream, DEFAULT_OUTPUT_ENCODING)
+			var output = new FileOutputStream(outputFile.toString());
+			var writer = new OutputStreamWriter(output, DEFAULT_OUTPUT_ENCODING)
 		){
 			writer.write("\"ETN\";\"NVKPR\"\n");
 
@@ -142,16 +140,16 @@ public abstract class VehicleBrandTask implements Runnable {
 	}
 
 	public void compress(final Path inputFilePath, final Path gzipFilePath) throws IOException {
-		byte[] buffer = new byte[8192];
+		var buffer = new byte[8192];
 		int bytesRead;
 
 		try (
-			FileInputStream inputStream = new FileInputStream(inputFilePath.toString());
-			FileOutputStream outputStream = new FileOutputStream(gzipFilePath.toString());
-			GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream)
+			var input = new FileInputStream(inputFilePath.toString());
+			var output = new FileOutputStream(gzipFilePath.toString());
+			var gzipOutput = new GZIPOutputStream(output)
 		){
-			while ((bytesRead = inputStream.read(buffer)) != -1) {
-				gzipOutputStream.write(buffer, 0, bytesRead);
+			while ((bytesRead = input.read(buffer)) != -1) {
+				gzipOutput.write(buffer, 0, bytesRead);
 			}
 		}
 	}

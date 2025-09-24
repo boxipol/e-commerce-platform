@@ -23,11 +23,12 @@ public class DropboxUploader {
 		DbxRequestConfig config = DbxRequestConfig.newBuilder("parts-manager").build();
 		DbxClientV2 client = new DbxClientV2(config, accessToken);
 
-		try (InputStream in = new FileInputStream(localFilePath.toString())) {
+	public FileMetadata uploadFile(Path localFilePath, String dropboxPath) throws IOException {
+		try (var input = new FileInputStream(localFilePath.toString())) {
 			return client.files()
 				.uploadBuilder(dropboxPath)
 				.withMode(WriteMode.OVERWRITE)
-				.uploadAndFinish(in);
+				.uploadAndFinish(input);
 		} catch (Exception e) {
 			throw new IOException("Error uploading to Dropbox", e);
 		}
