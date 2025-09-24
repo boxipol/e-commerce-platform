@@ -35,7 +35,7 @@ import java.util.zip.GZIPOutputStream;
  */
 @Slf4j
 @Getter
-public abstract class VehicleBrandTask implements Runnable {
+public abstract sealed class VehicleBrandTask implements Runnable permits BMW, FORD, JAGUAR, OPEL, PORSCHE, RENAULT, ROVER, SKODA, TOYOTA, VOLVO {
 
 	public static final LocalDate CURRENT_DATE = LocalDate.now();
 	public static final String WORKING_DIR = String.format("%s/parts-manager/PriceLists/%s/%s/", System.getProperty("user.dir"), CURRENT_DATE.getYear(), CURRENT_DATE.getMonthValue());
