@@ -96,6 +96,8 @@ public abstract sealed class VehicleBrandTask implements Runnable permits BMW, F
 
 	public abstract void run();
 
+
+
 	public void addPart(final String number, final String price, final Writer logWriter) throws IOException {
 		String validNumber = this.validatePartNumber(number);
 		MonetaryAmount validedPrice = validatePartPrice(price);
