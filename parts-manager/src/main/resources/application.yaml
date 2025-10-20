@@ -1,7 +1,0 @@
-ftp:
-  servers:
-    - brand: RENAULT
-      host: auto1.bg
-      port: 21
-      user: ${RENAULT_FTP_USER}
-      password: ${RENAULT_FTP_PASS}
