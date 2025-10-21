@@ -1,0 +1,10 @@
+package com.pdp.ecommerce.dto;
+
+import java.time.Instant;
+
+public record OrderResponse(
+
+	Long orderId,
+	String status,
+	Instant createdAt
+) {}
