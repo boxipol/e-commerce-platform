@@ -9,10 +9,6 @@ public record OrderRequest(
 	@NotNull(message = "Product ID cannot be null")
 	Long userId,
 
-//	@Min(value = 1, message = "Quantity must be at least 1")
-//	List<OrderItemRequest> items
-
-
-	@NotNull(message = "Item ID cannot be null")
-	Long itemId
+	@Min(value = 1, message = "Quantity must be at least 1")
+	List<OrderItemRequest> items
 ) {}
