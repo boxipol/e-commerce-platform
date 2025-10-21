@@ -20,7 +20,7 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-public class Order {
+public final class Order {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

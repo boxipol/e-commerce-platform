@@ -1,17 +1,15 @@
 package com.bbb.service;
 
-import lombok.RequiredArgsConstructor;
 import com.bbb.dto.OrderRequest;
 import com.bbb.dto.OrderResponse;
 import com.bbb.entity.Order;
-import com.bbb.entity.OrderStatus;
 import com.bbb.event.OrderEventProducer;
 import com.bbb.event.OrderPlacedEvent;
 import com.bbb.exception.OrderNotFoundException;
 import com.bbb.mapper.OrderMapper;
 import com.bbb.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +30,8 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public OrderResponse placeOrder(OrderRequest request) {
 		Order order = orderMapper.toOrder(request);
-		order.setStatus(OrderStatus.PENDING);
-		order.setCreatedAt(Instant.now());
+//		order.setStatus(OrderStatus.PENDING);
+//		order.setCreatedAt(Instant.now());
 
 		Order saved = orderRepository.save(order);
 

@@ -17,34 +17,17 @@ class OrderMapperSpringTest {
 	private OrderMapper orderMapper;
 
 
-//	@Test
-//	void testMappingFromOrderRequestToOrder() {
-//		OrderItemRequest item1 = new OrderItemRequest(101L, 3);
-//		OrderItemRequest item2 = new OrderItemRequest(202L, 1);
-//		OrderRequest request = new OrderRequest(55L, List.of(item1, item2));
-//
-//		Order order = orderMapper.toOrder(request);
-//
-//		assertEquals(55L, order.getUserId());
-//		assertEquals(OrderStatus.PENDING, order.getStatus());
-//		assertNotNull(order.getCreatedAt());
-//		assertEquals(2, order.getItems().size());
-//
-//		order.getItems().forEach(item -> {
-//			assertEquals(order, item.getOrder());
-//			assertTrue(item.getProductId() == 101L || item.getProductId() == 202L);
-//			assertNull(item.getId());
-//		});
-//	}
-
 	@Test
 	void testMappingFromOrderRequestToOrder() {
-		var orderRequest = new OrderRequest(55L, List.of(new OrderItemRequest(101L, 2), new OrderItemRequest(202L, 3)));
+		var item1 = new OrderItemRequest(101L, 2);
+		var item2 = new OrderItemRequest(202L, 3);
+		var orderRequest = new OrderRequest(55L, List.of(item1, item2));
 		var order = orderMapper.toOrder(orderRequest);
 
 		assertEquals(55L, order.getUserId());
 		assertEquals(OrderStatus.PENDING, order.getStatus());
 		assertNotNull(order.getCreatedAt());
+		assertEquals(2, order.getItems().size());
 
 		order.getItems().forEach(item -> {
 //			assertEquals(order, item.getOrder());
