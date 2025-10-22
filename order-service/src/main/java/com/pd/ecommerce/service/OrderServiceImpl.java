@@ -1,6 +1,6 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.client.OrderServiceClient;
+import com.pd.ecommerce.client.PaymentServiceClient;
 import com.pd.ecommerce.dto.OrderRequest;
 import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.entity.Order;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-	private final OrderServiceClient orderServiceClient;
+	private final PaymentServiceClient orderServiceClient;
 	private final OrderRepository orderRepository;
 	private final OrderMapper orderMapper;
 	private final OrderEventProducer eventProducer;
