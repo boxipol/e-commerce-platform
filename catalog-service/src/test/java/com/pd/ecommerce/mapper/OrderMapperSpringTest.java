@@ -4,18 +4,19 @@ import com.pd.ecommerce.dto.OrderItemRequest;
 import com.pd.ecommerce.dto.OrderRequest;
 import com.pd.ecommerce.entity.OrderStatus;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+
+//@SpringBootTest(properties = "spring.cloud.openfeign.enabled=false")
 class OrderMapperSpringTest {
 
-	@Autowired
-	private OrderMapper orderMapper;
+//	@Autowired
+//	private OrderMapper orderMapper;
 
+	private final OrderMapper orderMapper = Mappers.getMapper(OrderMapper.class);
 
 	@Test
 	void testMappingFromOrderRequestToOrder() {

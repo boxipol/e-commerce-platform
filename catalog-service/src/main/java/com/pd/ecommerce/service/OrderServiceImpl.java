@@ -1,5 +1,6 @@
 package com.pd.ecommerce.service;
 
+import com.pd.ecommerce.client.OrderServiceClient;
 import com.pd.ecommerce.dto.OrderRequest;
 import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.entity.Order;
@@ -9,12 +10,15 @@ import com.pd.ecommerce.exception.OrderNotFoundException;
 import com.pd.ecommerce.mapper.OrderMapper;
 import com.pd.ecommerce.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+	private final OrderServiceClient orderServiceClient;
 	private final OrderRepository orderRepository;
 	private final OrderMapper orderMapper;
 	private final OrderEventProducer eventProducer;
@@ -39,5 +43,10 @@ public class OrderServiceImpl implements OrderService {
 		eventProducer.publish(new OrderPlacedEvent(saved.getId(), saved.getUserId()));
 
 		return orderMapper.toResponse(saved);
+	}
+
+	public void printOrder(Long id) {
+		OrderResponse orderResponse = orderServiceClient.getOrderById(id);
+		log.info("Fetched order: {}", orderResponse);
 	}
 }

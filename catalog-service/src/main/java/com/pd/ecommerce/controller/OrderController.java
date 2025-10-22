@@ -1,5 +1,6 @@
 package com.pd.ecommerce.controller;
 
+import com.pd.ecommerce.client.OrderServiceClient;
 import com.pd.ecommerce.dto.OrderRequest;
 import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.service.OrderService;
@@ -21,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class OrderController {
 
+	private final OrderServiceClient orderServiceClient;
 	private final OrderService orderService;
 
 
@@ -36,9 +38,15 @@ public class OrderController {
 	}
 
 
+//	@GetMapping("/{id}")
+//	public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
+//		return ResponseEntity.ok(orderServiceClient.getOrder(id));
+//	}
+
+
 	@GetMapping("/hello")
 	public String hello() {
-		return "Hello from Service A!";
+		return "Hello from Order Service!";
 	}
 
 	@Bean
