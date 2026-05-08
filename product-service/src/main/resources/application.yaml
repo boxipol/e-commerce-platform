@@ -1,0 +1,16 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: product-service
+
+  cassandra:
+    contact-points: 127.0.0.1
+    port: 9042
+    keyspace-name: ecommerce
+    schema-action: create_if_not_exists
+    configuration:
+      # Specify the local datacenter
+      load-balancing-policy:
+        local-datacenter: datacenter1
