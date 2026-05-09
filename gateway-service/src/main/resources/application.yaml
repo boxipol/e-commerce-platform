@@ -21,29 +21,29 @@ jwt:
         webflux:
           routes:
             - id: customer-service
-            - uri: http://localhost:8082
-            - predicates:
-              - Path=/api/users/**
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/v1/customers/**
 
             - id: order-service
-            - uri: http://localhost:8083
-            - predicates:
-              - Path=/api/orders/**
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/v1/orders/**
 
             - id: product-service
-            - uri: http://localhost:8084
-            - predicates:
-              - Path=/api/products/**
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/v1/products/**
 
             - id: payment-service
-            - uri: http://localhost:8085
-            - predicates:
-              - Path=/api/orders/**
+              uri: http://localhost:8085
+              predicates:
+                - Path=/api/v1/payments/**
 
             - id: notification-service
-            - uri: http://localhost:8086
-            - predicates:
-              - Path=/api/orders/**
+              uri: http://localhost:8086
+              predicates:
+                - Path=/api/v1/notifications/**
 
 #resilience4j:
 #  circuitbreaker:
