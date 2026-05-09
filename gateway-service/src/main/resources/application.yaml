@@ -9,24 +9,38 @@ spring:
   application:
     name: gateway-service
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          secret-key: mysecretkey1234567890
+jwt:
+  secret: your-super-secret-key-with-at-least-32-characters
 
   cloud:
     gateway:
       server:
         webflux:
           routes:
-            - id: user-service
-              uri: lb://user-service
-              predicates:
-                - Path=/api/users/**
+            - id: customer-service
+            - uri: http://localhost:8082
+            - predicates:
+              - Path=/api/users/**
 
-#jwt:
-#  secret: my-secret-key-should-be-long-and-random
+            - id: order-service
+            - uri: http://localhost:8083
+            - predicates:
+              - Path=/api/orders/**
+
+            - id: product-service
+            - uri: http://localhost:8084
+            - predicates:
+              - Path=/api/products/**
+
+            - id: payment-service
+            - uri: http://localhost:8085
+            - predicates:
+              - Path=/api/orders/**
+
+            - id: notification-service
+            - uri: http://localhost:8086
+            - predicates:
+              - Path=/api/orders/**
 
 #resilience4j:
 #  circuitbreaker:
