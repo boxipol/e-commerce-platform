@@ -1,28 +1,35 @@
 E-COMMERCE PLATFORM
 
+Kubernetes Orchestration
+- service discovery
+- LB
+- pod lifecycle and scaling
+- network policies & security
+
+Docker
+
 gateway service (8081)
 - entry point
-Spring Cloud Gateway
-- route requests - /products, /orders/, /customers
+- authentication and authorization
+- routing requests - /products, /orders/, /customers
 handles cross-cutting concerns:
-- authentication - simple spring authentication
-- rate limiting
-- logging
+- rate limiting and throttling 
+- logging and monitoring
+
+customer service (8082)
+- manages customer data
+- CRUD customers
+- PostgreSQL
+
+order service (8083)
+- manages customer orders
+- CRUD orders
+- PostgreSQL
 
 product service (8084)
 - manages the product catalog
 - CRUD products
 - CassandraDB
-
-order service (8082)
-- manages customer orders
-- CRUD orders
-- PostgreSQL
-
-customer service (8083)
-- manages customer data
-- CRUD customers
-- PostgreSQL
 
 payment service (8085)
 - handles payment processing

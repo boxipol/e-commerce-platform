@@ -18,7 +18,7 @@ spec:
         - name: product-service-container
           image: IMAGE_PLACEHOLDER
           ports:
-            - containerPort: 8083
+            - containerPort: 8084
 
 ---
 
@@ -35,4 +35,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8083
+      targetPort: 8084

@@ -18,7 +18,7 @@ spec:
         - name: order-service-container
           image: IMAGE_PLACEHOLDER
           ports:
-            - containerPort: 8082
+            - containerPort: 8083
 
 ---
 
@@ -35,4 +35,4 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8082
+      targetPort: 8083

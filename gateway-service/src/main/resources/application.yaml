@@ -8,8 +8,22 @@ logging:
 spring:
   application:
     name: gateway-service
-#  main:
-#    allow-bean-definition-overriding: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: mysecretkey1234567890
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/users/**
 
 #jwt:
 #  secret: my-secret-key-should-be-long-and-random
