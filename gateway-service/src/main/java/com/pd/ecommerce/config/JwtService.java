@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
-
 @Component
 public class JwtService {
 
 	@Value("${jwt.secret}")
 	private String secret;
+
 
 	private SecretKey getKey() {
 		return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

@@ -1,5 +1,6 @@
 package com.pd.ecommerce.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -12,6 +13,22 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
 
 	@Bean
+	@ConditionalOnProperty(name = "security.enabled", havingValue = "false", matchIfMissing = true)
+	public SecurityWebFilterChain disabled(ServerHttpSecurity http) {
+		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+			.authorizeExchange(ex -> ex.pathMatchers("/auth/**")
+				.permitAll()
+				.pathMatchers("/actuator/**")
+				.permitAll()
+				.anyExchange()
+				.permitAll())
+			.build();
+	}
+
+	@Bean
+	@ConditionalOnProperty(name = "security.enabled", havingValue = "true")
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)

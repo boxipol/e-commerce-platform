@@ -12,7 +12,6 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import java.util.List;
 
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter implements WebFilter {

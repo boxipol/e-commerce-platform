@@ -9,6 +9,9 @@ spring:
   application:
     name: gateway-service
 
+security:
+  enabled: false
+
 jwt:
   secret: your-super-secret-key-with-at-least-32-characters
 
