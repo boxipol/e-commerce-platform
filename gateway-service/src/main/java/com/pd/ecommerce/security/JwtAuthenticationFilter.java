@@ -1,4 +1,4 @@
-package com.pd.ecommerce.config;
+package com.pd.ecommerce.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

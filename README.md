@@ -7,14 +7,14 @@ Kubernetes Orchestration
 - network policies & security
 
 Docker
+- containerisation
 
 gateway service (8081)
 - entry point
 - authentication and authorization
 - routing requests - /products, /orders/, /customers
-handles cross-cutting concerns:
 - rate limiting and throttling 
-- logging and monitoring
+- logging and monitoring, providing correlation ID, request start/end
 
 customer service (8082)
 - manages customer data
@@ -30,13 +30,28 @@ product service (8084)
 - manages the product catalog
 - CRUD products
 - CassandraDB
+  - optimise for product lookup by id, products by category, products by brand, search/filter support, 
+    inventory lookups, recommendations / trending, product variants, event-driven updates
 
+      brew services start cassandra
+      cqlsh
+        cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
+- 
 payment service (8085)
 - handles payment processing
 
 notification service (8086)
 - handles notifications
 
+logging and monitoring
+- Gateway logging filter
+- Spring Boot Actuator
+- OpenTelemetry auto-instrumentation -javaagent:/Users/user/IdeaProjects/opentelemetry-javaagent.jar 
+    - docker run --rm -p 4317:4317 -p 4318:4318 otel/opentelemetry-collector:latest
+- Jaeger (trace visualization)
+- Elasticsearch
+- Prometheus (data collection)
+- Grafana (dashboards)
 
 simple flow
 client logins through gateway service

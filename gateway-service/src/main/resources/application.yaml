@@ -6,14 +6,9 @@ logging:
     org.springframework.cloud.gateway: DEBUG
 
 spring:
+  
   application:
     name: gateway-service
-
-security:
-  enabled: false
-
-jwt:
-  secret: your-super-secret-key-with-at-least-32-characters
 
   cloud:
     gateway:
@@ -44,6 +39,12 @@ jwt:
               uri: http://localhost:8086
               predicates:
                 - Path=/api/v1/notifications/**
+
+security:
+  enabled: false
+
+jwt:
+  secret: your-super-secret-key-with-at-least-32-characters
 
 #resilience4j:
 #  circuitbreaker:
