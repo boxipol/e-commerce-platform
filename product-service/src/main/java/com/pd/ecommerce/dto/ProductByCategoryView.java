@@ -8,5 +8,5 @@ public record ProductByCategoryView(
 	String name,
 	String brand,
 	BigDecimal price,
-	ProductStatus status
+	Integer stock
 ) {}

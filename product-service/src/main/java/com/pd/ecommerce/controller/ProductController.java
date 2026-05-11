@@ -1,5 +1,6 @@
 package com.pd.ecommerce.controller;
 
+import com.pd.ecommerce.dto.PageResponse;
 import com.pd.ecommerce.dto.ProductByCategoryView;
 import com.pd.ecommerce.dto.ProductCreateRequest;
 import com.pd.ecommerce.dto.ProductResponse;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,8 +35,8 @@ public final class ProductController {
 	}
 
 	@GetMapping
-	public Flux<ProductResponse> getAll() {
-		return productService.getAll();
+	public Mono<PageResponse<ProductResponse>> getAll(@RequestParam(defaultValue = "10") int limit, @RequestParam(required = false) String cursor) {
+		return productService.getAll(limit, cursor);
 	}
 
 	@PostMapping
