@@ -17,6 +17,7 @@ public final class Product {
 	@PrimaryKey
 	@Column("product_id")
 	private UUID productId;
+
 	private String sku;
 	private String name;
 	private String description;
@@ -26,8 +27,10 @@ public final class Product {
 	private String currency;
 	private Integer stock;
 	private Boolean active;
+
 	@Column("created_at")
 	private Instant createdAt;
+
 	@Column("updated_at")
 	private Instant updatedAt;
 }
