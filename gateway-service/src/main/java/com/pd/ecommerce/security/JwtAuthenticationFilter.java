@@ -1,44 +1,49 @@
 package com.pd.ecommerce.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter implements WebFilter {
+public final class JwtAuthenticationFilter implements GlobalFilter {
 
 	private final JwtService jwtService;
 
 
 	@Override
-	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-		String authHeader = exchange.getRequest()
-			.getHeaders()
-			.getFirst(HttpHeaders.AUTHORIZATION);
+	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+		String path = exchange.getRequest().getURI().getPath();
+
+		// skip auth endpoints
+		if (path.startsWith("/api/v1/auth")) {
+			return chain.filter(exchange);
+		}
+
+		String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			return chain.filter(exchange);
+			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+			return exchange.getResponse().setComplete();
 		}
 
 		String token = authHeader.substring(7);
 
 		if (!jwtService.isTokenValid(token)) {
-			return chain.filter(exchange);
+			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+			return exchange.getResponse().setComplete();
 		}
 
 		String username = jwtService.extractUsername(token);
-		var auth = new UsernamePasswordAuthenticationToken(username, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+		String role = jwtService.extractRole(token);
+		ServerHttpRequest mutatedRequest = exchange.getRequest().mutate().header("X-User", username).header("X-Role", role).build();
 
-		return chain.filter(exchange)
-			.contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+		return chain.filter(exchange.mutate().request(mutatedRequest).build());
 	}
 }

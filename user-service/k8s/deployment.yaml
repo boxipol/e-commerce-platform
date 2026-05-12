@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: customer-service
+  name: user-service
   labels:
-    app: customer-service
+    app: user-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: customer-service
+      app: user-service
   template:
     metadata:
       labels:
-        app: customer-service
+        app: user-service
     spec:
       containers:
-        - name: customer-service-container
+        - name: user-service-container
           image: IMAGE_PLACEHOLDER
           ports:
             - containerPort: 8082
@@ -25,13 +25,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: customer-service
+  name: user-service
   labels:
-    app: customer-service
+    app: user-service
 spec:
   type: LoadBalancer
   selector:
-    app: customer-service
+    app: user-service
   ports:
     - protocol: TCP
       port: 80

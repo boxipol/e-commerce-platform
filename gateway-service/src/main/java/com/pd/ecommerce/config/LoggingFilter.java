@@ -5,7 +5,6 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -14,12 +13,13 @@ import java.util.UUID;
 @Slf4j
 @Component
 public class LoggingFilter implements GlobalFilter, Ordered {
+
 	private static final String CORRELATION_ID = "X-Correlation-Id";
+
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		ServerHttpRequest request = exchange.getRequest();
-		ServerHttpResponse response = exchange.getResponse();
 		long startTime = System.currentTimeMillis();
 		String correlationId = request.getHeaders().getFirst(CORRELATION_ID);
 
@@ -27,27 +27,29 @@ public class LoggingFilter implements GlobalFilter, Ordered {
 			correlationId = UUID.randomUUID().toString();
 		}
 
-		// attach correlation id to downstream request
-		ServerHttpRequest mutatedRequest = request.mutate().header(CORRELATION_ID, correlationId).build();
-		ServerWebExchange mutatedExchange = exchange.mutate().request(mutatedRequest).build();
-		request.getMethod();
+		ServerWebExchange mutatedExchange = exchange.mutate()
+			.request(request.mutate().header(CORRELATION_ID, correlationId)
+				.build())
+			.build();
+
 		String method = request.getMethod().name();
 		String path = request.getURI().getPath();
 		String query = request.getURI().getQuery();
-		String clientIp = (request.getRemoteAddress() != null) ? request.getRemoteAddress().getAddress().getHostAddress() : "unknown";
+		String clientIp = request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "unknown";
 
 		log.info("➡️ Incoming request [{}] {}{} | IP={} | CID={}", method, path, query != null ? "?" + query : "", clientIp, correlationId);
+
 		String finalCorrelationId = correlationId;
 
 		return chain.filter(mutatedExchange).doFinally(signal -> {
 			long duration = System.currentTimeMillis() - startTime;
-			int statusCode = response.getStatusCode() != null ? response.getStatusCode().value() : 0;
-			log.info("⬅️ Response [{}] {} | status={} | time={}ms | CID={}", method, path, statusCode, duration, finalCorrelationId);
+			Integer status = exchange.getResponse().getStatusCode() != null ? exchange.getResponse().getStatusCode().value() : 0;
+			log.info("⬅️ Response [{}] {} | status={} | time={}ms | CID={}", method, path, status, duration, finalCorrelationId);
 		});
 	}
 
 	@Override
 	public int getOrder() {
-		return -1; // run early in filter chain
+		return -2;
 	}
 }

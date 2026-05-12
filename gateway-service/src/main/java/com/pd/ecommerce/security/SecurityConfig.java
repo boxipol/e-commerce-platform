@@ -1,6 +1,5 @@
 package com.pd.ecommerce.security;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -12,37 +11,14 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
 
 	@Bean
-	@ConditionalOnProperty(name = "security.enabled", havingValue = "false", matchIfMissing = true)
-	public SecurityWebFilterChain disabled(ServerHttpSecurity http) {
-		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
-			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-			.authorizeExchange(ex -> ex.pathMatchers("/auth/**")
-				.permitAll()
-				.pathMatchers("/actuator/**")
-				.permitAll()
-				.anyExchange()
-				.permitAll())
-			.build();
-	}
-
-	@Bean
-	@ConditionalOnProperty(name = "security.enabled", havingValue = "true")
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-			.authorizeExchange(ex -> ex.pathMatchers("/auth/**")
-				.permitAll()
-				.pathMatchers("/actuator/**")
-				.permitAll()
-				.anyExchange()
-				.authenticated())
-//			.authorizeExchange(ex -> ex.pathMatchers("/admin/**")
-//				.hasRole("ADMIN")
-//				.pathMatchers("/user/**").hasAnyRole("USER", "ADMIN")
-//				.anyExchange()
-//				.authenticated()
+			.authorizeExchange(exchange -> exchange
+				.pathMatchers("/api/v1/auth/**").permitAll()
+				.pathMatchers("/actuator/**").permitAll()
+				.anyExchange().permitAll()) // IMPORTANT: let JWT filter handle security
 			.build();
 	}
 }

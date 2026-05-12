@@ -14,17 +14,26 @@ gateway service (8081)
 - authentication and authorization
 - routing requests - /products, /orders/, /customers
 - rate limiting and throttling 
-- logging and monitoring, providing correlation ID, request start/end
+- logging and monitoring(OpenTelemetry), providing correlation ID, request start/end
+simple flow:
+- client->gateway->product->cassandra
 
-customer service (8082)
-- manages customer data
-- CRUD customers
+user service (8082)
+- manages user data
+- CRUD users
 - PostgreSQL
+simple flow:
+- 
+scripts:
+    docker compose up -d
+    docker exec -it ecommerce-postgres psql -U admin -d users_db
 
 order service (8083)
 - manages customer orders
 - CRUD orders
 - PostgreSQL
+simple flow:
+- client->gateway->order->payment-inventory->kafka event
 
 product service (8084)
 - manages the product catalog
@@ -42,6 +51,8 @@ payment service (8085)
 
 notification service (8086)
 - handles notifications
+simple flow:
+- kafka event->notification->mail
 
 logging and monitoring
 - Gateway logging filter
