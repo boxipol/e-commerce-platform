@@ -3,7 +3,7 @@ package com.pd.ecommerce.service;
 import com.pd.ecommerce.dto.AuthResponse;
 import com.pd.ecommerce.dto.LoginRequest;
 import com.pd.ecommerce.dto.RegisterRequest;
-import com.pd.ecommerce.models.User;
+import com.pd.ecommerce.entity.User;
 import com.pd.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

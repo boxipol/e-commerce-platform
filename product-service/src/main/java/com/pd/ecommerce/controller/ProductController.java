@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,6 +33,11 @@ public final class ProductController {
 	@GetMapping("/{id}")
 	public Mono<ProductResponse> getById(@PathVariable UUID id) {
 		return productService.getById(id);
+	}
+
+	@GetMapping("/batch")
+	public Flux<ProductResponse> getProducts(@RequestParam List<UUID> ids) {
+		return productService.getProducts(ids);
 	}
 
 	@GetMapping

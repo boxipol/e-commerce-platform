@@ -42,6 +42,14 @@ final class ProductServiceImpl implements ProductService {
 			.map(mapper::toResponse);
 	}
 
+	// todo temp not effective
+	@Override
+	public Flux<ProductResponse> getProducts(List<UUID> ids) {
+		return productRepository.findAllById(ids)
+			.map(mapper::toResponse);
+	}
+
+	// todo temp not effective
 	public Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor) {
 		SimpleStatement statement = SimpleStatement.builder("SELECT * FROM ecommerce.products_by_id").setPageSize(limit).build();
 

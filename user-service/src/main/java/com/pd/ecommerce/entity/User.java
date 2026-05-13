@@ -1,4 +1,4 @@
-package com.pd.ecommerce.models;
+package com.pd.ecommerce.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -8,12 +8,14 @@ import com.pd.ecommerce.dto.ProductUpdateRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public interface ProductService {
 
 	Mono<ProductResponse> getById(UUID id);
+	Flux<ProductResponse> getProducts(List<UUID> ids);
 	Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor);
 	Mono<ProductResponse> create(ProductCreateRequest product);
 	Mono<ProductResponse> update(UUID id, ProductUpdateRequest product);

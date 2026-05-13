@@ -1,6 +1,6 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.models.User;
+import com.pd.ecommerce.entity.User;
 import com.pd.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
