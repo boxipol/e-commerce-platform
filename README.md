@@ -31,9 +31,11 @@ scripts:
 order service (8083)
 - manages customer orders
 - CRUD orders
-- PostgreSQL
+- PostgreSQL - Flyway migrations
 simple flow:
 - client->gateway->order->payment-inventory->kafka event
+
+    psql -U ecommerce_user -d orders_db
 
 product service (8084)
 - manages the product catalog

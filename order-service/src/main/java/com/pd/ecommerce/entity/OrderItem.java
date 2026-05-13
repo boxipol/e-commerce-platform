@@ -1,31 +1,24 @@
 package com.pd.ecommerce.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+import java.math.BigDecimal;
+import java.util.UUID;
 
-@Entity
-@Table(name = "order_items")
+@Table("order_items")
+@Builder
 @Getter
 @Setter
 public final class OrderItem {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	private Long productId;
+	private UUID id;
+	private UUID orderId;
+	private UUID productId;
 	private Integer quantity;
-	private Double price;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")
-	private Order order;
+	private BigDecimal unitPrice;
+	private BigDecimal subtotal;
 }

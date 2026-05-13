@@ -1,27 +1,49 @@
 server:
   port: 8083
 
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+
 spring:
   application:
     name: order-service
-  jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
-    username: postgres
-    password: mysecretpassword
-    driver-class-name: org.postgresql.Driver
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/orders_db
+    username: ecommerce_user
+    password: ecommerce_pass
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      orderService:
-        slidingWindowSize: 10
-        failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-  retry:
-    instances:
-      orderService:
-        maxAttempts: 3
-        waitDuration: 500ms
+    sql:
+      init:
+        mode: always
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: ecommerce-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+services:
+  product:
+    url: http://product-service:8084
+
+#resilience4j:
+#  circuitbreaker:
+#    instances:
+#      orderService:
+#        slidingWindowSize: 10
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 10s
+#  retry:
+#    instances:
+#      orderService:
+#        maxAttempts: 3
+#        waitDuration: 500ms
