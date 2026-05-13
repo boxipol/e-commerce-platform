@@ -31,9 +31,10 @@ services:
       dockerfile: product-service/Dockerfile
     container_name: product-service
     ports:
-      - "8083:8083"
+      - "8084:8084"
     depends_on:
-      - cassandra
+      cassandra:
+        condition: service_healthy
     environment:
       SPRING_CASSANDRA_CONTACT_POINTS: cassandra
       SPRING_CASSANDRA_PORT: 9042
@@ -43,18 +44,24 @@ services:
       - ecommerce-network
 
   cassandra:
-    image: cassandra:4.1
+    image: cassandra:5.0.8
     container_name: cassandra
     ports:
       - "9042:9042"
     environment:
-      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
+      CASSANDRA_CLUSTER_NAME: "Test Cluster"
+#      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
     volumes:
-      - cassandra_data:/var/lib/cassandra
+      - ./cassandra-data:/var/lib/cassandra
     networks:
       - ecommerce-network
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh localhost 9042 -e 'describe keyspaces'" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
 
 volumes:
   cassandra_data:
