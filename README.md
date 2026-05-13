@@ -11,7 +11,7 @@ Docker
 
 gateway service (8081)
 - entry point
-- authentication and authorization
+- authentication and authorization - Spring Security OAuth2 resource server
 - routing requests - /products, /orders/, /customers
 - rate limiting and throttling 
 - logging and monitoring(OpenTelemetry), providing correlation ID, request start/end
@@ -45,7 +45,10 @@ product service (8084)
       brew services start cassandra
       cqlsh
         cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
-- 
+    docker build -t product-service -f product-service/Dockerfile .
+    docker volume inspect cassandra_data
+
+
 payment service (8085)
 - handles payment processing
 

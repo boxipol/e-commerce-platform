@@ -28,7 +28,8 @@ public class LoggingFilter implements GlobalFilter, Ordered {
 		}
 
 		ServerWebExchange mutatedExchange = exchange.mutate()
-			.request(request.mutate().header(CORRELATION_ID, correlationId)
+			.request(request.mutate()
+				.header(CORRELATION_ID, correlationId)
 				.build())
 			.build();
 

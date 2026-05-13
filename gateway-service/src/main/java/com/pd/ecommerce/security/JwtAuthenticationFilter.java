@@ -42,7 +42,12 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 
 		String username = jwtService.extractUsername(token);
 		String role = jwtService.extractRole(token);
-		ServerHttpRequest mutatedRequest = exchange.getRequest().mutate().header("X-User", username).header("X-Role", role).build();
+
+		ServerHttpRequest mutatedRequest = exchange.getRequest()
+			.mutate()
+			.header("X-User", username)
+			.header("X-Role", role)
+			.build();
 
 		return chain.filter(exchange.mutate().request(mutatedRequest).build());
 	}
