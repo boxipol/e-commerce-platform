@@ -11,10 +11,10 @@ public class CassandraConfig {
 
 	@Bean
 	public CqlSession session(
-		@Value("${spring.cassandra.contact-points:cassandra}") String contactPoint,
-		@Value("${spring.cassandra.port:9042}") int port,
-		@Value("${spring.cassandra.local-datacenter:dc1}") String dc,
-		@Value("${spring.cassandra.keyspace-name:ecommerce}") String keyspace
+		@Value("${spring.cassandra.contact-points}") String contactPoint,
+		@Value("${spring.cassandra.port}") int port,
+		@Value("${spring.cassandra.local-datacenter}") String dc,
+		@Value("${spring.cassandra.keyspace-name}") String keyspace
 	){
 		return CqlSession.builder()
 			.addContactPoint(new InetSocketAddress(contactPoint, port))
