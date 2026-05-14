@@ -7,6 +7,8 @@ import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.dto.ProductSnapshot;
 import com.pd.ecommerce.entity.Order;
 import com.pd.ecommerce.entity.OrderItem;
+import com.pd.ecommerce.entity.OrderStatus;
+import com.pd.ecommerce.event.OrderCreatedEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import java.math.BigDecimal;
@@ -14,14 +16,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = OrderStatus.class)
 public interface OrderMapper {
 
 	OrderItemResponse toItemResponse(OrderItem item);
 
 	@Mapping(target = "id", source = "orderId")
 	@Mapping(target = "userId", source = "request.userId")
-	@Mapping(target = "status", constant = "CREATED")
+	@Mapping(target = "status", expression = "java(OrderStatus.CREATED)")
 	@Mapping(target = "totalAmount", source = "totalAmount")
 	@Mapping(target = "createdAt", source = "createdAt")
 	Order toOrder(CreateOrderRequest request, UUID orderId, BigDecimal totalAmount, Instant createdAt);
@@ -52,4 +54,13 @@ public interface OrderMapper {
 		    )
 		""")
 	OrderItem toOrderItem(CreateOrderItemRequest request, ProductSnapshot product, UUID orderId);
+
+	@Mapping(target = "orderId", source = "order.id")
+	@Mapping(target = "userId", source = "order.userId")
+	@Mapping(target = "totalPrice", source = "order.totalAmount")
+	@Mapping(target = "productIds", expression =
+		"java(items.stream()" +
+			".map(item -> item.getProductId().toString())" +
+			".toList())")
+	OrderCreatedEvent toOrderCreatedEvent(Order order, List<OrderItem> items);
 }

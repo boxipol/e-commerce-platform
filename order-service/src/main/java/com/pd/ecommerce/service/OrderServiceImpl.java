@@ -9,6 +9,8 @@ import com.pd.ecommerce.dto.ProductSnapshot;
 import com.pd.ecommerce.entity.Order;
 import com.pd.ecommerce.entity.OrderItem;
 import com.pd.ecommerce.entity.OrderStatus;
+import com.pd.ecommerce.event.OrderCreatedEvent;
+import com.pd.ecommerce.event.OrderEventProducer;
 import com.pd.ecommerce.mapper.OrderMapper;
 import com.pd.ecommerce.repository.OrderItemRepository;
 import com.pd.ecommerce.repository.OrderRepository;
@@ -32,7 +34,7 @@ public final class OrderServiceImpl implements OrderService {
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
 	private final OrderMapper mapper;
-//	private final OrderEventProducer eventProducer;
+	private final OrderEventProducer eventProducer;
 
 
 	public Mono<OrderResponse> getOrder(UUID id) {
@@ -81,7 +83,7 @@ public final class OrderServiceImpl implements OrderService {
 
 					Order order = Order.builder()
 						.userId(request.userId())
-						.status(OrderStatus.CREATED.toString())
+						.status(OrderStatus.CREATED)
 						.totalAmount(totalAmount)
 						.createdAt(Instant.now())
 						.build();
@@ -95,6 +97,10 @@ public final class OrderServiceImpl implements OrderService {
 							return orderItemRepository.saveAll(orderItems)
 								.collectList()
 								.map(savedItems -> mapper.toResponse(savedOrder, savedItems));
+						})
+						.doOnSuccess(savedOrder -> {
+							OrderCreatedEvent event = mapper.toOrderCreatedEvent(order, items);
+							eventProducer.publish(event);
 						});
 			});
 	}
