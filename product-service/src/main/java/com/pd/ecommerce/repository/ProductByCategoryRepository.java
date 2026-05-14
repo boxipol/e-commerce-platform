@@ -7,6 +7,5 @@ import reactor.core.publisher.Flux;
 
 public interface ProductByCategoryRepository extends ReactiveCassandraRepository<ProductByCategory, ProductByCategoryKey> {
 
-	// ✅ Efficient: single partition scan (category)
 	Flux<ProductByCategory> findByKeyCategory(String category);
 }

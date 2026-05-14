@@ -42,14 +42,15 @@ final class ProductServiceImpl implements ProductService {
 			.map(mapper::toResponse);
 	}
 
-	// todo temp not effective
 	@Override
 	public Flux<ProductResponse> getProducts(List<UUID> ids) {
-		return productRepository.findAllById(ids)
+		return Flux.fromIterable(ids)
+			.flatMap(id -> productRepository.findById(id)
+				.onErrorResume(e -> Mono.empty()), 32)
 			.map(mapper::toResponse);
 	}
 
-	// todo temp not effective
+	// todo temp not effective/testing
 	public Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor) {
 		SimpleStatement statement = SimpleStatement.builder("SELECT * FROM ecommerce.products_by_id").setPageSize(limit).build();
 
@@ -57,7 +58,8 @@ final class ProductServiceImpl implements ProductService {
 			statement = statement.setPagingState(ByteBuffer.wrap(Base64.getDecoder().decode(cursor)));
 		}
 
-		return Mono.fromCompletionStage(session.executeAsync(statement)).map(this::mapResultSet);
+		return Mono.fromCompletionStage(session.executeAsync(statement))
+			.map(this::mapResultSet);
 	}
 
 	public Mono<ProductResponse> create(ProductCreateRequest request) {

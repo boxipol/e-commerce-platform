@@ -91,7 +91,7 @@ services:
       cassandra:
         condition: service_healthy
     environment:
-      SPRING_CASSANDRA_CONTACT_POINTS: cassandra
+      SPRING_CASSANDRA_CONTACT_POINTS: products-cassandra
       SPRING_CASSANDRA_PORT: 9042
       SPRING_CASSANDRA_KEYSPACE_NAME: ecommerce
       SPRING_CASSANDRA_LOCAL_DATACENTER: datacenter1
@@ -100,7 +100,7 @@ services:
 
   cassandra:
     image: cassandra:5.0.8
-    container_name: cassandra
+    container_name: products-cassandra
     ports:
       - "9042:9042"
     environment:

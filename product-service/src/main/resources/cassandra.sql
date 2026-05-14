@@ -1,5 +1,18 @@
 // local
-CREATE KEYSPACE ecommerce WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+CREATE KEYSPACE ecommerce
+
+WITH replication = {
+    'class': 'SimpleStrategy',
+    'replication_factor': 1
+};
+
+// production
+CREATE KEYSPACE ecommerce
+
+WITH replication = {
+    'class': 'NetworkTopologyStrategy',
+    'datacenter1': 3
+};
 
 USE ecommerce;
 
@@ -54,40 +67,3 @@ WITH CLUSTERING ORDER BY (created_at DESC);
 
 SELECT * FROM products_by_category
 WHERE category = 'Phones';
-
-
-
-CREATE TABLE product_variants_by_product (
-    product_id UUID,
-    variant_id UUID,
-
-    sku TEXT,
-
-    color TEXT,
-    size TEXT,
-
-    price DECIMAL,
-    stock INT,
-
-    PRIMARY KEY ((product_id), variant_id)
-);
-
-SELECT * FROM product_variants_by_product
-WHERE product_id = ?;
-
-
-INSERT INTO products (id, name, price) VALUES (uuid(), 'Sample Product', 19.99);
-
-SELECT * FROM products;
-
-
-
-
-
-// production
-CREATE KEYSPACE ecommerce
-
-WITH replication = {
-    'class': 'NetworkTopologyStrategy',
-    'datacenter1': 3
-};

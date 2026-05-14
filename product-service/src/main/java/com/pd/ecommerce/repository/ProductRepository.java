@@ -11,5 +11,7 @@ import java.util.UUID;
 public interface ProductRepository extends ReactiveCassandraRepository<Product, UUID> {
 
 	Mono<Product> findById(UUID id);
+
+	// not efficient, for testing
 	Flux<Product> findAll();
 }
