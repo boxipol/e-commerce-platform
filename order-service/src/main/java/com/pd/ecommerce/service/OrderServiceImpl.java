@@ -8,6 +8,7 @@ import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.dto.ProductSnapshot;
 import com.pd.ecommerce.entity.Order;
 import com.pd.ecommerce.entity.OrderItem;
+import com.pd.ecommerce.entity.OrderStatus;
 import com.pd.ecommerce.mapper.OrderMapper;
 import com.pd.ecommerce.repository.OrderItemRepository;
 import com.pd.ecommerce.repository.OrderRepository;
@@ -59,19 +60,18 @@ public final class OrderServiceImpl implements OrderService {
 			.flatMap(productMap -> {
 				List<OrderItem> items = request.items()
 					.stream()
-					.map(req -> {
-						ProductSnapshot product = productMap.get(req.productId());
+					.map(orderItemRequest -> {
+						ProductSnapshot product = productMap.get(orderItemRequest.productId());
 
 						if (product == null) {
-							throw new RuntimeException("Product not found: " + req.productId());
+							throw new RuntimeException("Product not found: " + orderItemRequest.productId());
 						}
 
 						return OrderItem.builder()
-							.id(UUID.randomUUID())
-							.productId(req.productId())
-							.quantity(req.quantity())
+							.productId(orderItemRequest.productId())
+							.quantity(orderItemRequest.quantity())
 							.unitPrice(product.price())
-							.subtotal(product.price().multiply(BigDecimal.valueOf(req.quantity())))
+							.subtotal(product.price().multiply(BigDecimal.valueOf(orderItemRequest.quantity())))
 							.build();
 					}).toList();
 
@@ -80,19 +80,17 @@ public final class OrderServiceImpl implements OrderService {
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 					Order order = Order.builder()
-						.id(UUID.randomUUID())
 						.userId(request.userId())
-						.status("CREATED")
+						.status(OrderStatus.CREATED.toString())
 						.totalAmount(totalAmount)
 						.createdAt(Instant.now())
 						.build();
 
 					return orderRepository.save(order)
 						.flatMap(savedOrder -> {
-							List<OrderItem> orderItems = items.stream().map(item -> {
-								item.setOrderId(savedOrder.getId());
-								return item;
-							}).toList();
+							List<OrderItem> orderItems = items.stream()
+								.peek(item -> item.setOrderId(savedOrder.getId()))
+								.toList();
 
 							return orderItemRepository.saveAll(orderItems)
 								.collectList()
@@ -100,6 +98,8 @@ public final class OrderServiceImpl implements OrderService {
 						});
 			});
 	}
+
+//	==================== PRIVATE ====================
 
 	private OrderResponse buildResponse(Order order, List<OrderItem> items) {
 		List<OrderItemResponse> itemResponses = items.stream()

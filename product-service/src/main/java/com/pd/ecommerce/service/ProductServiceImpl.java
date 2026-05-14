@@ -118,5 +118,5 @@ final class ProductServiceImpl implements ProductService {
 		return new PageResponse<>(items, next != null ? Base64.getEncoder().encodeToString(next.array()) : null, next != null);
 	}
 
-	// Dual-table write orchestration
+	// todo Dual-table write orchestration
 }
