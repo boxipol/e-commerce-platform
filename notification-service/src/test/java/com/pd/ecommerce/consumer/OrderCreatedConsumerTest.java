@@ -14,7 +14,7 @@ import java.util.UUID;
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"order.created"})
 @TestPropertySource(properties = {
-	"spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
+	"spring.kafka.bootstrap-servers=localhost:29092",
 	"spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer",
 	"spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer",
 	"spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer",

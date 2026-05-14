@@ -25,6 +25,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+    # testing
     consumer:
       group-id: ecommerce-group
       auto-offset-reset: earliest

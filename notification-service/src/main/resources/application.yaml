@@ -1,14 +1,48 @@
 server:
   port: 8086
 
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.apache.kafka.clients: INFO
+
 spring:
   application:
     name: notification-service
 
-  consumer:
+  kafka:
+    bootstrap-servers: localhost:29092
+
+    # testing
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
       group-id: notification-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
       properties:
         spring.json.trusted.packages: com.pd.ecommerce.event
+
+  mail:
+    host: smtp.mail.me.com
+    port: 587
+    username: ${SPRING_MAIL_USER}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+app:
+  mail:
+    from: petyo_dobrev@icloud.com
+    base-url: https://shop.com/orders
+    enabled: true
