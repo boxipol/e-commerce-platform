@@ -11,7 +11,7 @@ Docker
 
 gateway service (8081)
 - entry point
-- authentication and authorization - Spring Security OAuth2 resource server
+- JWT validation - Spring Security OAuth2 resource server
 - routing requests - /products, /orders/, /customers
 - rate limiting and throttling 
 - logging and monitoring(OpenTelemetry), providing correlation ID, request start/end
@@ -23,10 +23,13 @@ user service (8082)
 - CRUD users
 - PostgreSQL
 simple flow:
-- 
+- login->generates JWT
+- signup->create account
 scripts:
+    brew services start postgresql
     docker compose up -d
     docker exec -it ecommerce-postgres psql -U admin -d users_db
+    psql -U ecommerce_user -d users_db
 
 order service (8083)
 - manages customer orders
@@ -41,7 +44,7 @@ product service (8084)
 - manages the product catalog
 - CRUD products
 - CassandraDB
-  - optimise for product lookup by id, products by category, products by brand, search/filter support, 
+  - optimise for product lookup by id, products by category, featured_products, products by brand, search/filter support, 
     inventory lookups, recommendations / trending, product variants, event-driven updates
 
       brew services start cassandra

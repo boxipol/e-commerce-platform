@@ -1,11 +1,11 @@
 package com.pd.ecommerce.repository;
 
 import com.pd.ecommerce.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends ReactiveCrudRepository<User, UUID> {
 
-	Optional<User> findByEmail(String email);
+	Mono<User> findByEmail(String email);
 }

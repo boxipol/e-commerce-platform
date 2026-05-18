@@ -4,10 +4,12 @@ import com.pd.ecommerce.dto.AuthResponse;
 import com.pd.ecommerce.dto.LoginRequest;
 import com.pd.ecommerce.dto.RegisterRequest;
 import com.pd.ecommerce.entity.User;
+import com.pd.ecommerce.entity.UserRole;
 import com.pd.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -18,31 +20,40 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 	private final PasswordEncoder passwordEncoder;
 
 
-	public AuthResponse register(RegisterRequest request) {
-		if (userRepository.findByEmail(request.email()).isPresent()) {
-			throw new RuntimeException("Email already exists");
-		}
-
-		User user = new User();
-		user.setEmail(request.email());
-		user.setPassword(passwordEncoder.encode(request.password()));
-		user.setRole("USER");
-		userRepository.save(user);
-		String token = jwtService.generateToken(user.getEmail(), user.getRole());
-
-		return new AuthResponse(token);
+	@Override
+	public Mono<AuthResponse> register(RegisterRequest request) {
+		return userRepository.findByEmail(request.email())
+			.flatMap(existing -> Mono.<AuthResponse>error(
+				new IllegalStateException("Email already exists")
+			))
+			.switchIfEmpty(createUser(request));
 	}
 
-	public AuthResponse login(LoginRequest request) {
-		User user = userRepository.findByEmail(request.email())
-			.orElseThrow();
+	private Mono<AuthResponse> createUser(RegisterRequest request) {
+		var user = User.builder()
+			.email(request.email())
+			.password(passwordEncoder.encode(request.password()))
+			.role(UserRole.CUSTOMER)
+			.build();
 
-		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new RuntimeException("Invalid credentials");
-		}
+		return userRepository.save(user)
+			.map(savedUser -> new AuthResponse(
+				jwtService.generateToken(savedUser.getEmail(), savedUser.getRole())
+			));
+	}
 
-		String token = jwtService.generateToken(user.getEmail(), user.getRole());
+	@Override
+	public Mono<AuthResponse> login(LoginRequest request) {
+		return userRepository.findByEmail(request.email())
+			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
+			.flatMap(user -> {
+				if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+					return Mono.error(new IllegalStateException("Invalid credentials"));
+				}
 
-		return new AuthResponse(token);
+				var token = jwtService.generateToken(user.getEmail(), user.getRole());
+
+				return Mono.just(new AuthResponse(token));
+			});
 	}
 }

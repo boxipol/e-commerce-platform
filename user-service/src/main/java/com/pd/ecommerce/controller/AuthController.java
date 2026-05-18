@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -19,12 +20,12 @@ public final class AuthController {
 
 
 	@PostMapping("/register")
-	public AuthResponse register(@RequestBody RegisterRequest request) {
+	public Mono<AuthResponse> register(@RequestBody RegisterRequest request) {
 		return service.register(request);
 	}
 
 	@PostMapping("/login")
-	public AuthResponse login(@RequestBody LoginRequest request) {
+	public Mono<AuthResponse> login(@RequestBody LoginRequest request) {
 		return service.login(request);
 	}
 }

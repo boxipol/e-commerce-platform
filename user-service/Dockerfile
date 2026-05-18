@@ -1,17 +1,14 @@
-# docker build -f user-service/Dockerfile -t microservice-1-app .
-
-# Step 1: Use Maven to build the app
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# -------- BUILD STAGE --------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY . app/user-service
-COPY ../pom.xml .
-WORKDIR app/user-service
+# copy full monorepo (important for multi-module build)
+COPY . .
+# build ONLY user-service module
+RUN mvn clean package -DskipTests -pl :user-service -am
 
-RUN mvn clean package -DskipTests
-
-# Step 2: Use a lightweight JDK 17 image to run the app
-FROM eclipse-temurin:17-jdk-jammy
+# -------- RUNTIME STAGE --------
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
-COPY /user-service/target/*.jar app.jar
-EXPOSE 8080
+COPY --from=build /app/user-service/target/*.jar app.jar
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]

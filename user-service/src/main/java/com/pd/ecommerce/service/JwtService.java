@@ -1,5 +1,6 @@
 package com.pd.ecommerce.service;
 
+import com.pd.ecommerce.entity.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -19,7 +20,7 @@ public final class JwtService {
 	private long expiration;
 
 
-	public String generateToken(String email, String role) {
+	public String generateToken(String email, UserRole role) {
 		return Jwts.builder()
 			.subject(email)
 			.claim("role", role)
@@ -38,12 +39,18 @@ public final class JwtService {
 		return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
 	}
 
+//	==================== PRIVATE ====================
+
 	private boolean isTokenExpired(String token) {
 		return extractAllClaims(token).getExpiration().before(new Date());
 	}
 
 	private Claims extractAllClaims(String token) {
-		return Jwts.parser().setSigningKey(getKey()).build().parseClaimsJws(token).getBody();
+		return Jwts.parser()
+			.setSigningKey(getKey())
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
 	}
 
 	private SecretKey getKey() {

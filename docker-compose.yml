@@ -19,8 +19,23 @@ services:
     container_name: user-service
     ports:
       - "8082:8082"
+    depends_on:
+      - users-db
     networks:
       - ecommerce-network
+
+  users-db:
+    image: postgres:16
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - users-db-data:/var/lib/postgresql/data
 
   order-service:
     build:
@@ -30,18 +45,18 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - postgres
+      - orders-db
     networks:
       - ecommerce-network
 
-  postgres:
+  orders-db:
     image: postgres:16
-    container_name: orders-postgres
+    container_name: orders-db
     restart: always
     environment:
+      POSTGRES_DB: orders_db
       POSTGRES_USER: ecommerce_user
       POSTGRES_PASSWORD: ecommerce_pass
-      POSTGRES_DB: orders_db
     ports:
       - "5432:5432"
     volumes:
@@ -59,7 +74,7 @@ services:
       ports:
         - "5050:80"
       depends_on:
-        - postgres
+        - orders-db
       networks:
         - ecommerce-network
 
@@ -128,6 +143,7 @@ services:
 volumes:
   cassandra_data:
   postgres_data:
+  users-db-data:
 
 networks:
   ecommerce-network:
