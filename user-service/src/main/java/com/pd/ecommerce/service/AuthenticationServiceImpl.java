@@ -10,33 +10,33 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 final class AuthenticationServiceImpl implements AuthenticationService {
 
 	private final JwtService jwtService;
-	private final UserRepository userRepository;
+	private final UserRepository repository;
 	private final PasswordEncoder passwordEncoder;
 
 
 	@Override
 	public Mono<AuthResponse> register(RegisterRequest request) {
-		return userRepository.findByEmail(request.email())
+		return repository.findByEmail(request.email())
 			.flatMap(existing -> Mono.<AuthResponse>error(
-				new IllegalStateException("Email already exists")
-			))
-			.switchIfEmpty(createUser(request));
+				new IllegalStateException("Email already exists")))
+			.switchIfEmpty(create(request));
 	}
 
-	private Mono<AuthResponse> createUser(RegisterRequest request) {
+	private Mono<AuthResponse> create(RegisterRequest request) {
 		var user = User.builder()
 			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.role(UserRole.CUSTOMER)
 			.build();
 
-		return userRepository.save(user)
+		return repository.save(user)
 			.map(savedUser -> new AuthResponse(
 				jwtService.generateToken(savedUser.getEmail(), savedUser.getRole())
 			));
@@ -44,7 +44,7 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public Mono<AuthResponse> login(LoginRequest request) {
-		return userRepository.findByEmail(request.email())
+		return repository.findByEmail(request.email())
 			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
 			.flatMap(user -> {
 				if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -55,5 +55,13 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 
 				return Mono.just(new AuthResponse(token));
 			});
+	}
+
+	@Override
+	public Mono<Void> delete(UUID id) {
+		return repository.findById(id)
+			.switchIfEmpty(
+				Mono.error(new RuntimeException("User not found with id: " + id)))
+			.flatMap(repository::delete);
 	}
 }

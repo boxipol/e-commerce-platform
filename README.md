@@ -23,8 +23,10 @@ user service (8082)
 - CRUD users
 - PostgreSQL
 simple flow:
-- login->generates JWT
 - signup->create account
+- login->generates JWT
+- remove->remove account
+
 scripts:
     brew services start postgresql
     docker compose up -d
