@@ -1,7 +1,12 @@
-package com.pd.ecommerce.dto;
+package com.pd.ecommerce.mapper;
 
+import com.pd.ecommerce.dto.ProductByCategoryView;
+import com.pd.ecommerce.dto.ProductCreateRequest;
+import com.pd.ecommerce.dto.ProductResponse;
+import com.pd.ecommerce.dto.ProductUpdateRequest;
 import com.pd.ecommerce.entity.Product;
 import com.pd.ecommerce.entity.ProductByCategory;
+import com.pd.ecommerce.entity.ProductByCategoryKey;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import java.time.Instant;
@@ -21,6 +26,23 @@ public interface ProductMapper {
 	Product toEntity(ProductCreateRequest request);
 
 	ProductResponse toEntity(ProductUpdateRequest request);
+
+	default ProductByCategory toProductByCategoryView(Product product) {
+		return ProductByCategory.builder()
+			.key(
+				ProductByCategoryKey.builder()
+					.category(product.getCategory())
+					.createdAt(product.getCreatedAt())
+					.productId(product.getProductId())
+					.build()
+			)
+
+			.name(product.getName())
+			.brand(product.getBrand())
+			.price(product.getPrice())
+			.stock(product.getStock())
+			.build();
+	}
 
 	@Mapping(source = "key.productId", target = "id")
 	ProductByCategoryView toCategoryView(ProductByCategory product);

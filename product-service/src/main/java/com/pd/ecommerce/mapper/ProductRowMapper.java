@@ -1,6 +1,7 @@
-package com.pd.ecommerce.dto;
+package com.pd.ecommerce.mapper;
 
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.pd.ecommerce.dto.ProductResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

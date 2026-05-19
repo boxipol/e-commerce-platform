@@ -6,11 +6,13 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.pd.ecommerce.dto.PageResponse;
 import com.pd.ecommerce.dto.ProductByCategoryView;
 import com.pd.ecommerce.dto.ProductCreateRequest;
-import com.pd.ecommerce.dto.ProductMapper;
 import com.pd.ecommerce.dto.ProductResponse;
-import com.pd.ecommerce.dto.ProductRowMapper;
 import com.pd.ecommerce.dto.ProductUpdateRequest;
 import com.pd.ecommerce.entity.Product;
+import com.pd.ecommerce.entity.ProductByCategory;
+import com.pd.ecommerce.entity.ProductByCategoryKey;
+import com.pd.ecommerce.mapper.ProductMapper;
+import com.pd.ecommerce.mapper.ProductRowMapper;
 import com.pd.ecommerce.repository.ProductByCategoryRepository;
 import com.pd.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +52,12 @@ final class ProductServiceImpl implements ProductService {
 			.map(mapper::toResponse);
 	}
 
-	// todo temp not effective/testing
+	public Flux<ProductByCategoryView> getByCategory(String category) {
+		return productByCategoryRepository.findByKeyCategory(category)
+			.map(mapper::toCategoryView);
+	}
+
+	// temp not effective/testing
 	public Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor) {
 		SimpleStatement statement = SimpleStatement.builder("SELECT * FROM ecommerce.products_by_id").setPageSize(limit).build();
 
@@ -63,25 +70,53 @@ final class ProductServiceImpl implements ProductService {
 	}
 
 	public Mono<ProductResponse> create(ProductCreateRequest request) {
-		return productRepository.save(mapper.toEntity(request))
+		Product product = mapper.toEntity(request);
+
+		return productByCategoryRepository.save(mapper.toProductByCategoryView(product))
+			.then(productRepository.save(product))
 			.map(mapper::toResponse);
 	}
 
 	public Mono<ProductResponse> update(UUID id, ProductUpdateRequest request) {
 		return productRepository.findById(id)
 			.switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
-			.map(existing -> applyUpdate(existing, request))
-			.flatMap(productRepository::save)
+			.flatMap(existing -> {
+				String oldCategory = existing.getCategory();
+				Product updated = applyUpdate(existing, request);
+				ProductByCategory oldProjection = mapper.toProductByCategoryView(existing);
+				ProductByCategory newProjection = mapper.toProductByCategoryView(updated);
+				Mono<Void> projectionOperation;
+
+				if (!oldCategory.equals(updated.getCategory())) {
+					projectionOperation = productByCategoryRepository.delete(oldProjection)
+						.then(productByCategoryRepository.save(newProjection))
+						.then();
+				} else {
+					projectionOperation = productByCategoryRepository.save(newProjection)
+						.then();
+				}
+
+				return productRepository.save(updated)
+					.then(projectionOperation)
+					.thenReturn(updated);
+			})
 			.map(mapper::toResponse);
 	}
 
 	public Mono<Void> delete(UUID id) {
-		return productRepository.deleteById(id);
-	}
+		return productRepository.findById(id)
+			.switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+			.flatMap(product -> {
+				ProductByCategoryKey key =
+					ProductByCategoryKey.builder()
+						.category(product.getCategory())
+						.createdAt(product.getCreatedAt())
+						.productId(product.getProductId())
+						.build();
 
-	public Flux<ProductByCategoryView> getByCategory(String category) {
-		return productByCategoryRepository.findByKeyCategory(category)
-			.map(mapper::toCategoryView);
+				return productRepository.deleteById(id)
+					.then(productByCategoryRepository.deleteById(key));
+			});
 	}
 
 //	==================== PRIVATE ====================
@@ -115,8 +150,8 @@ final class ProductServiceImpl implements ProductService {
 
 		ByteBuffer next = rs.getExecutionInfo().getPagingState();
 
-		return new PageResponse<>(items, next != null ? Base64.getEncoder().encodeToString(next.array()) : null, next != null);
+		return new PageResponse<>(
+			items, next != null ? Base64.getEncoder().encodeToString(next.array()) : null,
+			next != null);
 	}
-
-	// todo Dual-table write orchestration
 }

@@ -112,7 +112,7 @@ services:
     ports:
       - "8084:8084"
     depends_on:
-      cassandra:
+      products-db:
         condition: service_healthy
     environment:
       SPRING_CASSANDRA_CONTACT_POINTS: products-cassandra
@@ -122,9 +122,9 @@ services:
     networks:
       - ecommerce-network
 
-  cassandra:
+  products-db:
     image: cassandra:5.0.8
-    container_name: products-cassandra
+    container_name: products-db
     ports:
       - "9042:9042"
     environment:

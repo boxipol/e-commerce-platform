@@ -1,5 +1,6 @@
 package com.pd.ecommerce.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @PrimaryKeyClass
+@Builder
 @Getter
 @Setter
 public final class ProductByCategoryKey {
