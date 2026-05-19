@@ -1,17 +1,15 @@
-# docker build -f gateway-service/Dockerfile -t microservice-1-app .
 
-# Step 1: Use Maven to build the app
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# -------- BUILD STAGE --------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY . app/gateway-service
-COPY ../pom.xml .
-WORKDIR app/gateway-service
+# copy full monorepo (important for multi-module build)
+COPY . .
+# build ONLY user-service module
+RUN mvn clean package -DskipTests -pl :gateway-service -am
 
-RUN mvn clean package -DskipTests
-
-# Step 2: Use a lightweight JDK 17 image to run the app
-FROM eclipse-temurin:17-jdk-jammy
+# -------- RUNTIME STAGE --------
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
-COPY /gateway-service/target/*.jar app.jar
-EXPOSE 8080
+COPY --from=build /app/gateway-service/target/*.jar app.jar
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
