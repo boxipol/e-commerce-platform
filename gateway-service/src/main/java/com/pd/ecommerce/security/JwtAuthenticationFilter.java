@@ -1,5 +1,6 @@
 package com.pd.ecommerce.security;
 
+import com.pd.ecommerce.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;

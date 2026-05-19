@@ -5,6 +5,15 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: *
+  endpoint:
+    health:
+      show-details: never
+
 spring:
 
   application:
