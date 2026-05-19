@@ -22,3 +22,14 @@ CREATE TABLE order_items (
         REFERENCES orders(id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE outbox_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    aggregate_type VARCHAR(100),
+    aggregate_id UUID,
+    event_type VARCHAR(100),
+    payload JSONB,
+    status VARCHAR(20),
+    created_at TIMESTAMP,
+    published_at TIMESTAMP
+);

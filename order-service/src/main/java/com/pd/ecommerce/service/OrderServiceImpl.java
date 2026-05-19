@@ -9,14 +9,18 @@ import com.pd.ecommerce.dto.ProductSnapshot;
 import com.pd.ecommerce.entity.Order;
 import com.pd.ecommerce.entity.OrderItem;
 import com.pd.ecommerce.entity.OrderStatus;
+import com.pd.ecommerce.entity.OutboxEvent;
+import com.pd.ecommerce.entity.OutboxStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
-import com.pd.ecommerce.event.OrderEventProducer;
 import com.pd.ecommerce.mapper.OrderMapper;
 import com.pd.ecommerce.repository.OrderItemRepository;
 import com.pd.ecommerce.repository.OrderRepository;
+import com.pd.ecommerce.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -28,13 +32,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public final class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements OrderService {
 
 	private final ProductServiceClient productServiceClient;
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
+	private final OutboxEventRepository outboxEventRepository;
 	private final OrderMapper mapper;
-	private final OrderEventProducer eventProducer;
+//	private final OrderEventProducer eventProducer;
+	private final TransactionalOperator transactionalOperator;
 
 
 	public Mono<OrderResponse> getOrder(UUID id) {
@@ -50,6 +56,7 @@ public final class OrderServiceImpl implements OrderService {
 		});
 	}
 
+	@Transactional
 	public Mono<OrderResponse> createOrder(CreateOrderRequest request) {
 		List<UUID> productIds = request.items()
 			.stream()
@@ -60,48 +67,69 @@ public final class OrderServiceImpl implements OrderService {
 			.map(products -> products.stream()
 				.collect(Collectors.toMap(ProductSnapshot::id, Function.identity())))
 			.flatMap(productMap -> {
+
 				List<OrderItem> items = request.items()
 					.stream()
 					.map(orderItemRequest -> {
 						ProductSnapshot product = productMap.get(orderItemRequest.productId());
 
 						if (product == null) {
-							throw new RuntimeException("Product not found: " + orderItemRequest.productId());
+							throw new RuntimeException(
+								"Product not found: " + orderItemRequest.productId()
+							);
 						}
 
 						return OrderItem.builder()
 							.productId(orderItemRequest.productId())
 							.quantity(orderItemRequest.quantity())
 							.unitPrice(product.price())
-							.subtotal(product.price().multiply(BigDecimal.valueOf(orderItemRequest.quantity())))
+							.subtotal(product.price()
+								.multiply(BigDecimal.valueOf(orderItemRequest.quantity())))
 							.build();
-					}).toList();
+					})
+					.toList();
 
-					BigDecimal totalAmount = items.stream()
-						.map(OrderItem::getSubtotal)
-						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				BigDecimal totalAmount = items.stream()
+					.map(OrderItem::getSubtotal)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-					Order order = Order.builder()
-						.userId(request.userId())
-						.status(OrderStatus.CREATED)
-						.totalAmount(totalAmount)
-						.createdAt(Instant.now())
-						.build();
+				Order order = Order.builder()
+					.userId(request.userId())
+					.status(OrderStatus.CREATED)
+					.totalAmount(totalAmount)
+					.createdAt(Instant.now())
+					.build();
 
-					return orderRepository.save(order)
+				return transactionalOperator.transactional(
+					orderRepository.save(order)
 						.flatMap(savedOrder -> {
+
 							List<OrderItem> orderItems = items.stream()
 								.peek(item -> item.setOrderId(savedOrder.getId()))
 								.toList();
 
+							OrderCreatedEvent event =
+								mapper.toOrderCreatedEvent(savedOrder, orderItems);
+
+							OutboxEvent outboxEvent = OutboxEvent.builder()
+								.id(UUID.randomUUID())
+								.aggregateType("ORDER")
+								.aggregateId(savedOrder.getId())
+								.eventType("OrderCreated")
+								.payload(mapper.toJson(event))
+								.status(OutboxStatus.PENDING)
+								.createdAt(Instant.now())
+								.build();
+
 							return orderItemRepository.saveAll(orderItems)
 								.collectList()
-								.map(savedItems -> mapper.toResponse(savedOrder, savedItems));
+								.flatMap(savedItems ->
+									outboxEventRepository.save(outboxEvent)
+										.map(savedOutbox ->
+											mapper.toResponse(savedOrder, savedItems))
+								);
 						})
-						.doOnSuccess(savedOrder -> {
-							OrderCreatedEvent event = mapper.toOrderCreatedEvent(order, items);
-							eventProducer.publish(event);
-						});
+				);
 			});
 	}
 
