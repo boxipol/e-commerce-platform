@@ -40,6 +40,11 @@ public final class ProductController {
 		return productService.getProducts(ids);
 	}
 
+	@GetMapping("/{category}/products")
+	public Flux<ProductByCategoryView> getProducts(@PathVariable String category) {
+		return productService.getByCategory(category);
+	}
+
 	@GetMapping
 	public Mono<PageResponse<ProductResponse>> getAll(@RequestParam(defaultValue = "10") int limit, @RequestParam(required = false) String cursor) {
 		return productService.getAll(limit, cursor);
@@ -58,10 +63,5 @@ public final class ProductController {
 	@DeleteMapping("/{id}")
 	public Mono<Void> delete(@PathVariable UUID id) {
 		return productService.delete(id);
-	}
-
-	@GetMapping("/{category}/products")
-	public Flux<ProductByCategoryView> getProducts(@PathVariable String category) {
-		return productService.getByCategory(category);
 	}
 }

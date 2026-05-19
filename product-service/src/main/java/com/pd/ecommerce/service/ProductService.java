@@ -16,9 +16,9 @@ public interface ProductService {
 
 	Mono<ProductResponse> getById(UUID id);
 	Flux<ProductResponse> getProducts(List<UUID> ids);
+	Flux<ProductByCategoryView> getByCategory(String category);
 	Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor);
 	Mono<ProductResponse> create(ProductCreateRequest product);
 	Mono<ProductResponse> update(UUID id, ProductUpdateRequest product);
 	Mono<Void> delete(UUID id);
-	Flux<ProductByCategoryView> getByCategory(String category);
 }
