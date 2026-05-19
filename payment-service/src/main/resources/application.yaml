@@ -1,6 +1,33 @@
 server:
   port: 8085
 
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+
 spring:
   application:
     name: payment-service
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/payments_db
+    username: ecommerce_user
+    password: ecommerce_pass
+
+    sql:
+      init:
+        mode: always
+
+  kafka:
+    bootstrap-servers: localhost:29092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    # testing
+    consumer:
+      group-id: ecommerce-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer

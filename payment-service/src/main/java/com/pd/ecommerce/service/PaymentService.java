@@ -1,8 +1,10 @@
 package com.pd.ecommerce.service;
 
+import com.pd.ecommerce.dto.CreatePaymentRequest;
+import com.pd.ecommerce.dto.PaymentResponse;
 import reactor.core.publisher.Mono;
 
 public interface PaymentService {
 
-	Mono<String> getData();
+	Mono<PaymentResponse> createPayment(CreatePaymentRequest request);
 }
