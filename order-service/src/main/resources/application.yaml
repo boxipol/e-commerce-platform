@@ -36,6 +36,9 @@ services:
   product:
     url: http://product-service:8084
 
+  payment:
+    url: http://localhost:8085
+
 #resilience4j:
 #  circuitbreaker:
 #    instances:
