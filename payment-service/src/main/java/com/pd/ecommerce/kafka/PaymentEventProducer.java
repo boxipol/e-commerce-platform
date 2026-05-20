@@ -22,7 +22,7 @@ public class PaymentEventProducer {
 		);
 
 		kafkaTemplate.send(
-			"payment-completed",
+			"payment.completed",
 			payment.getOrderId().toString(),
 			event
 		);
@@ -36,7 +36,7 @@ public class PaymentEventProducer {
 		);
 
 		kafkaTemplate.send(
-			"payment-failed",
+			"payment.failed",
 			payment.getOrderId().toString(),
 			event
 		);
