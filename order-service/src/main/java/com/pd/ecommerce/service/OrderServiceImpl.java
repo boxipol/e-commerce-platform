@@ -32,14 +32,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+public final class OrderServiceImpl implements OrderService {
 
 	private final ProductServiceClient productServiceClient;
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
 	private final OutboxEventRepository outboxEventRepository;
 	private final OrderMapper mapper;
-//	private final OrderEventProducer eventProducer;
 	private final TransactionalOperator transactionalOperator;
 
 

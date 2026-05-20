@@ -15,7 +15,7 @@ import java.time.Instant;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OutboxPublisher {
+public final class OutboxPublisher {
 
 	private final OutboxEventRepository outboxRepository;
 	private final KafkaTemplate<String, String> kafkaTemplate;
@@ -28,6 +28,8 @@ public class OutboxPublisher {
 			.onErrorContinue((err, obj) -> log.error("Outbox processing failed for event {}", obj, err))
 			.subscribe();
 	}
+
+//	==================== PRIVATE ====================
 
 	private Mono<Void> processEvent(OutboxEvent event) {
 		return markProcessing(event).flatMap(this::publishToKafka)

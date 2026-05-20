@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ProductServiceClientImpl implements ProductServiceClient {
+public final class ProductServiceClientImpl implements ProductServiceClient {
 
 	private final WebClient webClient;
 

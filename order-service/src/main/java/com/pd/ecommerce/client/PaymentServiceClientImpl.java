@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class PaymentServiceClientImpl implements PaymentServiceClient {
+public final class PaymentServiceClientImpl implements PaymentServiceClient {
 
 	private final WebClient webClient;
 

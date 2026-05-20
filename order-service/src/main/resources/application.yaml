@@ -3,7 +3,7 @@ server:
 
 logging:
   level:
-    org.springframework.r2dbc: DEBUG
+    org.springframework.r2dbc: INFO
 
 spring:
   application:

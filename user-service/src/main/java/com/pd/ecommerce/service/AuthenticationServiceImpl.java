@@ -5,11 +5,14 @@ import com.pd.ecommerce.dto.LoginRequest;
 import com.pd.ecommerce.dto.RegisterRequest;
 import com.pd.ecommerce.entity.User;
 import com.pd.ecommerce.entity.UserRole;
+import com.pd.ecommerce.event.UserCreatedEvent;
+import com.pd.ecommerce.kafka.UserEventProducer;
 import com.pd.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -19,6 +22,7 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 	private final JwtService jwtService;
 	private final UserRepository repository;
 	private final PasswordEncoder passwordEncoder;
+	private final UserEventProducer eventProducer;
 
 
 	@Override
@@ -29,6 +33,8 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 			.switchIfEmpty(create(request));
 	}
 
+//	==================== PRIVATE ====================
+
 	private Mono<AuthResponse> create(RegisterRequest request) {
 		var user = User.builder()
 			.email(request.email())
@@ -36,10 +42,13 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 			.role(UserRole.CUSTOMER)
 			.build();
 
+		var event = new UserCreatedEvent(user.getEmail(), Instant.now());
+
 		return repository.save(user)
 			.map(savedUser -> new AuthResponse(
 				jwtService.generateToken(savedUser.getEmail(), savedUser.getRole())
-			));
+			))
+			.doOnSuccess(saved -> eventProducer.sendUserRegistered(event));
 	}
 
 	@Override
