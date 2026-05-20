@@ -60,7 +60,7 @@ services:
       POSTGRES_USER: ecommerce_user
       POSTGRES_PASSWORD: ecommerce_pass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -142,15 +142,16 @@ services:
       timeout: 10s
       retries: 10
 
-  payments-service:
+  payment-service:
     build:
       context: .
-      dockerfile: payments-service/Dockerfile
-    container_name: payments-service
+      dockerfile: payment-service/Dockerfile
+    container_name: payment-service
     ports:
       - "8085:8085"
     depends_on:
-      - payments-db
+      payments-db:
+        condition: service_healthy
     networks:
       - ecommerce-network
 
@@ -168,6 +169,11 @@ services:
       - payments-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d payments_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   cassandra_data:
