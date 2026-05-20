@@ -14,7 +14,7 @@ public final class UserEventProducer {
 
 	public void sendUserRegistered(UserCreatedEvent event) {
 		kafkaTemplate.send(
-			"payment.completed",
+			"user.created",
 			event.email(),
 			event
 		);

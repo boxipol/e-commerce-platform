@@ -1,4 +1,4 @@
-package com.pd.ecommerce.consumer;
+package com.pd.ecommerce.kafka;
 
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.service.EmailService;

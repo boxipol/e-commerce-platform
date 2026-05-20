@@ -4,6 +4,7 @@ import com.pd.ecommerce.config.MailProperties;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
+import com.pd.ecommerce.event.UserCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -75,6 +76,24 @@ public final class EmailServiceImpl implements EmailService {
 		}
 	}
 
+	@Override
+	public void sendUserCreatedEmail(UserCreatedEvent event) {
+		String subject = "User Confirmation: " + event.email();
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom(mailProperties.getFrom());
+			message.setTo("petyo_dobrev@icloud.com");
+			message.setSubject(subject);
+			message.setText(buildUserCreatedEmailBody(event));
+
+			mailSender.send(message);
+			log.info("Email sent for user {}", event.email());
+		} catch (Exception ex) {
+			log.error("Failed to register email for user {}", event.email(), ex);
+			throw ex;
+		}
+	}
 //	==================== PRIVATE ====================
 
 	private String buildOrderEmailBody(OrderCreatedEvent event) {
@@ -111,5 +130,15 @@ public final class EmailServiceImpl implements EmailService {
 			
 			Please try again!.
 			""".formatted(event.orderId(), event.paymentId(), event.amount());
+	}
+
+	private String buildUserCreatedEmailBody(UserCreatedEvent event) {
+		return """
+			User has created!
+			
+			Mail: %s
+			
+			Thank you for your registration.
+			""".formatted(event.email());
 	}
 }

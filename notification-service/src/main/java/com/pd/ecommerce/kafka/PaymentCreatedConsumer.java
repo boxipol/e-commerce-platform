@@ -1,4 +1,4 @@
-package com.pd.ecommerce.consumer;
+package com.pd.ecommerce.kafka;
 
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
