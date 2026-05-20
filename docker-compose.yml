@@ -185,6 +185,24 @@ services:
       timeout: 5s
       retries: 10
 
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: notification-service
+    ports:
+      - "8086:8086"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_MAIL_USER: petyo_dobrev@icloud.com
+      SPRING_MAIL_PASSWORD:
+    networks:
+      - ecommerce-network
+
+
 volumes:
   cassandra_data:
   postgres_data:

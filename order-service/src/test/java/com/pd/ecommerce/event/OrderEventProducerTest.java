@@ -1,5 +1,6 @@
 package com.pd.ecommerce.event;
 
+import com.pd.ecommerce.kafka.OrderEventProducer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

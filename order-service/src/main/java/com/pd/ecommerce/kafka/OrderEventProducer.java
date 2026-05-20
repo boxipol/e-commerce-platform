@@ -1,5 +1,6 @@
-package com.pd.ecommerce.event;
+package com.pd.ecommerce.kafka;
 
+import com.pd.ecommerce.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
