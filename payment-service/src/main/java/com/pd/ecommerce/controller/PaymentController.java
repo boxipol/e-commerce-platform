@@ -3,6 +3,7 @@ package com.pd.ecommerce.controller;
 import com.pd.ecommerce.dto.CreatePaymentRequest;
 import com.pd.ecommerce.dto.PaymentResponse;
 import com.pd.ecommerce.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,7 @@ public final class PaymentController {
 
 
 	@PostMapping
-	public Mono<PaymentResponse> createPayment(@RequestBody CreatePaymentRequest request){
+	public Mono<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request){
 		return paymentService.createPayment(request);
 	}
 }

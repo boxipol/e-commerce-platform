@@ -18,4 +18,3 @@ CREATE TABLE payments
     created_at TIMESTAMP      NOT NULL DEFAULT now(),
     updated_at TIMESTAMP      NOT NULL DEFAULT now()
 );
-

@@ -59,6 +59,8 @@ product service (8084)
 payment service (8085)
 - handles payment processing
 
+  psql -U ecommerce_user -d payments_db
+
 notification service (8086)
 - handles notifications
 simple flow:

@@ -24,6 +24,10 @@ public class PaymentServiceImpl implements PaymentService {
 
 	public Mono<PaymentResponse> createPayment(CreatePaymentRequest request) {
 		Payment payment = paymentMapper.toEntity(request);
+		payment.setProvider("STRIPE");
+		payment.setStatus(PaymentStatus.PENDING);
+		payment.setCreatedAt(Instant.now());
+		payment.setUpdatedAt(Instant.now());
 
 		return paymentRepository.save(payment)
 			.flatMap(this::processPayment)

@@ -142,10 +142,38 @@ services:
       timeout: 10s
       retries: 10
 
+  payments-service:
+    build:
+      context: .
+      dockerfile: payments-service/Dockerfile
+    container_name: payments-service
+    ports:
+      - "8085:8085"
+    depends_on:
+      - payments-db
+    networks:
+      - ecommerce-network
+
+  payments-db:
+    image: postgres:16
+    container_name: payments-db
+    restart: always
+    environment:
+      POSTGRES_DB: payments_db
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - payments-db-data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
+
 volumes:
   cassandra_data:
   postgres_data:
   users-db-data:
+  payments-db-data:
 
 networks:
   ecommerce-network:

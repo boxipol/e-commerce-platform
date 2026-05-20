@@ -10,7 +10,7 @@ spring:
     name: payment-service
 
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/payments_db
+    url: r2dbc:postgresql://payments-db:5434/payments_db
     username: ecommerce_user
     password: ecommerce_pass
 

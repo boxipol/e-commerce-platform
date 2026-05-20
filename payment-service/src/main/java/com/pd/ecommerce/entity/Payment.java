@@ -17,20 +17,12 @@ public class Payment {
 
 	@Id
 	private UUID id;
-
 	private UUID orderId;
-
 	private UUID userId;
-
 	private BigDecimal amount;
-
 	private String currency;
-
 	private PaymentStatus status;
-
 	private String provider;
-
 	private Instant createdAt;
-
 	private Instant updatedAt;
 }

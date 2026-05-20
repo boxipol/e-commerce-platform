@@ -4,6 +4,7 @@ import com.pd.ecommerce.dto.AuthResponse;
 import com.pd.ecommerce.dto.LoginRequest;
 import com.pd.ecommerce.dto.RegisterRequest;
 import com.pd.ecommerce.service.AuthenticationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,12 +24,12 @@ public final class AuthController {
 
 
 	@PostMapping("/register")
-	public Mono<AuthResponse> register(@RequestBody RegisterRequest request) {
+	public Mono<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
 		return service.register(request);
 	}
 
 	@PostMapping("/login")
-	public Mono<AuthResponse> login(@RequestBody LoginRequest request) {
+	public Mono<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
 		return service.login(request);
 	}
 
