@@ -19,7 +19,7 @@ spring:
         mode: always
 
   kafka:
-    bootstrap-servers: localhost:29092
+    bootstrap-servers: kafka:9092
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -37,7 +37,7 @@ services:
     url: http://product-service:8084
 
   payment:
-    url: http://localhost:8085
+    url: http://payment_service:8085
 
 #resilience4j:
 #  circuitbreaker:

@@ -82,10 +82,11 @@ services:
 
   kafka:
     image: apache/kafka:3.7.0
-    container_name: kafka
+    container_name: kafka-c
+    networks:
+      - ecommerce-network
     ports:
       - "29092:29092"
-
     environment:
       # KRaft mode ENABLED
       KAFKA_NODE_ID: 1
@@ -103,6 +104,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    healthcheck:
+      test: [ "CMD-SHELL", "bash -c '</dev/tcp/localhost/9092'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 
   product-service:
     build:
@@ -150,6 +157,8 @@ services:
     ports:
       - "8085:8085"
     depends_on:
+      kafka:
+        condition: service_healthy
       payments-db:
         condition: service_healthy
     networks:
