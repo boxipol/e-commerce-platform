@@ -1,8 +1,12 @@
 package com.pd.ecommerce.entity;
 
 public enum PaymentStatus {
-	
+
 	PENDING,
-	COMPLETED,
-	FAILED
+	REQUIRES_ACTION,
+	PROCESSING,
+	SUCCEEDED,
+	FAILED,
+	REFUNDED,
+	CANCELLED
 }

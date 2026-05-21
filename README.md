@@ -30,7 +30,6 @@ simple flow:
 scripts:
     brew services start postgresql
     docker compose up -d
-    docker exec -it ecommerce-postgres psql -U admin -d users_db
     psql -U ecommerce_user -d users_db
 
 order service (8083)

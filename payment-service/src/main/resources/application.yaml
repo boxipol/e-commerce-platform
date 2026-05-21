@@ -31,3 +31,13 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+payment:
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:test}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:test}
+
+  paypal:
+    client-id: ${PAYPAL_CLIENT_ID:1234}
+    client-secret: ${PAYPAL_CLIENT_SECRET:test}
+    base-url: https://api-m.sandbox.paypal.com
