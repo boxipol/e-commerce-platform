@@ -1,0 +1,39 @@
+server:
+  port: 8087
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG
+
+spring:
+  application:
+    name: inventory-service
+
+  r2dbc:
+    url: r2dbc:postgresql://inventory-db:5432/inventory_db
+    username: ecommerce_user
+    password: ecommerce_pass
+
+    sql:
+      init:
+        mode: always
+
+  kafka:
+    bootstrap-servers: kafka:9092
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    # testing
+    consumer:
+      group-id: ecommerce-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+jwt:
+  secret: your-super-secret-key-with-at-least-32-characters
+
+  # 1 hour
+  expiration: 3600000

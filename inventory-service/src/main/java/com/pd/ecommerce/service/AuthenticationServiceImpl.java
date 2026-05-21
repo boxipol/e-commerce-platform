@@ -1,13 +1,11 @@
 package com.pd.ecommerce.service;
 
 import com.pd.ecommerce.dto.AuthResponse;
-import com.pd.ecommerce.dto.UserLoginRequest;
-import com.pd.ecommerce.dto.UserRegisterRequest;
-import com.pd.ecommerce.dto.UserUpdateRequest;
+import com.pd.ecommerce.dto.LoginRequest;
+import com.pd.ecommerce.dto.RegisterRequest;
 import com.pd.ecommerce.entity.User;
 import com.pd.ecommerce.entity.UserRole;
 import com.pd.ecommerce.event.UserCreatedEvent;
-import com.pd.ecommerce.exception.EmailAlreadyExistsException;
 import com.pd.ecommerce.kafka.UserEventProducer;
 import com.pd.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,18 +26,33 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 
 
 	@Override
-	public Mono<AuthResponse> register(UserRegisterRequest request) {
+	public Mono<AuthResponse> register(RegisterRequest request) {
 		return repository.findByEmail(request.email())
-			.flatMap(existing ->
-				Mono.<AuthResponse>error(
-					new EmailAlreadyExistsException(request.email())))
-			.switchIfEmpty(
-				Mono.defer(() -> create(request))
-			);
+			.flatMap(existing -> Mono.<AuthResponse>error(
+				new IllegalStateException("Email already exists")))
+			.switchIfEmpty(create(request));
+	}
+
+//	==================== PRIVATE ====================
+
+	private Mono<AuthResponse> create(RegisterRequest request) {
+		var user = User.builder()
+			.email(request.email())
+			.password(passwordEncoder.encode(request.password()))
+			.role(UserRole.CUSTOMER)
+			.build();
+
+		var event = new UserCreatedEvent(user.getEmail(), Instant.now());
+
+		return repository.save(user)
+			.map(savedUser -> new AuthResponse(
+				jwtService.generateToken(savedUser.getEmail(), savedUser.getRole())
+			))
+			.doOnSuccess(saved -> eventProducer.sendUserRegistered(event));
 	}
 
 	@Override
-	public Mono<AuthResponse> login(UserLoginRequest request) {
+	public Mono<AuthResponse> login(LoginRequest request) {
 		return repository.findByEmail(request.email())
 			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
 			.flatMap(user -> {
@@ -54,46 +67,10 @@ final class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	@Override
-	public Mono<Void> update(UserUpdateRequest request) {
-		return repository.findByEmail(request.email())
-			.switchIfEmpty(
-				Mono.error(new IllegalStateException("User not found")))
-			.flatMap(user -> {
-				applyUpdate(user, request);
-				repository.save(user);
-
-				return Mono.empty();
-			});
-	}
-
-	@Override
 	public Mono<Void> delete(UUID id) {
 		return repository.findById(id)
 			.switchIfEmpty(
 				Mono.error(new RuntimeException("User not found with id: " + id)))
 			.flatMap(repository::delete);
-	}
-
-//	==================== PRIVATE ====================
-
-	private Mono<AuthResponse> create(UserRegisterRequest request) {
-		var user = User.builder()
-			.email(request.email())
-			.password(passwordEncoder.encode(request.password()))
-			.role(UserRole.CUSTOMER)
-			.build();
-
-		var event = new UserCreatedEvent(user.getEmail(), Instant.now());
-
-		return repository.save(user)
-			.map(savedUser -> new AuthResponse(
-				jwtService.generateToken(savedUser.getEmail(), savedUser.getRole())))
-			.doOnSuccess(saved -> eventProducer.sendUserRegistered(event));
-	}
-
-	private void applyUpdate(User user, UserUpdateRequest request) {
-		if (request.email() != null) {
-			user.setEmail(request.email());
-		}
 	}
 }

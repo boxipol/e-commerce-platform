@@ -6,25 +6,28 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler(OrderNotFoundException.class)
-	public ResponseEntity<Map<String, Object>> handleOrderNotFound(OrderNotFoundException ex) {
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(Map.of(
-				"timestamp", Instant.now(),
-				"status", HttpStatus.NOT_FOUND.value(),
-				"error", "Not Found",
-				"message", ex.getMessage()
-			)
-		);
+	@ExceptionHandler(EmailAlreadyExistsException.class)
+	public Mono<ResponseEntity<ErrorResponse>> handleEmailExists(EmailAlreadyExistsException ex) {
+		log.error("EmailAlreadyExistsException", ex);
+
+		ErrorResponse response = ErrorResponse.builder()
+			.timestamp(LocalDateTime.now())
+			.status(HttpStatus.CONFLICT.value())
+			.error(HttpStatus.CONFLICT.getReasonPhrase())
+			.message(ex.getMessage())
+			.build();
+
+		return Mono.just(
+			ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(response));
 	}
 
 	@ExceptionHandler(Exception.class)
