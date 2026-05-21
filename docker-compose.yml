@@ -130,6 +130,11 @@ services:
     networks:
       - ecommerce-network
 
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
   products-db:
     image: cassandra:5.0.8
     container_name: products-db

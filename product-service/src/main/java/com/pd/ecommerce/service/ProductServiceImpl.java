@@ -17,10 +17,12 @@ import com.pd.ecommerce.repository.ProductByCategoryRepository;
 import com.pd.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
@@ -37,24 +39,25 @@ final class ProductServiceImpl implements ProductService {
 	private final ProductMapper productMapper;
 	private final ProductRowMapper productRowMapper;
 	private final CqlSession session;
+	private final ReactiveRedisTemplate<String, ProductResponse> redisTemplate;
+	private final ReactiveRedisTemplate<String, List<ProductByCategoryView>> categoryRedisTemplate;
 
 
+	@Override
 	public Mono<ProductResponse> getById(UUID id) {
-		return productRepository.findById(id)
-			.map(productMapper::toResponse);
+		return getProductCached(id);
 	}
 
 	@Override
 	public Flux<ProductResponse> getProducts(List<UUID> ids) {
 		return Flux.fromIterable(ids)
-			.flatMap(id -> productRepository.findById(id)
-				.onErrorResume(e -> Mono.empty()), 32)
-			.map(productMapper::toResponse);
+			.flatMap(this::getProductCached, 32);
 	}
 
+
 	public Flux<ProductByCategoryView> getByCategory(String category) {
-		return productByCategoryRepository.findByKeyCategory(category)
-			.map(productMapper::toCategoryView);
+		return getCategoryCached(category)
+			.flatMapMany(Flux::fromIterable);
 	}
 
 	// temp not effective/testing
@@ -153,5 +156,48 @@ final class ProductServiceImpl implements ProductService {
 		return new PageResponse<>(
 			items, next != null ? Base64.getEncoder().encodeToString(next.array()) : null,
 			next != null);
+	}
+
+	private Mono<ProductResponse> getProductCached(UUID id) {
+		String key = "product:" + id;
+
+		return redisTemplate.opsForValue()
+			.get(key)
+			.doOnNext(v -> log.info("CACHE HIT product id={}", id))
+			.switchIfEmpty(
+				Mono.defer(() -> {
+					log.info("CACHE MISS product id={}", id);
+
+					return productRepository.findById(id)
+						.map(productMapper::toResponse)
+						.flatMap(dto ->
+							redisTemplate.opsForValue()
+								.set(key, dto, Duration.ofMinutes(10))
+								.thenReturn(dto)
+						);
+				})
+			);
+	}
+
+	private Mono<List<ProductByCategoryView>> getCategoryCached(String category) {
+		String key = "product:category:" + category;
+
+		return categoryRedisTemplate.opsForValue()
+			.get(key)
+			.doOnNext(v -> log.info("CACHE HIT category={}", category))
+			.switchIfEmpty(
+				Mono.defer(() -> {
+					log.info("CACHE MISS category={}", category);
+
+					return productByCategoryRepository.findByKeyCategory(category)
+						.map(productMapper::toCategoryView)
+						.collectList()
+						.flatMap(list ->
+							categoryRedisTemplate.opsForValue()
+								.set(key, list, Duration.ofMinutes(10))
+								.thenReturn(list)
+						);
+				})
+			);
 	}
 }

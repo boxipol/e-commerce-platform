@@ -10,3 +10,10 @@ spring:
     port: 9042
     keyspace-name: ecommerce
     local-datacenter: datacenter1
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      repositories:
+        enabled: false
