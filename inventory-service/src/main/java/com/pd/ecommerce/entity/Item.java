@@ -1,0 +1,18 @@
+package com.pd.ecommerce.entity;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+import java.util.UUID;
+
+@Table(name = "items")
+@Builder
+@Getter
+@Setter
+public final class Item {
+
+	@Id
+	private UUID id;
+}
