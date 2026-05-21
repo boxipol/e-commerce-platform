@@ -43,7 +43,7 @@ public final class OutboxPublisher {
 
 	private Mono<OutboxEvent> publishToKafka(OutboxEvent event) {
 		return Mono.fromCallable(() -> {
-			String topic = event.getAggregateType().toLowerCase() + ".events";
+			String topic = "order.created";
 			kafkaTemplate.send(topic, event.getPayload()).get(); // blocking wait
 			log.info("Published event {} to topic {}", event.getId(), topic);
 

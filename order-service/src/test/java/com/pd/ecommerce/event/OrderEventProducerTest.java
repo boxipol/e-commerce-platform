@@ -55,7 +55,7 @@ class OrderEventProducerTest {
 		assertThat(receivedEvent.orderId()).isEqualTo(event.orderId());
 	}
 
-	@KafkaListener(topics = "order.created", groupId = "test-group")
+	@KafkaListener(topics = "order.created", groupId = "notification-group")
 	void listen(OrderCreatedEvent event) {
 		this.receivedEvent = event;
 		latch.countDown();

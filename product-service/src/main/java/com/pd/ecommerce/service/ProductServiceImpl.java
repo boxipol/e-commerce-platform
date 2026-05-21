@@ -34,14 +34,14 @@ final class ProductServiceImpl implements ProductService {
 
 	private final ProductRepository productRepository;
 	private final ProductByCategoryRepository productByCategoryRepository;
-	private final ProductMapper mapper;
+	private final ProductMapper productMapper;
 	private final ProductRowMapper productRowMapper;
 	private final CqlSession session;
 
 
 	public Mono<ProductResponse> getById(UUID id) {
 		return productRepository.findById(id)
-			.map(mapper::toResponse);
+			.map(productMapper::toResponse);
 	}
 
 	@Override
@@ -49,12 +49,12 @@ final class ProductServiceImpl implements ProductService {
 		return Flux.fromIterable(ids)
 			.flatMap(id -> productRepository.findById(id)
 				.onErrorResume(e -> Mono.empty()), 32)
-			.map(mapper::toResponse);
+			.map(productMapper::toResponse);
 	}
 
 	public Flux<ProductByCategoryView> getByCategory(String category) {
 		return productByCategoryRepository.findByKeyCategory(category)
-			.map(mapper::toCategoryView);
+			.map(productMapper::toCategoryView);
 	}
 
 	// temp not effective/testing
@@ -70,11 +70,11 @@ final class ProductServiceImpl implements ProductService {
 	}
 
 	public Mono<ProductResponse> create(ProductCreateRequest request) {
-		Product product = mapper.toEntity(request);
+		Product product = productMapper.toEntity(request);
 
-		return productByCategoryRepository.save(mapper.toProductByCategoryView(product))
+		return productByCategoryRepository.save(productMapper.toProductByCategoryView(product))
 			.then(productRepository.save(product))
-			.map(mapper::toResponse);
+			.map(productMapper::toResponse);
 	}
 
 	public Mono<ProductResponse> update(UUID id, ProductUpdateRequest request) {
@@ -83,8 +83,8 @@ final class ProductServiceImpl implements ProductService {
 			.flatMap(existing -> {
 				String oldCategory = existing.getCategory();
 				Product updated = applyUpdate(existing, request);
-				ProductByCategory oldProjection = mapper.toProductByCategoryView(existing);
-				ProductByCategory newProjection = mapper.toProductByCategoryView(updated);
+				ProductByCategory oldProjection = productMapper.toProductByCategoryView(existing);
+				ProductByCategory newProjection = productMapper.toProductByCategoryView(updated);
 				Mono<Void> projectionOperation;
 
 				if (!oldCategory.equals(updated.getCategory())) {
@@ -100,7 +100,7 @@ final class ProductServiceImpl implements ProductService {
 					.then(projectionOperation)
 					.thenReturn(updated);
 			})
-			.map(mapper::toResponse);
+			.map(productMapper::toResponse);
 	}
 
 	public Mono<Void> delete(UUID id) {

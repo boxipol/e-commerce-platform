@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class OrderCreatedConsumer {
+public final class OrderConsumer {
 
 	private final EmailService emailService;
 

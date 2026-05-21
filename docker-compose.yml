@@ -62,7 +62,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - orders-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
 
@@ -221,6 +221,7 @@ services:
       timeout: 5s
       retries: 10
 
+
   notification-service:
     build:
       context: .
@@ -240,9 +241,10 @@ services:
 
 volumes:
   cassandra_data:
-  postgres_data:
+  orders-db-data:
   users-db-data:
   payments-db-data:
+  inventory-db-data:
 
 networks:
   ecommerce-network:

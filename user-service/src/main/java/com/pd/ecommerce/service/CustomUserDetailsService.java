@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService implements UserDetailsService {
+public final class CustomUserDetailsService implements UserDetailsService {
 
 	private final UserRepository repository;
 

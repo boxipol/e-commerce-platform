@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class PaymentCreatedConsumer {
+public final class PaymentConsumer {
 
 	private final EmailService emailService;
 
