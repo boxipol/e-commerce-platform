@@ -18,7 +18,6 @@ import java.util.List;
 public class RedisConfig {
 
 	@Bean
-
 	public ReactiveRedisTemplate<String, ProductResponse> productRedisTemplate(ReactiveRedisConnectionFactory factory, ObjectMapper objectMapper) {
 		Jackson2JsonRedisSerializer<ProductResponse> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, ProductResponse.class);
 
