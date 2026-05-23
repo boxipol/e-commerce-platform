@@ -1,59 +1,66 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.entity.UserRole;
+import com.pd.ecommerce.entity.User;
+import com.pd.ecommerce.security.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
+import java.time.Instant;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public final class JwtService {
 
-	@Value("${jwt.secret}")
-	private String secret;
-
-	@Value("${jwt.expiration}")
-	private long expiration;
+	private final JwtProperties properties;
 
 
-	public String generateToken(String email, UserRole role) {
+	public String generateToken(User user) {
+		Instant now = Instant.now();
+
 		return Jwts.builder()
-			.subject(email)
-			.claim("role", role)
-			.issuedAt(new Date())
-			.expiration(new Date(System.currentTimeMillis() + expiration))
+			.subject(user.getId().toString())
+			.claim("email", user.getEmail())
+			.claim("role", user.getRole().name())
+			.issuedAt(Date.from(now))
+			.expiration(Date.from(now.plusMillis(properties.getExpiration())))
 			.signWith(getKey())
 			.compact();
 	}
 
-	public String extractUsername(String token) {
-		return extractAllClaims(token).getSubject();
+	public String extractUserId(String token) {
+		return extractClaims(token).getSubject();
 	}
 
-	public boolean isTokenValid(String token, UserDetails userDetails) {
-		final String username = extractUsername(token);
-		return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+	public String extractRole(String token) {
+		return extractClaims(token).get("role", String.class);
+	}
+
+	public boolean isValid(String token) {
+		try {
+			extractClaims(token);
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 //	==================== PRIVATE ====================
 
-	private boolean isTokenExpired(String token) {
-		return extractAllClaims(token).getExpiration().before(new Date());
-	}
-
-	private Claims extractAllClaims(String token) {
+	private Claims extractClaims(String token) {
 		return Jwts.parser()
-			.setSigningKey(getKey())
+			.verifyWith(getKey())
 			.build()
-			.parseClaimsJws(token)
-			.getBody();
+			.parseSignedClaims(token)
+			.getPayload();
 	}
 
 	private SecretKey getKey() {
-		return Keys.hmacShaKeyFor(secret.getBytes());
+		byte[] keyBytes = Decoders.BASE64.decode(properties.getSecret());
+		return Keys.hmacShaKeyFor(keyBytes);
 	}
 }

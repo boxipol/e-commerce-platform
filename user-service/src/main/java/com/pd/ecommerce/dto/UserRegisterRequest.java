@@ -9,6 +9,14 @@ public record UserRegisterRequest(
 	@Email(message = "Invalid email format")
 	String email,
 
+	@NotBlank(message = "First name is required")
+	@Size(max = 50, message = "First name too long")
+	String firstName,
+
+	@NotBlank(message = "Last name is required")
+	@Size(max = 50, message = "First name too long")
+	String lastName,
+
 	@NotBlank(message = "Password is required")
 	@Size(min = 6, message = "Password must be at least 6 characters")
 	String password
