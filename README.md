@@ -44,6 +44,7 @@ simple flow:
 product service (8084)
 - manages the product catalog
 - CRUD products
+- Redis cache
 - CassandraDB
   - optimise for product lookup by id, products by category, featured_products, products by brand, search/filter support, 
     inventory lookups, recommendations / trending, product variants, event-driven updates
@@ -64,6 +65,11 @@ notification service (8086)
 - handles notifications
 simple flow:
 - kafka event->notification->mail
+
+inventory service (8087)
+- handles stock amounts
+
+  psql -U ecommerce_user -d inventory_db
 
 logging and monitoring
 - Gateway logging filter

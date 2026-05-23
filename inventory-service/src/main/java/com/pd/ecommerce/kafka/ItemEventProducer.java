@@ -12,9 +12,9 @@ public final class ItemEventProducer {
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
-	public void sendUserRegistered(ItemUpdateEvent event) {
+	public void sendItemCreated(ItemUpdateEvent event) {
 		kafkaTemplate.send(
-			"user.created",
+			"item.created",
 			event.id().toString(),
 			event
 		);
