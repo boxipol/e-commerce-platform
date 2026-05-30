@@ -21,7 +21,7 @@ public class JwtProperties {
 	private long expiration;
 
 
-	public String getSecret() {
+	public String readSecret() {
 		try {
 			return Files.readString(Path.of(secretFile)).trim();
 		} catch (IOException e) {
@@ -33,6 +33,6 @@ public class JwtProperties {
 
 	public void test() {
 		log.info("secret file read: {}", secretFile);
-		log.info("secret file read: {}", getSecret());
+		log.info("secret file read: {}", readSecret());
 	}
 }

@@ -16,7 +16,7 @@ public class SecurityConfig {
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 			.authorizeExchange(exchange -> exchange
-				.pathMatchers("/api/v1/auth/**").permitAll()
+				.pathMatchers("/api/v1/users/**").permitAll()
 				.pathMatchers("/actuator/**").permitAll()
 				.anyExchange().permitAll()) // IMPORTANT: let JWT filter handle security
 			.build();

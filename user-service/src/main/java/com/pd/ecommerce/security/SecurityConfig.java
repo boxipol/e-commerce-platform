@@ -24,7 +24,7 @@ public class SecurityConfig {
 			.securityContextRepository(repository)
 			.authorizeExchange(exchange -> exchange
 				.pathMatchers(
-					"/api/v1/auth/**"
+					"/api/v1/users/**"
 				).permitAll()
 				.pathMatchers("/admin/**")
 				.hasRole("ADMIN")

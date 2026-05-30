@@ -23,7 +23,7 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 		String path = exchange.getRequest().getURI().getPath();
 
 		// skip auth endpoints
-		if (path.startsWith("/api/v1/auth")) {
+		if (path.startsWith("/api/v1/users")) {
 			return chain.filter(exchange);
 		}
 
@@ -50,6 +50,10 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 			.header("X-Role", role)
 			.build();
 
-		return chain.filter(exchange.mutate().request(mutatedRequest).build());
+		return chain.filter(
+			exchange.mutate()
+				.request(mutatedRequest)
+				.build()
+		);
 	}
 }
