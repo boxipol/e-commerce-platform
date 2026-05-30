@@ -25,7 +25,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AuthenticationServiceImpl implements AuthenticationService {
+public class UserServiceImpl implements UserService {
 
 	private final JwtService jwtService;
 	private final UserRepository repository;
@@ -37,9 +37,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	public Mono<UserProfileResponse> getProfile() {
 		return SecurityUtils.getCurrentUserId()
 			.flatMap(repository::findById)
-			.switchIfEmpty(Mono.error(
-				new IllegalStateException("User not found")
-			))
+			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
 			.map(this::toResponse);
 	}
 
@@ -58,10 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return repository.findByEmail(request.email())
 			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
 			.filter(user ->
-				passwordEncoder.matches(
-					request.password(),
-					user.getPassword()
-				)
+				passwordEncoder.matches(request.password(), user.getPassword())
 			)
 			.switchIfEmpty(Mono.error(new RuntimeException("Invalid credentials")))
 			.map(this::buildResponse);
@@ -70,8 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Override
 	public Mono<Void> update(UserUpdateRequest request) {
 		return repository.findByEmail(request.email())
-			.switchIfEmpty(
-				Mono.error(new IllegalStateException("User not found")))
+			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
 			.flatMap(user -> {
 				applyUpdate(user, request);
 				repository.save(user)
@@ -91,11 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			.flatMap(user ->
 				repository.delete(user)
 					.doOnSuccess(v -> {
-						var event = new UserDeletedEvent(
-							user.getEmail(),
-							Instant.now()
-						);
-
+						var event = new UserDeletedEvent(user.getEmail(), Instant.now());
 						eventProducer.sendUserDeleted(event);
 					})
 			);
@@ -131,7 +121,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return AuthResponse.builder()
 			.accessToken(jwtService.generateToken(user))
 			.tokenType("Bearer")
-			.expiresIn(3600L)
+			.expiresIn(3_600L)
 			.build();
 	}
 

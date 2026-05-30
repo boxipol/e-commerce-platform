@@ -21,7 +21,8 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
-		String token = authentication.getCredentials().toString();
+		String token = authentication.getCredentials()
+			.toString();
 
 		if (!jwtService.isValid(token)) {
 			return Mono.empty();

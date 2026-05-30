@@ -5,7 +5,7 @@ import com.pd.ecommerce.dto.UserLoginRequest;
 import com.pd.ecommerce.dto.UserProfileResponse;
 import com.pd.ecommerce.dto.UserRegisterRequest;
 import com.pd.ecommerce.dto.UserUpdateRequest;
-import com.pd.ecommerce.service.AuthenticationService;
+import com.pd.ecommerce.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,11 +20,11 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public final class AuthController {
+public final class UserController {
 
-	private final AuthenticationService service;
+	private final UserService service;
 
 
 	@GetMapping("/me")

@@ -4,7 +4,7 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 # copy full monorepo (important for multi-module build)
 COPY . .
-# build ONLY user-service module
+# build ONLY module using proper reactor resolution
 RUN mvn clean package -DskipTests -pl :user-service -am
 
 # -------- RUNTIME STAGE --------

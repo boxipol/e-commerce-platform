@@ -15,7 +15,8 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class JwtSecurityContextRepository implements ServerSecurityContextRepository {
 
-	private final JwtAuthenticationManager authenticationManager;
+	private final JwtAuthenticationManager manager;
+
 
 	@Override
 	public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
@@ -24,8 +25,7 @@ public class JwtSecurityContextRepository implements ServerSecurityContextReposi
 
 	@Override
 	public Mono<SecurityContext> load(ServerWebExchange exchange) {
-		String authHeader = exchange
-			.getRequest()
+		String authHeader = exchange.getRequest()
 			.getHeaders()
 			.getFirst(HttpHeaders.AUTHORIZATION);
 
@@ -36,7 +36,7 @@ public class JwtSecurityContextRepository implements ServerSecurityContextReposi
 		String token = authHeader.substring(7);
 		Authentication auth = new UsernamePasswordAuthenticationToken(token, token);
 
-		return authenticationManager.authenticate(auth)
+		return manager.authenticate(auth)
 			.map(SecurityContextImpl::new);
 	}
 }

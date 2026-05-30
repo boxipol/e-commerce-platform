@@ -1,12 +1,11 @@
 package com.pd.ecommerce.dto;
 
 import lombok.Builder;
-
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Builder
 public record ErrorResponse(
-	LocalDateTime timestamp,
+	Instant timestamp,
 	int status,
 	String error,
 	String message,

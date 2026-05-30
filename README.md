@@ -27,7 +27,7 @@ estimations:
 - 100 KB metadata/user = 100 GB
 - 20 % DAU = 200 000 DAU
 - 1 million products 
-- 1 MB per product = 1 TB
+- 1 MB per product = 1 TB product data
 - 30 products by user viewed/day = 60 mil product reads
 - 10 % of DAU add products = 20 000 product writes, 20 GB/day
 - 20 %/DAU make 1 order = 40 000 orders/day

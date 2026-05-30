@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import reactor.core.publisher.Mono;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Slf4j
 @RestControllerAdvice
@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 		log.error("EmailAlreadyExistsException", ex);
 
 		ErrorResponse response = ErrorResponse.builder()
-			.timestamp(LocalDateTime.now())
+			.timestamp(Instant.now())
 			.status(HttpStatus.CONFLICT.value())
 			.error(HttpStatus.CONFLICT.getReasonPhrase())
 			.message(ex.getMessage())
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
 		log.error("Unhandled exception", ex);
 
 		ErrorResponse response = ErrorResponse.builder()
-			.timestamp(LocalDateTime.now())
+			.timestamp(Instant.now())
 			.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
 			.error(HttpStatus.INTERNAL_SERVER_ERROR
 				.getReasonPhrase())

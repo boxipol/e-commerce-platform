@@ -8,7 +8,7 @@ import com.pd.ecommerce.dto.UserUpdateRequest;
 import reactor.core.publisher.Mono;
 import java.util.UUID;
 
-public interface AuthenticationService {
+public interface UserService {
 
 	Mono<UserProfileResponse> getProfile();
 	Mono<AuthResponse> register(UserRegisterRequest request);
