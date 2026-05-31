@@ -1,8 +1,7 @@
 package com.pd.ecommerce.controller;
 
-import com.pd.ecommerce.dto.PageResponse;
-import com.pd.ecommerce.dto.ProductByCategoryView;
 import com.pd.ecommerce.dto.ProductCreateRequest;
+import com.pd.ecommerce.dto.ProductPageResponse;
 import com.pd.ecommerce.dto.ProductResponse;
 import com.pd.ecommerce.dto.ProductUpdateRequest;
 import com.pd.ecommerce.service.ProductService;
@@ -40,14 +39,13 @@ public final class ProductController {
 		return productService.getProducts(ids);
 	}
 
-	@GetMapping("/{category}/products")
-	public Flux<ProductByCategoryView> getProducts(@PathVariable String category) {
-		return productService.getByCategory(category);
-	}
-
-	@GetMapping
-	public Mono<PageResponse<ProductResponse>> getAll(@RequestParam(defaultValue = "10") int limit, @RequestParam(required = false) String cursor) {
-		return productService.getAll(limit, cursor);
+	@GetMapping("/category/{category}")
+	public Mono<ProductPageResponse> getByCategory(
+		@PathVariable String category,
+		@RequestParam(defaultValue = "20") int pageSize,
+		@RequestParam(required = false) String pageState
+	) {
+		return productService.getByCategory(category, pageSize, pageState);
 	}
 
 	@PostMapping

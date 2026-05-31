@@ -1,33 +1,24 @@
 package com.pd.ecommerce.service;
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.pd.ecommerce.dto.PageResponse;
-import com.pd.ecommerce.dto.ProductByCategoryView;
 import com.pd.ecommerce.dto.ProductCreateRequest;
+import com.pd.ecommerce.dto.ProductPageResponse;
 import com.pd.ecommerce.dto.ProductResponse;
 import com.pd.ecommerce.dto.ProductUpdateRequest;
 import com.pd.ecommerce.entity.Product;
 import com.pd.ecommerce.entity.ProductByCategory;
 import com.pd.ecommerce.entity.ProductByCategoryKey;
 import com.pd.ecommerce.mapper.ProductMapper;
-import com.pd.ecommerce.mapper.ProductRowMapper;
+import com.pd.ecommerce.repository.ProductByCategoryQueryRepository;
 import com.pd.ecommerce.repository.ProductByCategoryRepository;
 import com.pd.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.nio.ByteBuffer;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -36,11 +27,9 @@ final class ProductServiceImpl implements ProductService {
 
 	private final ProductRepository productRepository;
 	private final ProductByCategoryRepository productByCategoryRepository;
+	private final ProductByCategoryQueryRepository productByCategoryQueryRepository;
 	private final ProductMapper productMapper;
-	private final ProductRowMapper productRowMapper;
-	private final CqlSession session;
-	private final ReactiveRedisTemplate<String, ProductResponse> redisTemplate;
-	private final ReactiveRedisTemplate<String, List<ProductByCategoryView>> categoryRedisTemplate;
+	private final ProductCacheService productCacheService;
 
 
 	@Override
@@ -54,22 +43,23 @@ final class ProductServiceImpl implements ProductService {
 			.flatMap(this::getProductCached, 32);
 	}
 
+	@Override
+		public Mono<ProductPageResponse> getByCategory(String category, int pageSize, String pageState) {
+		String cacheKey = productCacheService.key(category, pageSize, pageState);
 
-	public Flux<ProductByCategoryView> getByCategory(String category) {
-		return getCategoryCached(category)
-			.flatMapMany(Flux::fromIterable);
-	}
+		return productCacheService.getProducts(cacheKey)
+			.doOnNext(response -> log.info("CACHE HIT category={}", category))
+			.switchIfEmpty(
+				Mono.defer(() -> {
+					log.info("CACHE MISS category={}", category);
 
-	// temp not effective/testing
-	public Mono<PageResponse<ProductResponse>> getAll(int limit, String cursor) {
-		SimpleStatement statement = SimpleStatement.builder("SELECT * FROM ecommerce.products_by_id").setPageSize(limit).build();
-
-		if (cursor != null && !cursor.isBlank()) {
-			statement = statement.setPagingState(ByteBuffer.wrap(Base64.getDecoder().decode(cursor)));
-		}
-
-		return Mono.fromCompletionStage(session.executeAsync(statement))
-			.map(this::mapResultSet);
+					return productByCategoryQueryRepository.findByCategory(category, pageSize, pageState)
+						.flatMap(response ->
+							productCacheService.putProducts(cacheKey, response)
+								.thenReturn(response)
+						);
+				})
+			);
 	}
 
 	public Mono<ProductResponse> create(ProductCreateRequest request) {
@@ -146,23 +136,10 @@ final class ProductServiceImpl implements ProductService {
 		return existing;
 	}
 
-	private PageResponse<ProductResponse> mapResultSet(AsyncResultSet rs) {
-		List<ProductResponse> items = StreamSupport.stream(rs.currentPage().spliterator(), false)
-			.map(productRowMapper::toResponse)
-			.toList();
-
-		ByteBuffer next = rs.getExecutionInfo().getPagingState();
-
-		return new PageResponse<>(
-			items, next != null ? Base64.getEncoder().encodeToString(next.array()) : null,
-			next != null);
-	}
-
 	private Mono<ProductResponse> getProductCached(UUID id) {
 		String key = "product:" + id;
 
-		return redisTemplate.opsForValue()
-			.get(key)
+		return productCacheService.getProduct(key)
 			.doOnNext(v -> log.info("CACHE HIT product id={}", id))
 			.switchIfEmpty(
 				Mono.defer(() -> {
@@ -171,31 +148,8 @@ final class ProductServiceImpl implements ProductService {
 					return productRepository.findById(id)
 						.map(productMapper::toResponse)
 						.flatMap(dto ->
-							redisTemplate.opsForValue()
-								.set(key, dto, Duration.ofMinutes(10))
+							productCacheService.putProduct(key, dto)
 								.thenReturn(dto)
-						);
-				})
-			);
-	}
-
-	private Mono<List<ProductByCategoryView>> getCategoryCached(String category) {
-		String key = "product:category:" + category;
-
-		return categoryRedisTemplate.opsForValue()
-			.get(key)
-			.doOnNext(v -> log.info("CACHE HIT category={}", category))
-			.switchIfEmpty(
-				Mono.defer(() -> {
-					log.info("CACHE MISS category={}", category);
-
-					return productByCategoryRepository.findByKeyCategory(category)
-						.map(productMapper::toCategoryView)
-						.collectList()
-						.flatMap(list ->
-							categoryRedisTemplate.opsForValue()
-								.set(key, list, Duration.ofMinutes(10))
-								.thenReturn(list)
 						);
 				})
 			);

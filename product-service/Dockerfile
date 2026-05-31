@@ -1,10 +1,13 @@
+
+# -------- BUILD STAGE --------
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-# copy full monorepo
+# copy full monorepo (important for multi-module build)
 COPY . .
 # build ONLY module using proper reactor resolution
 RUN mvn clean package -DskipTests -pl :product-service -am
 
+# -------- RUNTIME STAGE --------
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/product-service/target/*.jar app.jar
