@@ -57,7 +57,6 @@ public class ProductByCategoryQueryRepository {
 			});
 	}
 
-
 	private ProductByCategoryView toView(ProductByCategory product) {
 		return ProductByCategoryView.builder()
 			.id(product.getKey().getProductId())
