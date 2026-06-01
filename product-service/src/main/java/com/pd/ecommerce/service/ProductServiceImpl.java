@@ -44,7 +44,7 @@ final class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-		public Mono<ProductPageResponse> getByCategory(String category, int pageSize, String pageState) {
+	public Mono<ProductPageResponse> getByCategory(String category, int pageSize, String pageState) {
 		String cacheKey = productCacheService.key(category, pageSize, pageState);
 
 		return productCacheService.getProducts(cacheKey)
@@ -100,12 +100,11 @@ final class ProductServiceImpl implements ProductService {
 		return productRepository.findById(id)
 			.switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
 			.flatMap(product -> {
-				ProductByCategoryKey key =
-					ProductByCategoryKey.builder()
-						.category(product.getCategory())
-						.createdAt(product.getCreatedAt())
-						.productId(product.getProductId())
-						.build();
+				ProductByCategoryKey key = ProductByCategoryKey.builder()
+					.category(product.getCategory())
+					.createdAt(product.getCreatedAt())
+					.productId(product.getProductId())
+					.build();
 
 				return productRepository.deleteById(id)
 					.then(productByCategoryRepository.deleteById(key));
@@ -140,7 +139,7 @@ final class ProductServiceImpl implements ProductService {
 		String key = "product:" + id;
 
 		return productCacheService.getProduct(key)
-			.doOnNext(v -> log.info("CACHE HIT product id={}", id))
+			.doOnNext(response -> log.info("CACHE HIT product id={}", id))
 			.switchIfEmpty(
 				Mono.defer(() -> {
 					log.info("CACHE MISS product id={}", id);
