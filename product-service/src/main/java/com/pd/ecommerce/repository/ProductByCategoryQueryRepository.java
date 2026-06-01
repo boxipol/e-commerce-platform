@@ -1,7 +1,6 @@
 package com.pd.ecommerce.repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.PagingState;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 import com.pd.ecommerce.dto.ProductByCategoryView;
@@ -11,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.cassandra.core.convert.CassandraConverter;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import java.nio.ByteBuffer;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -32,26 +33,25 @@ public class ProductByCategoryQueryRepository {
 			.setPageSize(pageSize);
 
 		if (pageState != null && !pageState.isBlank()) {
-			builder.setPagingState(
-				PagingState.fromString(pageState)
-					.getRawPagingState());
+			byte[] bytes = Base64.getUrlDecoder().decode(pageState);
+			builder.setPagingState(ByteBuffer.wrap(bytes));
 		}
 
 		return Mono.fromCompletionStage(
 			session.executeAsync(builder.build()))
 			.map(resultSet -> {
-				List<ProductByCategoryView> items = StreamSupport.stream(
-					resultSet.currentPage().spliterator(),
-						false)
-						.map(row -> converter.read(ProductByCategory.class, row))
-						.map(this::toView)
-						.toList();
+				List<ProductByCategoryView> items = StreamSupport.stream(resultSet.currentPage().spliterator(), false)
+					.map(row -> converter.read(ProductByCategory.class, row))
+					.map(this::toView)
+					.toList();
 
-				String cursor = resultSet.getExecutionInfo().getPagingState() == null
-						? null
-						: resultSet.getExecutionInfo()
-							.getPagingState()
-							.toString();
+				ByteBuffer state = resultSet.getExecutionInfo()
+					.getPagingState();
+
+				String cursor = (state == null)
+					? null
+					: Base64.getUrlEncoder()
+						.encodeToString(state.slice().array());
 
 				return new ProductPageResponse(items, cursor);
 			});
