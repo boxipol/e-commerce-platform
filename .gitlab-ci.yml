@@ -39,10 +39,7 @@ default:
     - docker:27-dind
 
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login \
-      -u "$CI_REGISTRY_USER" \
-      --password-stdin \
-      "$CI_REGISTRY"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
 
 # =====================================================
 # API GATEWAY
@@ -77,12 +74,8 @@ api-gateway-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA \
-      ./api-gateway
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA ./api-gateway
+    - docker push $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA
 
 # =====================================================
 # USER SERVICE
@@ -117,12 +110,8 @@ user-service-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA \
-      ./user-service
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA ./user-service
+    - docker push $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA
 
 # =====================================================
 # PRODUCT SERVICE
@@ -157,12 +146,8 @@ product-service-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA \
-      ./product-service
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA ./product-service
+    - docker push $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA
 
 # =====================================================
 # INVENTORY SERVICE
@@ -197,12 +182,8 @@ inventory-service-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA \
-      ./inventory-service
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA ./inventory-service
+    - docker push $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA
 
 # =====================================================
 # ORDER SERVICE
@@ -237,12 +218,8 @@ order-service-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA \
-      ./order-service
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA ./order-service
+    - docker push $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA
 
 # =====================================================
 # NOTIFICATION SERVICE
@@ -277,9 +254,5 @@ notification-service-image:
         - common/**
 
   script:
-    - docker build \
-      -t $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA \
-      ./notification-service
-
-    - docker push \
-      $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA ./notification-service
+    - docker push $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA
