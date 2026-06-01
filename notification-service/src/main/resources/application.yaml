@@ -30,8 +30,8 @@ spring:
   mail:
     host: smtp.mail.me.com
     port: 587
-    username: ${SPRING_MAIL_USER}
-    password: ${SPRING_MAIL_PASSWORD}
+    username: ${SMTP_USER}
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         smtp:

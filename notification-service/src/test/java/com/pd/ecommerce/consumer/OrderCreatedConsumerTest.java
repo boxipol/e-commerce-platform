@@ -21,7 +21,7 @@ import java.util.UUID;
 	"spring.kafka.consumer.value-deserializer=org.springframework.kafka.support.serializer.JsonDeserializer",
 	"spring.kafka.consumer.properties.spring.json.trusted.packages=*"
 })
-class OrderCreatedConsumerTest {
+public class OrderCreatedConsumerTest {
 
 	@Autowired
 	private KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
@@ -36,7 +36,7 @@ class OrderCreatedConsumerTest {
 			.totalPrice(BigDecimal.valueOf(199.99))
 			.build();
 
-		kafkaTemplate.send("order.created", event);
-		Thread.sleep(2000); // simple sync wait for demo
+//		kafkaTemplate.send("order.created", event);
+//		Thread.sleep(2000); // simple sync wait for demo
 	}
 }

@@ -1,52 +1,50 @@
 package com.pd.ecommerce.service;
 
+import com.pd.ecommerce.security.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 
 @Service
+@RequiredArgsConstructor
 public final class JwtService {
 
-	@Value("${jwt.secret}")
-	private String secret;
+	private final JwtProperties jwtProperties;
 
+
+	public String extractRole(String token) {
+		return extractClaims(token).get("role", String.class);
+	}
 
 	public String extractUsername(String token) {
-		return extractAllClaims(token).getSubject();
+		return extractClaims(token).getSubject();
 	}
 
 	public boolean isTokenValid(String token) {
 		try {
-			Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token);
+			Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token);
 			return true;
 		} catch (Exception e) {
 			return false;
 		}
 	}
 
-	public String extractRole(String token) {
-		return (String) extractAllClaims(token).get("role");
-	}
-
 //	==================== PRIVATE ====================
 
-	private Claims extractAllClaims(String token) {
+	private Claims extractClaims(String token) {
 		return Jwts.parser()
-			.setSigningKey(getKey())
+			.verifyWith(getKey())
 			.build()
-			.parseClaimsJws(token)
-			.getBody();
+			.parseSignedClaims(token)
+			.getPayload();
 	}
 
 	private SecretKey getKey() {
-		return Keys.hmacShaKeyFor(secret.getBytes());
-	}
-
-	private SecretKey getSigningKey() {
-		return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.readSecret());
+		return Keys.hmacShaKeyFor(keyBytes);
 	}
 }

@@ -50,7 +50,6 @@ spring:
                 - Path=/api/v1/notifications/**
 
 jwt:
-  secret: your-super-secret-key-with-at-least-32-characters
-
+  secret-file: ${JWT_SECRET_FILE}
   # 1 hour
   expiration: 3600000
