@@ -1,37 +1,285 @@
+
 stages:
   - build
-  - test
   - package
 
 variables:
-  MAVEN_CLI_OPTS: "-B -e -V"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-
-image: maven:3.9.6-eclipse-temurin-17
+  DOCKER_TLS_CERTDIR: "/certs"
 
 cache:
   paths:
     - .m2/repository
 
-before_script:
-  - java -version
-  - mvn --version
+default:
+  interruptible: true
 
-build:
+# =====================================================
+# COMMON BUILD TEMPLATE
+# =====================================================
+
+.maven-build-template:
   stage: build
-  script:
-    - mvn $MAVEN_CLI_OPTS compile
 
-test:
-  stage: test
-  script:
-    - mvn $MAVEN_CLI_OPTS test
+  image: maven:3.9.9-eclipse-temurin-17
 
-package:
+  artifacts:
+    expire_in: 1 day
+
+# =====================================================
+# COMMON DOCKER TEMPLATE
+# =====================================================
+
+.docker-template:
   stage: package
+
+  image: docker:27
+
+  services:
+    - docker:27-dind
+
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login \
+      -u "$CI_REGISTRY_USER" \
+      --password-stdin \
+      "$CI_REGISTRY"
+
+# =====================================================
+# API GATEWAY
+# =====================================================
+
+api-gateway-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - api-gateway/**
+        - pom.xml
+        - common/**
+
   script:
-    - mvn $MAVEN_CLI_OPTS package
+    - mvn clean package -DskipTests -pl :api-gateway -am
+
   artifacts:
     paths:
-      - catalog-service/target/*.jar
-    expire_in: 1 week
+      - api-gateway/target/*.jar
+
+api-gateway-image:
+  extends: .docker-template
+
+  needs:
+    - api-gateway-build
+
+  rules:
+    - changes:
+        - api-gateway/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA \
+      ./api-gateway
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA
+
+# =====================================================
+# USER SERVICE
+# =====================================================
+
+user-service-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - user-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - mvn clean package -DskipTests -pl :user-service -am
+
+  artifacts:
+    paths:
+      - user-service/target/*.jar
+
+user-service-image:
+  extends: .docker-template
+
+  needs:
+    - user-service-build
+
+  rules:
+    - changes:
+        - user-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA \
+      ./user-service
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA
+
+# =====================================================
+# PRODUCT SERVICE
+# =====================================================
+
+product-service-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - product-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - mvn clean package -DskipTests -pl :product-service -am
+
+  artifacts:
+    paths:
+      - product-service/target/*.jar
+
+product-service-image:
+  extends: .docker-template
+
+  needs:
+    - product-service-build
+
+  rules:
+    - changes:
+        - product-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA \
+      ./product-service
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA
+
+# =====================================================
+# INVENTORY SERVICE
+# =====================================================
+
+inventory-service-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - inventory-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - mvn clean package -DskipTests -pl :inventory-service -am
+
+  artifacts:
+    paths:
+      - inventory-service/target/*.jar
+
+inventory-service-image:
+  extends: .docker-template
+
+  needs:
+    - inventory-service-build
+
+  rules:
+    - changes:
+        - inventory-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA \
+      ./inventory-service
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA
+
+# =====================================================
+# ORDER SERVICE
+# =====================================================
+
+order-service-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - order-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - mvn clean package -DskipTests -pl :order-service -am
+
+  artifacts:
+    paths:
+      - order-service/target/*.jar
+
+order-service-image:
+  extends: .docker-template
+
+  needs:
+    - order-service-build
+
+  rules:
+    - changes:
+        - order-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA \
+      ./order-service
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA
+
+# =====================================================
+# NOTIFICATION SERVICE
+# =====================================================
+
+notification-service-build:
+  extends: .maven-build-template
+
+  rules:
+    - changes:
+        - notification-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - mvn clean package -DskipTests -pl :notification-service -am
+
+  artifacts:
+    paths:
+      - notification-service/target/*.jar
+
+notification-service-image:
+  extends: .docker-template
+
+  needs:
+    - notification-service-build
+
+  rules:
+    - changes:
+        - notification-service/**
+        - pom.xml
+        - common/**
+
+  script:
+    - docker build \
+      -t $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA \
+      ./notification-service
+
+    - docker push \
+      $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA
