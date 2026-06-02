@@ -1,10 +1,12 @@
 package com.pd.ecommerce.entity;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -24,7 +26,8 @@ public class OutboxEvent {
 	/**
 	 * JSON serialized event payload
 	 */
-	private String payload;
+	@Column("payload")
+	private Json payload;
 	/**
 	 * PENDING
 	 * PUBLISHED

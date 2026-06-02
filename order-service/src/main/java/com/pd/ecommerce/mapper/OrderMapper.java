@@ -65,12 +65,6 @@ public interface OrderMapper {
 			".toList())")
 	OrderCreatedEvent toOrderCreatedEvent(Order order, List<OrderItem> items);
 
-//	@Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
-//	@Mapping(target = "payload", source = "event", qualifiedByName = "toJson")
-//	@Mapping(target = "status", constant = "PENDING")
-//	@Mapping(target = "createdAt", expression = "java(java.time.Instant.now())")
-//	OutboxEvent toOutbox(OrderCreatedEvent event);
-
 	@Named("toJson")
 	default String toJson(Object event) {
 		try {

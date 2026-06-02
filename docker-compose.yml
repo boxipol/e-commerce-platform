@@ -124,6 +124,8 @@ services:
     ports:
       - "8084:8084"
     depends_on:
+      redis:
+        condition: service_healthy
       products-db:
         condition: service_healthy
     environment:
@@ -141,6 +143,13 @@ services:
     depends_on:
       products-db:
         condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   products-db:
     image: cassandra:5.0.8

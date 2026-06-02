@@ -22,7 +22,8 @@ public final class ProductServiceClientImpl implements ProductServiceClient {
 	public Mono<List<ProductSnapshot>> getProducts(List<UUID> productIds) {
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder.path("/api/v1/products/batch")
-				.queryParam("ids", productIds).build())
+				.queryParam("ids", productIds)
+				.build())
 			.retrieve()
 			.bodyToFlux(ProductSnapshot.class)
 			.collectList();

@@ -1,7 +1,9 @@
 package com.pd.ecommerce.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pd.ecommerce.entity.OutboxEvent;
 import com.pd.ecommerce.entity.OutboxStatus;
+import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import java.time.Instant;
 
 @Slf4j
 @Component
@@ -18,10 +19,11 @@ import java.time.Instant;
 public final class OutboxPublisher {
 
 	private final OutboxEventRepository outboxRepository;
-	private final KafkaTemplate<String, String> kafkaTemplate;
+	private final KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
+	private final ObjectMapper objectMapper;
 
 
-	@Scheduled(fixedDelay = 2000)
+	@Scheduled(fixedDelay = 2_000)
 	public void publishOutboxEvents() {
 		outboxRepository.findByStatus(OutboxStatus.PENDING)
 			.flatMap(this::processEvent)
@@ -33,7 +35,8 @@ public final class OutboxPublisher {
 
 	private Mono<Void> processEvent(OutboxEvent event) {
 		return markProcessing(event).flatMap(this::publishToKafka)
-			.flatMap(this::markPublished).then();
+			.flatMap(this::markPublished)
+			.then();
 	}
 
 	private Mono<OutboxEvent> markProcessing(OutboxEvent event) {
@@ -44,7 +47,12 @@ public final class OutboxPublisher {
 	private Mono<OutboxEvent> publishToKafka(OutboxEvent event) {
 		return Mono.fromCallable(() -> {
 			String topic = "order.created";
-			kafkaTemplate.send(topic, event.getPayload()).get(); // blocking wait
+
+			OrderCreatedEvent orderEvent = objectMapper.readValue(event.getPayload().asString(), OrderCreatedEvent.class);
+
+			kafkaTemplate.send(topic, orderEvent)
+				.get(); // blocking wait
+
 			log.info("Published event {} to topic {}", event.getId(), topic);
 
 			return event;
@@ -52,9 +60,13 @@ public final class OutboxPublisher {
 	}
 
 	private Mono<OutboxEvent> markPublished(OutboxEvent event) {
-		event.setStatus(OutboxStatus.PUBLISHED);
-		event.setPublishedAt(Instant.now());
+		log.info("Marking {} as PROCESSING", event.getId());
 
-		return outboxRepository.save(event);
+		event.setStatus(OutboxStatus.PROCESSING);
+
+		return outboxRepository.save(event)
+			.doOnNext(saved ->
+				log.info("Saved {} as PROCESSING", saved.getId())
+			);
 	}
 }

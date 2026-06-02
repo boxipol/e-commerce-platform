@@ -41,8 +41,9 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
+
 app:
   mail:
-    from: petyo_dobrev@icloud.com
+    from: ${SMTP_USER}
     base-url: https://shop.com/orders
     enabled: true

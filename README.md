@@ -137,10 +137,20 @@ simple flow
 client logins through gateway service
 gateway service checks customer service for data and logins/singup
 client requests product(product service)
-client creates order(order service)
-order service check product service for availability
-order service check customer service for data
-creates and order a calls payment service
+
+Client
+↓
+Order Service
+↓
+Inventory Service (check stock)
+↓
+Create Order
+↓
+Insert Outbox Event
+↓
+Commit Transaction
+↓
+Return 201 Created
 
 
 scripts:

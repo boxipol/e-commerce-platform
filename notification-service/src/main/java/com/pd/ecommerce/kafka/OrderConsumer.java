@@ -18,7 +18,7 @@ public final class OrderConsumer {
 	@KafkaListener(topics = "order.created", groupId = "notification-group")
 	public void consume(OrderCreatedEvent event) {
 		log.info("Received order created event: {}", event);
-		log.info("Sending notification for order {}", event.orderId());
+		log.info("Sending notification for order: {}", event.orderId());
 
 		emailService.sendOrderCreatedEmail(event);
 	}
