@@ -22,7 +22,10 @@ public class Payment {
 	private BigDecimal amount;
 	private String currency;
 	private PaymentStatus status;
-	private String provider;
+	private PaymentProvider provider;
+	private String providerPaymentId;
+	private String paymentUrl;
+	private String failureReason;
 	private Instant createdAt;
 	private Instant updatedAt;
 }

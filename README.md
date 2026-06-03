@@ -100,8 +100,40 @@ Product service (8084)
 - Redis cache
 - CassandraDB - optimise for product lookup by id, products by category, featured_products, products by brand, search/filter support, inventory lookups, recommendations / trending, product variants
 
+
 Payment service (8085)
 - handles payment processing
+
+Order Service
+↓
+order.created
+↓
+Payment Service
+↓
+Create Payment Intent / Order at provider
+↓
+Payment record = PENDING
+↓
+Return payment URL/client secret
+
+Customer completes payment
+
+Stripe/PayPal
+↓
+Webhook
+↓
+Payment Service
+↓
+Update payment status
+↓
+Outbox Event
+↓
+payment.completed / payment.failed
+↓
+Order Service
+↓
+Order status updated
+
 
 Notification service (8086)
 - handles notifications

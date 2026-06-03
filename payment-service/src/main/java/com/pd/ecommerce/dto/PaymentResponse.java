@@ -1,5 +1,6 @@
 package com.pd.ecommerce.dto;
 
+import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import lombok.Builder;
 import java.math.BigDecimal;
@@ -11,5 +12,7 @@ public record PaymentResponse(
 	UUID orderId,
 	BigDecimal amount,
 	String currency,
-	PaymentStatus status
+	PaymentStatus status,
+	PaymentProvider provider,
+	String paymentUrl
 ) {}

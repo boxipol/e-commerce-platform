@@ -1,22 +1,21 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.dto.CreatePaymentRequest;
+import com.pd.ecommerce.dto.CreateProviderPaymentRequest;
 import com.pd.ecommerce.dto.PaymentResponse;
+import com.pd.ecommerce.dto.ProviderPaymentResponse;
 import com.pd.ecommerce.entity.Payment;
+import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.kafka.PaymentEventProducer;
-import com.pd.ecommerce.mapper.PaymentMapper;
+import com.pd.ecommerce.providers.PaymentProviderRegistry;
+import com.pd.ecommerce.providers.PaymentProviderService;
 import com.pd.ecommerce.repository.PaymentRepository;
-import com.stripe.model.PaymentIntent;
-import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import java.time.Instant;
 import java.util.Random;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,94 +23,69 @@ public final class PaymentServiceImpl implements PaymentService {
 
 	private final PaymentRepository repository;
 	private final PaymentEventProducer eventProducer;
-	private final PaymentMapper mapper;
+	private final PaymentProviderRegistry paymentProviderRegistry;
 
 
-//	 TEST
-	public Mono<PaymentResponse> createPayment(CreatePaymentRequest request) {
-		Payment payment = mapper.toEntity(request);
-		payment.setProvider("STRIPE");
-		payment.setStatus(PaymentStatus.PENDING);
-		payment.setCreatedAt(Instant.now());
-		payment.setUpdatedAt(Instant.now());
-
-		return repository.save(payment)
-			.flatMap(this::processPayment)
-			.map(mapper::toResponse);
-	}
-
-	// TEST
 	public Mono<PaymentResponse> createPayment(OrderCreatedEvent event) {
+		PaymentProviderService paymentService = paymentProviderRegistry.get(resolveProvider());
+		Instant createdAt = Instant.now();
+
 		Payment payment = Payment.builder()
 			.orderId(event.orderId())
 			.userId(event.userId())
 			.amount(event.totalPrice())
-			.currency("EUR")
+			.currency("EUR") // todo add ccy provider
 			.status(PaymentStatus.PENDING)
-			.provider("STRIPE")
-			.createdAt(Instant.now())
-			.updatedAt(Instant.now())
+			.provider(paymentService.provider())
+			.createdAt(createdAt)
+			.updatedAt(createdAt)
 			.build();
 
 		return repository.save(payment)
-			.flatMap(this::processPayment)
-			.map(mapper::toResponse);
-	}
-
-	public Mono<PaymentResponse> createPayment2(CreatePaymentRequest request) {
-		return Mono.fromCallable(() -> {
-				PaymentIntentCreateParams params =
-					PaymentIntentCreateParams.builder()
-						.setAmount(request.amount().longValue())
-						.setCurrency(request.currency())
-						.putMetadata("orderId", request.orderId().toString())
-						.setAutomaticPaymentMethods(
-							PaymentIntentCreateParams.AutomaticPaymentMethods
-								.builder()
-								.setEnabled(true)
-								.build()
-						)
-						.build();
-
-				return PaymentIntent.create(params);
-			})
-			.subscribeOn(Schedulers.boundedElastic())
-			.flatMap(intent -> {
-				Payment payment = Payment.builder()
-					.orderId(request.orderId())
-					.provider("STRIPE")
-					.id(UUID.fromString(intent.getId()))
-//					.clientSecret(intent.getClientSecret())
-					.status(PaymentStatus.PENDING)
-					.amount(request.amount())
-					.currency(request.currency())
-					.build();
-
-				return repository.save(payment);
-			})
-			.map(mapper::toResponse);
+			.flatMap(saved ->
+				paymentService.createPayment(toProviderRequest(payment))
+					.map(response -> updatePayment(saved, response))
+					.flatMap(repository::save)
+			).map(this::toResponse);
 	}
 
 //	==================== PRIVATE ====================
 
-	private Mono<Payment> processPayment(Payment payment) {
+	// todo resolve based on some logic
+	private PaymentProvider resolveProvider() {
 		boolean success = new Random().nextBoolean();
 
-		payment.setStatus(
-			success
-				? PaymentStatus.SUCCEEDED
-				: PaymentStatus.FAILED
-		);
+		return success
+			? PaymentProvider.STRIPE
+			: PaymentProvider.PAYPAL;
+	}
 
+	private CreateProviderPaymentRequest toProviderRequest(Payment payment) {
+		return CreateProviderPaymentRequest.builder()
+			.paymentId(payment.getId())
+			.orderId(payment.getOrderId())
+			.amount(payment.getAmount())
+			.currency(payment.getCurrency())
+			.build();
+	}
+
+	private Payment updatePayment(Payment payment, ProviderPaymentResponse response) {
+		payment.setProviderPaymentId(response.id());
+		payment.setPaymentUrl(response.url());
 		payment.setUpdatedAt(Instant.now());
 
-		return repository.save(payment)
-			.doOnSuccess(saved -> {
-				if (saved.getStatus() == PaymentStatus.SUCCEEDED) {
-					eventProducer.sendPaymentCompleted(saved);
-				} else {
-					eventProducer.sendPaymentFailed(saved);
-				}
-			});
+		return payment;
+	}
+
+	private PaymentResponse toResponse(Payment payment) {
+		return PaymentResponse.builder()
+			.id(payment.getId())
+			.orderId(payment.getOrderId())
+			.amount(payment.getAmount())
+			.currency(payment.getCurrency())
+			.status(payment.getStatus())
+			.provider(payment.getProvider())
+			.paymentUrl(payment.getPaymentUrl())
+			.build();
 	}
 }

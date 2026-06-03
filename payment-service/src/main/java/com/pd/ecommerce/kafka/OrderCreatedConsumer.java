@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderCreatedConsumer {
+public final class OrderCreatedConsumer {
 
 	private final PaymentService paymentService;
 
@@ -19,17 +19,10 @@ public class OrderCreatedConsumer {
 	public void consume(OrderCreatedEvent event) {
 		paymentService.createPayment(event)
 			.doOnSuccess(response ->
-				log.info(
-					"Payment created for order {}",
-					event.orderId()
-				)
+				log.info("Payment created for order {}", event.orderId())
 			)
 			.doOnError(error ->
-				log.error(
-					"Failed creating payment for order {}",
-					event.orderId(),
-					error
-				)
+				log.error("Failed creating payment for order {}", event.orderId(), error)
 			)
 			.subscribe();
 	}
