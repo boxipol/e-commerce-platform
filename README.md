@@ -114,7 +114,7 @@ Create Payment Intent / Order at provider
 ↓
 Payment record = PENDING
 ↓
-Return payment URL/client secret
+Return payment URL
 
 Customer completes payment
 
@@ -170,19 +170,6 @@ client logins through gateway service
 gateway service checks customer service for data and logins/singup
 client requests product(product service)
 
-Client
-↓
-Order Service
-↓
-Inventory Service (check stock)
-↓
-Create Order
-↓
-Insert Outbox Event
-↓
-Commit Transaction
-↓
-Return 201 Created
 
 
 scripts:
@@ -199,6 +186,6 @@ cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
 docker build -t product-service -f product-service/Dockerfile .
 docker volume inspect cassandra_data
 
-
-
+stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe
+stripe trigger payment_intent.succeeded
 

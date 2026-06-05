@@ -47,7 +47,6 @@ public final class OutboxPublisher {
 	private Mono<OutboxEvent> publishToKafka(OutboxEvent event) {
 		return Mono.fromCallable(() -> {
 			String topic = "order.created";
-
 			OrderCreatedEvent orderEvent = objectMapper.readValue(event.getPayload().asString(), OrderCreatedEvent.class);
 
 			kafkaTemplate.send(topic, orderEvent)

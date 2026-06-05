@@ -4,41 +4,67 @@ import com.pd.ecommerce.entity.Payment;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-@Component
+@Slf4j
+@Service
 @RequiredArgsConstructor
-public final class PaymentEventProducer {
+public class PaymentEventProducer {
+
+	private static final String COMPLETED_TOPIC = "payment.completed";
+	private static final String FAILED_TOPIC = "payment.failed";
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
-	public void sendPaymentCompleted(Payment payment) {
+	public Mono<Void> sendPaymentCompleted(Payment payment) {
 		PaymentCompletedEvent event = new PaymentCompletedEvent(
 			payment.getId(),
 			payment.getOrderId(),
 			payment.getAmount()
 		);
 
-		kafkaTemplate.send(
-			"payment.completed",
-			payment.getOrderId().toString(),
-			event
-		);
+		return Mono.fromFuture(
+				kafkaTemplate.send(
+					COMPLETED_TOPIC,
+					payment.getOrderId().toString(),
+					event
+				)
+			)
+			.doOnSuccess(result ->
+				log.info(
+					"Published PaymentCompletedEvent paymentId={}, orderId={}",
+					payment.getId(),
+					payment.getOrderId()
+				)
+			)
+			.then();
 	}
 
-	public void sendPaymentFailed(Payment payment) {
+	public Mono<Void> sendPaymentFailed(Payment payment) {
 		PaymentFailedEvent event = new PaymentFailedEvent(
 			payment.getId(),
 			payment.getOrderId(),
 			payment.getAmount()
 		);
 
-		kafkaTemplate.send(
-			"payment.failed",
-			payment.getOrderId().toString(),
-			event
-		);
+		return Mono.fromFuture(
+				kafkaTemplate.send(
+					FAILED_TOPIC,
+					payment.getOrderId().toString(),
+					event
+				)
+			)
+			.doOnSuccess(result ->
+				log.info(
+					"Published PaymentFailedEvent paymentId={}, orderId={}",
+					payment.getId(),
+					payment.getOrderId()
+				)
+			)
+			.then();
 	}
 }

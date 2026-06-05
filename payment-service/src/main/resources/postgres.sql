@@ -3,18 +3,25 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE payments
 (
-    id         UUID PRIMARY KEY        DEFAULT gen_random_uuid(),
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id            UUID                        NOT NULL,
+    user_id             UUID                        NOT NULL,
 
-    order_id   UUID           NOT NULL,
-    user_id    UUID           NOT NULL,
+    amount              NUMERIC(19, 2)              NOT NULL,
+    currency            VARCHAR(10)                 NOT NULL,
 
-    amount     NUMERIC(19, 2) NOT NULL,
-    currency   VARCHAR(10)    NOT NULL,
+    status              VARCHAR(32)                 NOT NULL,
+    provider            VARCHAR(32)                 NOT NULL,
 
-    status     VARCHAR(30)    NOT NULL,
+    provider_payment_id VARCHAR(128),
+    payment_url         TEXT,
+    failure_reason      TEXT,
 
-    provider   VARCHAR(30),
-
-    created_at TIMESTAMP      NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP      NOT NULL DEFAULT now()
+    created_at          TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    updated_at          TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
+
+CREATE INDEX idx_payments_order_id ON payments (order_id);
+CREATE INDEX idx_payments_user_id ON payments (user_id);
+CREATE INDEX idx_payments_status ON payments (status);
+CREATE INDEX idx_payments_provider_payment_id ON payments (provider_payment_id);

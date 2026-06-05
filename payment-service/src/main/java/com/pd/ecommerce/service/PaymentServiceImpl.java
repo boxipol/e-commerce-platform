@@ -7,27 +7,26 @@ import com.pd.ecommerce.entity.Payment;
 import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
-import com.pd.ecommerce.kafka.PaymentEventProducer;
 import com.pd.ecommerce.providers.PaymentProviderRegistry;
 import com.pd.ecommerce.providers.PaymentProviderService;
 import com.pd.ecommerce.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
-import java.util.Random;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public final class PaymentServiceImpl implements PaymentService {
 
 	private final PaymentRepository repository;
-	private final PaymentEventProducer eventProducer;
 	private final PaymentProviderRegistry paymentProviderRegistry;
 
 
 	public Mono<PaymentResponse> createPayment(OrderCreatedEvent event) {
-		PaymentProviderService paymentService = paymentProviderRegistry.get(resolveProvider());
+		PaymentProviderService paymentProvider = paymentProviderRegistry.get(resolveProvider());
 		Instant createdAt = Instant.now();
 
 		Payment payment = Payment.builder()
@@ -36,28 +35,37 @@ public final class PaymentServiceImpl implements PaymentService {
 			.amount(event.totalPrice())
 			.currency("EUR") // todo add ccy provider
 			.status(PaymentStatus.PENDING)
-			.provider(paymentService.provider())
+			.provider(paymentProvider.provider())
 			.createdAt(createdAt)
 			.updatedAt(createdAt)
 			.build();
 
 		return repository.save(payment)
 			.flatMap(saved ->
-				paymentService.createPayment(toProviderRequest(payment))
-					.map(response -> updatePayment(saved, response))
-					.flatMap(repository::save)
-			).map(this::toResponse);
+				paymentProvider.createPayment(toProviderRequest(saved))
+					.flatMap(response ->
+						updatePayment(saved, response)
+					)
+			)
+			.doOnSuccess(response ->
+				log.info("Payment {} created successfully for order {}", response.id(), payment.getOrderId())
+			)
+			.doOnError(ex ->
+				log.error("Failed to create payment for order {}", payment.getOrderId(), ex)
+			)
+			.map(response -> toResponse(payment, response));
 	}
 
 //	==================== PRIVATE ====================
 
 	// todo resolve based on some logic
 	private PaymentProvider resolveProvider() {
-		boolean success = new Random().nextBoolean();
-
-		return success
-			? PaymentProvider.STRIPE
-			: PaymentProvider.PAYPAL;
+		return PaymentProvider.STRIPE;
+//		boolean success = new Random().nextBoolean();
+//
+//		return success
+//			? PaymentProvider.STRIPE
+//			: PaymentProvider.PAYPAL;
 	}
 
 	private CreateProviderPaymentRequest toProviderRequest(Payment payment) {
@@ -69,15 +77,12 @@ public final class PaymentServiceImpl implements PaymentService {
 			.build();
 	}
 
-	private Payment updatePayment(Payment payment, ProviderPaymentResponse response) {
-		payment.setProviderPaymentId(response.id());
-		payment.setPaymentUrl(response.url());
-		payment.setUpdatedAt(Instant.now());
-
-		return payment;
+	private Mono<ProviderPaymentResponse> updatePayment(Payment payment, ProviderPaymentResponse response) {
+		return repository.updateProviderData(payment.getId(), response.id(), response.url(), Instant.now())
+			.thenReturn(response);
 	}
 
-	private PaymentResponse toResponse(Payment payment) {
+	private PaymentResponse toResponse(Payment payment, ProviderPaymentResponse response) {
 		return PaymentResponse.builder()
 			.id(payment.getId())
 			.orderId(payment.getOrderId())
@@ -85,7 +90,7 @@ public final class PaymentServiceImpl implements PaymentService {
 			.currency(payment.getCurrency())
 			.status(payment.getStatus())
 			.provider(payment.getProvider())
-			.paymentUrl(payment.getPaymentUrl())
+			.paymentUrl(response.url())
 			.build();
 	}
 }

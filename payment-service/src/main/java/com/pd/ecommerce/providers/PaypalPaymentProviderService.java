@@ -6,14 +6,13 @@ import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
 public final class PaypalPaymentProviderService implements PaymentProviderService {
 
-	private final WebClient paypalWebClient;
+//	private final WebClient paypalWebClient;
 
 
 	@Override

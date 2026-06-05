@@ -20,7 +20,7 @@ public final class WebhookController {
 	private final PaypalWebhookService paypalWebhookService;
 
 
-	@PostMapping("/webhook/stripe")
+	@PostMapping("/stripe")
 	public Mono<Void> stripeWebhook(
 		@RequestBody String payload,
 		@RequestHeader("Stripe-Signature") String signature
@@ -28,7 +28,7 @@ public final class WebhookController {
 		return stripeWebhookService.handle(payload, signature);
 	}
 
-	@PostMapping("/webhook/paypal")
+	@PostMapping("/paypal")
 	public Mono<Void> paypalWebhook(
 		@RequestBody String payload,
 		@RequestHeader Map<String, String> headers

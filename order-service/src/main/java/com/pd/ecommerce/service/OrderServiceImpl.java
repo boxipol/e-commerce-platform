@@ -115,6 +115,15 @@ public class OrderServiceImpl implements OrderService {
 			});
 	}
 
+	@Transactional
+	public Mono<Void> markAsPaid(UUID orderId) {
+		Instant updatedAt = Instant.now();
+
+		return orderRepository.markAsPaid(orderId, updatedAt)
+			.then(outboxEventRepository.markProcessed(orderId, updatedAt))
+			.then();
+	}
+
 //	==================== PRIVATE ====================
 
 	private OrderResponse buildResponse(Order order, List<OrderItem> items) {
