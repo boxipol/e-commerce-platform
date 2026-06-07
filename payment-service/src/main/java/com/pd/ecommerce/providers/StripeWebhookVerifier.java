@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class StripeWebhookVerifier {
+public final class StripeWebhookVerifier {
 
 	private final StripeProperties properties;
 

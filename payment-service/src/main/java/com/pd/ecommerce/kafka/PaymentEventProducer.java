@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PaymentEventProducer {
+public final class PaymentEventProducer {
 
 	private static final String COMPLETED_TOPIC = "payment.completed";
 	private static final String FAILED_TOPIC = "payment.failed";
@@ -21,11 +21,12 @@ public class PaymentEventProducer {
 
 
 	public Mono<Void> sendPaymentCompleted(Payment payment) {
-		PaymentCompletedEvent event = new PaymentCompletedEvent(
-			payment.getId(),
-			payment.getOrderId(),
-			payment.getAmount()
-		);
+		PaymentCompletedEvent event = PaymentCompletedEvent.builder()
+			.paymentId(payment.getId())
+			.orderId(payment.getOrderId())
+			.items(payment.getItems())
+			.amount(payment.getAmount())
+			.build();
 
 		return Mono.fromFuture(
 				kafkaTemplate.send(
@@ -45,11 +46,11 @@ public class PaymentEventProducer {
 	}
 
 	public Mono<Void> sendPaymentFailed(Payment payment) {
-		PaymentFailedEvent event = new PaymentFailedEvent(
-			payment.getId(),
-			payment.getOrderId(),
-			payment.getAmount()
-		);
+		PaymentFailedEvent event = PaymentFailedEvent.builder()
+			.paymentId(payment.getId())
+			.orderId(payment.getOrderId())
+			.amount(payment.getAmount())
+			.build();
 
 		return Mono.fromFuture(
 				kafkaTemplate.send(

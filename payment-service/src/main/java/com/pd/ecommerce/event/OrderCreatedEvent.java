@@ -9,6 +9,6 @@ import java.util.UUID;
 public record OrderCreatedEvent(
 	UUID orderId,
 	UUID userId,
-	List<String> productIds,
+	List<OrderItem> items,
 	BigDecimal totalPrice
 ) {}

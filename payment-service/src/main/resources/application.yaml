@@ -41,7 +41,8 @@ spring:
 payment:
   stripe:
     base-url: https://api.stripe.com
-    api-key: ${STRIPE_API_KEY:sk_test_xxx}
+    api-key: ${STRIPE_API_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 
   paypal:
     client-id: ${PAYPAL_CLIENT_ID:1234}

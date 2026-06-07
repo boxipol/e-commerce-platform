@@ -33,6 +33,7 @@ public final class PaymentServiceImpl implements PaymentService {
 			.orderId(event.orderId())
 			.userId(event.userId())
 			.amount(event.totalPrice())
+			.items(event.items())
 			.currency("EUR") // todo add ccy provider
 			.status(PaymentStatus.PENDING)
 			.provider(paymentProvider.provider())

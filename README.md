@@ -140,9 +140,25 @@ Notification service (8086)
 simple flow:
 - kafka event->notification->mail
 
+
 Inventory service (8087)
 - handles stock amounts
 - notify merchants on stock 0
+
+
+OrderCreated
+↓
+PaymentCreated
+↓
+PaymentCompleted
+↓
+Inventory Deduct
+↓
+Success → Order Completed
+
+or
+
+Failure → Refund + Order Cancelled
 
 
 
