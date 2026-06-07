@@ -32,22 +32,12 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.pd.ecommerce.event
+
 services:
   product:
     url: http://product-service:8084
-
-  payment:
-    url: http://payment_service:8085
-
-#resilience4j:
-#  circuitbreaker:
-#    instances:
-#      orderService:
-#        slidingWindowSize: 10
-#        failureRateThreshold: 50
-#        waitDurationInOpenState: 10s
-#  retry:
-#    instances:
-#      orderService:
-#        maxAttempts: 3
-#        waitDuration: 500ms

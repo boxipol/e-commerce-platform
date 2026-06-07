@@ -10,4 +10,5 @@ public interface OrderService {
 	Mono<OrderResponse> getOrder(UUID id);
 	Mono<OrderResponse> createOrder(CreateOrderRequest request);
 	Mono<Void> markAsPaid(UUID orderId);
+	Mono<Void> markAsFailed(UUID orderId);
 }

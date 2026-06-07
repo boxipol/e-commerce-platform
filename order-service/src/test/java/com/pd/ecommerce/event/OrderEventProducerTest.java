@@ -43,7 +43,9 @@ class OrderEventProducerTest {
 		OrderCreatedEvent event = OrderCreatedEvent.builder()
 			.orderId(UUID.randomUUID())
 			.userId(UUID.randomUUID())
-			.productIds(List.of("p1", "p2"))
+			.items(List.of(
+				new OrderItem(UUID.randomUUID(), 3),
+				new OrderItem(UUID.randomUUID(), 2)))
 			.totalPrice(BigDecimal.valueOf(199.99))
 			.build();
 

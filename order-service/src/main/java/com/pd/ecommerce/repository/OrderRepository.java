@@ -17,4 +17,13 @@ public interface OrderRepository extends ReactiveCrudRepository<Order, UUID> {
 		      AND status = 'CREATED'
 		""")
 	Mono<Integer> markAsPaid(UUID orderId, Instant updatedAt);
+
+	@Query("""
+		    UPDATE orders
+		    SET status = 'CANCELLED',
+		        updated_at = :updatedAt
+		    WHERE id = :orderId
+		      AND status = 'CREATED'
+		""")
+	Mono<Integer> markAsCanceled(UUID orderId, Instant updatedAt);
 }

@@ -11,7 +11,6 @@ import com.pd.ecommerce.entity.OrderStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -59,18 +58,5 @@ public interface OrderMapper {
 	@Mapping(target = "orderId", source = "order.id")
 	@Mapping(target = "userId", source = "order.userId")
 	@Mapping(target = "totalPrice", source = "order.totalAmount")
-	@Mapping(target = "productIds", expression =
-		"java(items.stream()" +
-			".map(item -> item.getProductId().toString())" +
-			".toList())")
 	OrderCreatedEvent toOrderCreatedEvent(Order order, List<OrderItem> items);
-
-	@Named("toJson")
-	default String toJson(Object event) {
-		try {
-			return new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(event);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to serialize event", e);
-		}
-	}
 }

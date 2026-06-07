@@ -115,12 +115,23 @@ public class OrderServiceImpl implements OrderService {
 			});
 	}
 
+	@Override
 	@Transactional
 	public Mono<Void> markAsPaid(UUID orderId) {
 		Instant updatedAt = Instant.now();
 
 		return orderRepository.markAsPaid(orderId, updatedAt)
 			.then(outboxEventRepository.markProcessed(orderId, updatedAt))
+			.then();
+	}
+
+	@Override
+	@Transactional
+	public Mono<Void> markAsFailed(UUID orderId) {
+		Instant updatedAt = Instant.now();
+
+		return orderRepository.markAsCanceled(orderId, updatedAt)
+			.then(outboxEventRepository.markAsFailed(orderId, updatedAt))
 			.then();
 	}
 

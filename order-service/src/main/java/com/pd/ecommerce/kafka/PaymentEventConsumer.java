@@ -1,6 +1,6 @@
 package com.pd.ecommerce.kafka;
 
-import com.pd.ecommerce.event.PaymentCompletedEvent;
+import com.pd.ecommerce.event.PaymentFailedEvent;
 import com.pd.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +16,11 @@ public final class PaymentEventConsumer {
 	private final OrderService orderService;
 
 
-	@KafkaListener(topics = "payment.completed")
-	public Mono<Void> onPaymentCompleted(PaymentCompletedEvent event) {
-		return orderService.markAsPaid(event.orderId())
+	@KafkaListener(topics = "payment.failed")
+	public Mono<Void> onPaymentFailed(PaymentFailedEvent event) {
+		return orderService.markAsFailed(event.orderId())
 			.doOnSuccess(response ->
-				log.info("Payment completed for order {}", event.orderId())
-			)
-			.doOnError(error ->
-				log.error("Failed completing payment for order {}", event.orderId(), error)
+				log.info("Payment failed for order {}", event.orderId())
 			);
 	}
 }

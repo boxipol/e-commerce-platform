@@ -21,4 +21,12 @@ public interface OutboxEventRepository extends ReactiveCrudRepository<OutboxEven
 		      AND status = 'PROCESSING'
 		""")
 	Mono<Integer> markProcessed(UUID orderId, Instant updatedAt);
+
+	@Query("""
+		    UPDATE outbox_events
+		    SET status = 'FAILED',
+		        updated_at = :updatedAt
+		    WHERE aggregate_id = :orderId
+		""")
+	Mono<Integer> markAsFailed(UUID orderId, Instant updatedAt);
 }
