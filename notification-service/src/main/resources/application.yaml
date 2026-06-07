@@ -25,7 +25,10 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
       properties:
-        spring.json.trusted.packages: com.pd.ecommerce.event
+        spring:
+          json:
+            trusted:
+              packages: com.pd.ecommerce.event
 
   mail:
     host: smtp.mail.me.com

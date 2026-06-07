@@ -1,6 +1,7 @@
 package com.pd.ecommerce.consumer;
 
 import com.pd.ecommerce.event.OrderCreatedEvent;
+import com.pd.ecommerce.event.OrderItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +33,9 @@ public class OrderCreatedConsumerTest {
 		OrderCreatedEvent event = OrderCreatedEvent.builder()
 			.orderId(UUID.randomUUID())
 			.userId(UUID.randomUUID())
-			.productIds(List.of("p1", "p2"))
+			.items(List.of(
+				new OrderItem(UUID.randomUUID(), 3),
+				new OrderItem(UUID.randomUUID(), 2)))
 			.totalPrice(BigDecimal.valueOf(199.99))
 			.build();
 

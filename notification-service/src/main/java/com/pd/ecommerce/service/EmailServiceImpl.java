@@ -1,6 +1,8 @@
 package com.pd.ecommerce.service;
 
 import com.pd.ecommerce.config.MailProperties;
+import com.pd.ecommerce.event.InventoryReservationCompletedEvent;
+import com.pd.ecommerce.event.InventoryReservationFailedEvent;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
@@ -77,6 +79,44 @@ public final class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
+	public void sendReservationCompletedEmail(InventoryReservationCompletedEvent event) {
+		String subject = "Reservation Confirmation: " + event.orderId();
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom(mailProperties.getFrom());
+			message.setTo("petyo_dobrev@icloud.com");
+			message.setSubject(subject);
+			message.setText(buildReservationCompletedEmailBody(event));
+
+			mailSender.send(message);
+			log.info("Email sent for reservation {}", event.orderId());
+		} catch (Exception ex) {
+			log.error("Failed to send email for reservation {}", event.orderId(), ex);
+			throw ex;
+		}
+	}
+
+	@Override
+	public void sendReservationFailedEmail(InventoryReservationFailedEvent event) {
+		String subject = "Payment Confirmation: " + event.orderId();
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom(mailProperties.getFrom());
+			message.setTo("petyo_dobrev@icloud.com");
+			message.setSubject(subject);
+			message.setText(buildReservationFailedEmailBody(event));
+
+			mailSender.send(message);
+			log.info("Email sent for reservation {}", event.orderId());
+		} catch (Exception ex) {
+			log.error("Failed to send email for reservation {}", event.orderId(), ex);
+			throw ex;
+		}
+	}
+
+	@Override
 	public void sendUserCreatedEmail(UserCreatedEvent event) {
 		String subject = "User Confirmation: " + event.email();
 
@@ -105,7 +145,7 @@ public final class EmailServiceImpl implements EmailService {
 			Total: %s
 			
 			Thank you for your purchase.
-			""".formatted(event.orderId(), event.productIds(), event.totalPrice());
+			""".formatted(event.orderId(), event.items(), event.totalPrice());
 	}
 
 	private String buildPaymentCompletedEmailBody(PaymentCompletedEvent event) {
@@ -130,6 +170,27 @@ public final class EmailServiceImpl implements EmailService {
 			
 			Please try again!.
 			""".formatted(event.orderId(), event.paymentId(), event.amount());
+	}
+
+	private String buildReservationCompletedEmailBody(InventoryReservationCompletedEvent event) {
+		return """
+			Your reservation has been completed!
+			
+			Order ID: %s
+			
+			Thank you for your purchase.
+			""".formatted(event.orderId());
+	}
+
+	private String buildReservationFailedEmailBody(InventoryReservationFailedEvent event) {
+		return """
+			Your reservation has failed!
+			
+			Order ID: %s
+			Reason: %s
+			
+			Please try again!.
+			""".formatted(event.orderId(), event.reason());
 	}
 
 	private String buildUserCreatedEmailBody(UserCreatedEvent event) {
