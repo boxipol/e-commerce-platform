@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -16,10 +15,8 @@ import java.util.UUID;
 public final class Inventory {
 
 	@Id
-	private UUID productId;
-	private int stock;
-	private Instant updatedAt;
-
-	@Version
-	private Long version;
+	UUID productId;
+	Integer quantity;
+	Instant createdAt;
+	Instant updatedAt;
 }

@@ -1,9 +1,9 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.dto.ItemUpdateRequest;
+import com.pd.ecommerce.event.PaymentCompletedEvent;
 import reactor.core.publisher.Mono;
 
 public interface InventoryService {
 
-	Mono<Void> update(ItemUpdateRequest request);
+	Mono<Void> reserveInventory(PaymentCompletedEvent event);
 }

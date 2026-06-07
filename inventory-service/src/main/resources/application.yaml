@@ -32,8 +32,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
-jwt:
-  secret: your-super-secret-key-with-at-least-32-characters
-
-  # 1 hour
-  expiration: 3600000
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.pd.ecommerce.event
