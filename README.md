@@ -124,11 +124,17 @@ Webhook
 ↓
 Payment Service
 ↓
-Update payment status
+Update payment status = PAID
 ↓
 Outbox Event
 ↓
 payment.completed / payment.failed
+↓
+Inventory Deduct
+↓
+Success → Order Completed
+or
+Failure → Refund + Order Cancelled
 ↓
 Order Service
 ↓
@@ -144,22 +150,6 @@ simple flow:
 Inventory service (8087)
 - handles stock amounts
 - notify merchants on stock 0
-
-
-OrderCreated
-↓
-PaymentCreated
-↓
-PaymentCompleted
-↓
-Inventory Deduct
-↓
-Success → Order Completed
-
-or
-
-Failure → Refund + Order Cancelled
-
 
 
 logging and monitoring
