@@ -11,6 +11,7 @@ spring:
     name: notification-service
 
   kafka:
+    # localhost:29092
     bootstrap-servers: kafka:9092
 
     # testing

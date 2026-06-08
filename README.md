@@ -4,7 +4,7 @@ The platform is used to trade products between customers and/or shops.
 
 System design:
 
-functional:
+Functional requirements:
 - create and manage user accounts
 - store products in inventory
 - provide products catalog
@@ -12,7 +12,7 @@ functional:
 - provide secure payments
 - create notifications
 
-non-functional:
+Non-functional requirements:
 - authentication/authorisation
 - monitor activity
 - low latency especially viewing products
@@ -21,7 +21,7 @@ non-functional:
 - rate limiting
 - caching
 
-estimations:
+Back of the envelope:
 - 1 million user base
 - 100 000 users/month growth rate
 - 100 KB metadata/user = 100 GB
@@ -38,7 +38,7 @@ estimations:
 User point of view:
 - singup/login
 - view/add products
-- organize shopping carts
+- organize orders
 - make secure payments
 - receive notifications
 
@@ -78,6 +78,7 @@ Gateway service (8081)
 simple flow:
 - client->gateway->product->cassandra
 
+
 User service (8082)
 - manages user data
 - CRUD users
@@ -87,6 +88,7 @@ simple flow:
 - login->generates JWT
 - remove->remove account
 
+
 Order service (8083)
 - manages customer orders
 - CRUD orders
@@ -94,11 +96,12 @@ Order service (8083)
 simple flow:
 - client->gateway->order->payment-inventory->kafka event
 
+
 Product service (8084)
 - manages the product catalog
 - CRUD products
 - Redis cache
-- CassandraDB - optimise for product lookup by id, products by category, featured_products, products by brand, search/filter support, inventory lookups, recommendations / trending, product variants
+- CassandraDB - optimize for product lookup by id, products by category, featured_products, products by brand, search/filter support, inventory lookups, recommendations / trending, product variants
 
 
 Payment service (8085)
@@ -152,7 +155,7 @@ Inventory service (8087)
 - notify merchants on stock 0
 
 
-logging and monitoring
+Logging and monitoring
 - Gateway logging filter
 - Spring Boot Actuator
 - OpenTelemetry auto-instrumentation -javaagent:/Users/user/IdeaProjects/opentelemetry-javaagent.jar 
@@ -163,12 +166,17 @@ logging and monitoring
 - Grafana (dashboards)
 
 
-Consider:
+TODOs:
 - DB Flyway migrations
 - circuit breaker
-
-- error handling
+- cache warmup
+- cache invalidation on change
+- exception handling
+- AOP
 - monitoring
+- RabbitMQ
+- admin control
+- ElasticSearch for product discovery
 
 
 simple flow
@@ -178,20 +186,24 @@ client requests product(product service)
 
 
 
-scripts:
+Brew:
 brew services start postgresql
 brew services start cassandra
 
+Postgres:
 psql -U ecommerce_user -d users_db
 psql -U ecommerce_user -d orders_db
 psql -U ecommerce_user -d payments_db
 psql -U ecommerce_user -d inventory_db
 
+Cassandra:
 cqlsh
 cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
-docker build -t product-service -f product-service/Dockerfile .
-docker volume inspect cassandra_data
 
+Docker:
+docker volume inspect cassandra_data
+docker compose build --no-cache some-service
+
+Stripe testing:
 stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe
 stripe trigger payment_intent.succeeded
-

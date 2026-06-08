@@ -96,21 +96,18 @@ public class OrderServiceImpl implements OrderService {
 							.publishedAt(createdAt)
 							.build();
 
-						log.info("Saving outbox event for order {}", savedOrder.getId());
+						log.info("Saving outbox event for order: {}", savedOrder.getId());
 
 						return orderItemRepository.saveAll(items)
 							.then(
 								outboxEventRepository.save(outboxEvent)
 									.doOnNext(saved ->
-										log.info("OUTBOX SAVED: {}", saved.getId())
+										log.info("Outbox saved: {}", saved.getId())
 									)
 							)
 							.thenReturn(
 								mapper.toResponse(savedOrder, items)
-							)
-							.doOnSuccess(v -> log.info("TX SUCCESS"))
-							.doOnError(e -> log.error("TX FAILED", e))
-							.doFinally(sig -> log.info("TX FINALLY: {}", sig));
+							);
 					});
 			});
 	}
