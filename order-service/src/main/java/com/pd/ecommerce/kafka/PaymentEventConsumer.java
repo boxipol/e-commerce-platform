@@ -16,7 +16,7 @@ public final class PaymentEventConsumer {
 	private final OrderService orderService;
 
 
-	@KafkaListener(topics = "payment.failed")
+	@KafkaListener(topics = "payment.failed", groupId = "order.group")
 	public Mono<Void> onPaymentFailed(PaymentFailedEvent event) {
 		return orderService.markAsFailed(event.orderId())
 			.doOnSuccess(response ->

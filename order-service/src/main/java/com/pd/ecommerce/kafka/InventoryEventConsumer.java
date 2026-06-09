@@ -17,7 +17,7 @@ final class InventoryEventConsumer {
 	private final OrderService orderService;
 
 
-	@KafkaListener(topics = "reservation.completed")
+	@KafkaListener(topics = "reservation.completed", groupId = "order-group")
 	public Mono<Void> onReservationCompleted(InventoryReservationCompletedEvent event) {
 		return orderService.markAsPaid(event.orderId())
 			.doOnSuccess(response ->
@@ -28,7 +28,7 @@ final class InventoryEventConsumer {
 			);
 	}
 
-	@KafkaListener(topics = "reservation.failed")
+	@KafkaListener(topics = "reservation.failed", groupId = "order-group")
 	public Mono<Void> onReservationFailed(InventoryReservationFailedEvent event) {
 		return orderService.markAsFailed(event.orderId())
 			.doOnSuccess(response ->

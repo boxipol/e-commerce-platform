@@ -68,7 +68,8 @@ public class OrderServiceImpl implements OrderService {
 
 		return productServiceClient.getProducts(productIds)
 			.map(products -> products.stream()
-				.collect(Collectors.toMap(ProductSnapshot::id, Function.identity())))
+				.collect(Collectors
+					.toMap(ProductSnapshot::id, Function.identity())))
 			.flatMap(productMap -> {
 				List<OrderItem> items = buildOrderItems(request, productMap);
 				BigDecimal totalAmount = calculateTotal(items);
@@ -101,9 +102,6 @@ public class OrderServiceImpl implements OrderService {
 						return orderItemRepository.saveAll(items)
 							.then(
 								outboxEventRepository.save(outboxEvent)
-									.doOnNext(saved ->
-										log.info("Outbox saved: {}", saved.getId())
-									)
 							)
 							.thenReturn(
 								mapper.toResponse(savedOrder, items)

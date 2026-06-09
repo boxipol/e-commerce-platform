@@ -153,11 +153,10 @@ public final class EmailServiceImpl implements EmailService {
 			Your payment has been received!
 			
 			Order ID: %s
-			Product ID: %s
 			Amount: %s
 			
 			Thank you for your purchase.
-			""".formatted(event.orderId(), event.paymentId(), event.amount());
+			""".formatted(event.orderId(), event.amount());
 	}
 
 	private String buildPaymentFailedEmailBody(PaymentFailedEvent event) {
@@ -165,11 +164,10 @@ public final class EmailServiceImpl implements EmailService {
 			Your payment has failed!
 			
 			Order ID: %s
-			Product ID: %s
 			Amount: %s
 			
 			Please try again!.
-			""".formatted(event.orderId(), event.paymentId(), event.amount());
+			""".formatted(event.orderId(), event.amount());
 	}
 
 	private String buildReservationCompletedEmailBody(InventoryReservationCompletedEvent event) {

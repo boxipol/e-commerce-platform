@@ -19,7 +19,8 @@ public final class CustomUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String email) {
 		User user = repository.findByEmail(email)
-			.switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")))
+			.switchIfEmpty(
+				Mono.error(new UsernameNotFoundException("User not found")))
 			.block();
 
 		return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())

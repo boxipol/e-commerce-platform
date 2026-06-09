@@ -18,7 +18,7 @@ public final class PaymentEventConsumer {
 	private final InventoryEventProducer eventProducer;
 
 
-	@KafkaListener(topics = "payment.completed")
+	@KafkaListener(topics = "payment.completed", groupId = "inventory-group")
 	public Mono<Void> onPaymentCompleted(PaymentCompletedEvent event) {
 		return service.reserveInventory(event)
 			.then(Mono.defer(() ->

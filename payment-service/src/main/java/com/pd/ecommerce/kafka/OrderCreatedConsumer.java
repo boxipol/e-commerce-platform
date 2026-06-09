@@ -15,7 +15,7 @@ public final class OrderCreatedConsumer {
 	private final PaymentService paymentService;
 
 
-	@KafkaListener(topics = "order.created", groupId = "notification-group")
+	@KafkaListener(topics = "order.created", groupId = "payment-group")
 	public void consume(OrderCreatedEvent event) {
 		paymentService.createPayment(event)
 			.doOnSuccess(response ->
