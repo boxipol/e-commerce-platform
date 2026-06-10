@@ -17,4 +17,20 @@ public interface InventoryRepository extends ReactiveCrudRepository<Inventory, U
 		  AND quantity >= :quantity
 		""")
 	Mono<Integer> decreaseStock(UUID productId, Integer quantity, Instant updatedAt);
+
+	@Query("""
+		INSERT INTO inventory (product_id, quantity, created_at, updated_at)
+		VALUES (:productId, :quantity, :createdAt, :updatedAt)
+		RETURNING product_id, quantity, created_at, updated_at
+		""")
+	Mono<Inventory> insert(UUID productId, Integer quantity, Instant createdAt, Instant updatedAt);
+
+	@Query("""
+		UPDATE inventory
+		SET quantity = :quantity,
+		    updated_at = :updatedAt
+		WHERE product_id = :productId
+		RETURNING product_id, quantity, created_at, updated_at
+		""")
+	Mono<Inventory> update(UUID productId, Integer quantity, Instant updatedAt);
 }

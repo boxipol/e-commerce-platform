@@ -13,6 +13,22 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+	@ExceptionHandler(ProductAlreadyExistsException.class)
+	public Mono<ResponseEntity<ErrorResponse>> handleProductExists(ProductAlreadyExistsException ex) {
+		log.error("ProductAlreadyExistsException", ex);
+
+		ErrorResponse response = ErrorResponse.builder()
+			.timestamp(LocalDateTime.now())
+			.status(HttpStatus.CONFLICT.value())
+			.error(HttpStatus.CONFLICT.getReasonPhrase())
+			.message(ex.getMessage())
+			.build();
+
+		return Mono.just(
+			ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(response));
+	}
+
 	@ExceptionHandler(Exception.class)
 	public Mono<ResponseEntity<ErrorResponse>> handleGeneric(Exception ex) {
 		log.error("Unhandled exception", ex);

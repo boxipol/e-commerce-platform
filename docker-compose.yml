@@ -229,12 +229,10 @@ services:
       context: .
       dockerfile: inventory-service/Dockerfile
     container_name: inventory-service
-    ports:
-      - "8087:8087"
     depends_on:
-      kafka:
-        condition: service_healthy
       inventory-db:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - ecommerce-network
@@ -242,17 +240,17 @@ services:
   inventory-db:
     image: postgres:16
     container_name: inventory-db
-    restart: always
-    environment:
-      POSTGRES_DB: inventory_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
-    ports:
-      - "5435:5432"
+    restart: unless-stopped
+#    ports:
+#      - "5435:5432"
     volumes:
       - inventory-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_pass
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d inventory_db" ]
       interval: 5s
