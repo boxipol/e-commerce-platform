@@ -1,6 +1,5 @@
-package com.pd.ecommerce.security;
+package com.pd.ecommerce.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +26,5 @@ public class JwtProperties {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read JWT secret", e);
 		}
-	}
-
-	@PostConstruct
-
-	public void test() {
-		log.info("secret file read: {}", secretFile);
-		log.info("secret file read: {}", readSecret());
 	}
 }

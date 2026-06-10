@@ -167,6 +167,7 @@ Logging and monitoring
 
 
 TODOs:
+- cassandra batch update with outbox for product updates
 - DB Flyway migrations
 - circuit breaker
 - cache warmup

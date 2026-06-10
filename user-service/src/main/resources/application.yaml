@@ -10,7 +10,7 @@ spring:
     name: user-service
 
   r2dbc:
-    # localhost:5432
+#    url: r2dbc:postgresql://localhost:5432/users_db
     url: r2dbc:postgresql://users-db:5432/users_db
     username: ecommerce_user
     password: ecommerce_pass
@@ -20,7 +20,7 @@ spring:
         mode: always
 
   kafka:
-    # localhost:29092
+#    bootstrap-servers: localhost:29092
     bootstrap-servers: kafka:9092
 
     producer:

@@ -1,8 +1,7 @@
 package com.pd.ecommerce.service;
 
+import com.pd.ecommerce.config.JwtProperties;
 import com.pd.ecommerce.entity.User;
-import com.pd.ecommerce.security.JwtProperties;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -32,32 +31,7 @@ public final class JwtService {
 			.compact();
 	}
 
-	public String extractUserId(String token) {
-		return extractClaims(token).getSubject();
-	}
-
-	public String extractRole(String token) {
-		return extractClaims(token).get("role", String.class);
-	}
-
-	public boolean isValid(String token) {
-		try {
-			extractClaims(token);
-			return true;
-		} catch (Exception ex) {
-			return false;
-		}
-	}
-
 //	==================== PRIVATE ====================
-
-	private Claims extractClaims(String token) {
-		return Jwts.parser()
-			.verifyWith(getKey())
-			.build()
-			.parseSignedClaims(token)
-			.getPayload();
-	}
 
 	private SecretKey getKey() {
 		byte[] keyBytes = Decoders.BASE64.decode(properties.readSecret());

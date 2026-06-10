@@ -1,6 +1,7 @@
 package com.pd.ecommerce.service;
 
 import com.pd.ecommerce.dto.AuthResponse;
+import com.pd.ecommerce.dto.UserDeleteRequest;
 import com.pd.ecommerce.dto.UserLoginRequest;
 import com.pd.ecommerce.dto.UserProfileResponse;
 import com.pd.ecommerce.dto.UserRegisterRequest;
@@ -20,12 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
-import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public final class UserServiceImpl implements UserService {
 
 	private final JwtService jwtService;
 	private final UserRepository repository;
@@ -37,7 +37,8 @@ public class UserServiceImpl implements UserService {
 	public Mono<UserProfileResponse> getProfile() {
 		return SecurityUtils.getCurrentUserId()
 			.flatMap(repository::findById)
-			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
+			.switchIfEmpty(
+				Mono.error(new IllegalStateException("User not found")))
 			.map(this::toResponse);
 	}
 
@@ -54,7 +55,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Mono<AuthResponse> login(UserLoginRequest request) {
 		return repository.findByEmail(request.email())
-			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
+			.switchIfEmpty(
+				Mono.error(new IllegalStateException("User not found")))
 			.filter(user ->
 				passwordEncoder.matches(request.password(), user.getPassword())
 			)
@@ -65,7 +67,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Mono<Void> update(UserUpdateRequest request) {
 		return repository.findByEmail(request.email())
-			.switchIfEmpty(Mono.error(new IllegalStateException("User not found")))
+			.switchIfEmpty(
+				Mono.error(new IllegalStateException("User not found")))
 			.flatMap(user -> {
 				applyUpdate(user, request);
 				repository.save(user)
@@ -79,9 +82,10 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public Mono<Void> delete(UUID id) {
-		return repository.findById(id)
-			.switchIfEmpty(Mono.error(new RuntimeException("User not found with id: " + id)))
+	public Mono<Void> delete(UserDeleteRequest request) {
+		return repository.findByEmail(request.email())
+			.switchIfEmpty(
+				Mono.error(new RuntimeException("User not found with email: " + request.email())))
 			.flatMap(user ->
 				repository.delete(user)
 					.doOnSuccess(v -> {

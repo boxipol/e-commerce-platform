@@ -1,4 +1,4 @@
-package com.pd.ecommerce.security;
+package com.pd.ecommerce.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,16 +12,12 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtSecurityContextRepository repository;
-
-
 	@Bean
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 		return http
 			.csrf(ServerHttpSecurity.CsrfSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-			.securityContextRepository(repository)
 			.authorizeExchange(exchange -> exchange
 				.pathMatchers(
 					"/api/v1/users/**"

@@ -1,6 +1,7 @@
 package com.pd.ecommerce.controller;
 
 import com.pd.ecommerce.dto.AuthResponse;
+import com.pd.ecommerce.dto.UserDeleteRequest;
 import com.pd.ecommerce.dto.UserLoginRequest;
 import com.pd.ecommerce.dto.UserProfileResponse;
 import com.pd.ecommerce.dto.UserRegisterRequest;
@@ -14,10 +15,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -48,7 +47,7 @@ public final class UserController {
 	}
 
 	@DeleteMapping("/delete")
-	public Mono<Void> delete(@RequestParam UUID id) {
-		return service.delete(id);
+	public Mono<Void> delete(@Valid @RequestBody UserDeleteRequest request) {
+		return service.delete(request);
 	}
 }
