@@ -42,4 +42,9 @@ public class ProductCacheServiceImpl implements ProductCacheService {
 	public String key(String category, int pageSize, String cursor) {
 		return "products:%s:%d:%s".formatted(category, pageSize, cursor == null ? "null" : cursor);
 	}
+
+	public Mono<Void> evictProduct(String key) {
+		return productResponseTemplate.delete(key)
+			.then();
+	}
 }

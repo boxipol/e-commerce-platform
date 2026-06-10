@@ -11,4 +11,5 @@ public interface ProductCacheService {
 	Mono<ProductPageResponse> getProducts(String key);
 	Mono<Boolean> putProducts(String key, ProductPageResponse value);
 	String key(String category, int pageSize, String cursor);
+	Mono<Void> evictProduct(String key);
 }

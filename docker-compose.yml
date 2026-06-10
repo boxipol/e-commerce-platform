@@ -20,10 +20,6 @@ services:
     container_name: user-service
     secrets:
       - jwt_secret
-    environment:
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
-    ports:
-      - "8082:8082"
     depends_on:
       users-db:
         condition: service_healthy
@@ -143,12 +139,10 @@ services:
       context: .
       dockerfile: product-service/Dockerfile
     container_name: product-service
-    ports:
-      - "8084:8084"
     depends_on:
-      redis:
-        condition: service_healthy
       products-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       SPRING_CASSANDRA_CONTACT_POINTS: products-db
@@ -160,8 +154,8 @@ services:
 
   redis:
     image: redis:7
-    ports:
-      - "6379:6379"
+#    ports:
+#      - "6379:6379"
     depends_on:
       products-db:
         condition: service_healthy
@@ -176,17 +170,17 @@ services:
   products-db:
     image: cassandra:5.0.8
     container_name: products-db
-    ports:
-      - "9042:9042"
+#    ports:
+#      - "9042:9042"
+    volumes:
+      - ./cassandra-data:/var/lib/cassandra
+    networks:
+      - ecommerce-network
     environment:
       CASSANDRA_CLUSTER_NAME: "Test Cluster"
 #      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
-    volumes:
-      - ./cassandra-data:/var/lib/cassandra
-    networks:
-      - ecommerce-network
     healthcheck:
       test: [ "CMD-SHELL", "cqlsh localhost 9042 -e 'describe keyspaces'" ]
       interval: 20s

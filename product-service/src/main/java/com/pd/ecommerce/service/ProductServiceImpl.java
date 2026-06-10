@@ -29,7 +29,7 @@ final class ProductServiceImpl implements ProductService {
 	private final ProductByCategoryRepository productByCategoryRepository;
 	private final ProductByCategoryQueryRepository productByCategoryQueryRepository;
 	private final ProductMapper productMapper;
-	private final ProductCacheService productCacheService;
+	private final ProductCacheService cacheService;
 
 
 	@Override
@@ -45,9 +45,9 @@ final class ProductServiceImpl implements ProductService {
 
 	@Override
 	public Mono<ProductPageResponse> getByCategory(String category, int pageSize, String pageState) {
-		String cacheKey = productCacheService.key(category, pageSize, pageState);
+		String cacheKey = cacheService.key(category, pageSize, pageState);
 
-		return productCacheService.getProducts(cacheKey)
+		return cacheService.getProducts(cacheKey)
 			.doOnNext(response -> log.info("CACHE HIT category={}", category))
 			.switchIfEmpty(
 				Mono.defer(() -> {
@@ -55,7 +55,7 @@ final class ProductServiceImpl implements ProductService {
 
 					return productByCategoryQueryRepository.findByCategory(category, pageSize, pageState)
 						.flatMap(response ->
-							productCacheService.putProducts(cacheKey, response)
+							cacheService.putProducts(cacheKey, response)
 								.thenReturn(response)
 						);
 				})
@@ -65,40 +65,51 @@ final class ProductServiceImpl implements ProductService {
 	public Mono<ProductResponse> create(ProductCreateRequest request) {
 		Product product = productMapper.toEntity(request);
 
-		return productByCategoryRepository.save(productMapper.toProductByCategoryView(product))
-			.then(productRepository.save(product))
+		return productRepository.save(product)
+			.flatMap(saved ->
+				productByCategoryRepository.save(
+					productMapper.toProductByCategoryView(saved)
+				).thenReturn(saved)
+			)
 			.map(productMapper::toResponse);
 	}
 
 	public Mono<ProductResponse> update(UUID id, ProductUpdateRequest request) {
 		return productRepository.findById(id)
-			.switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+			.switchIfEmpty(
+				Mono.error(new RuntimeException("Product not found")))
 			.flatMap(existing -> {
 				String oldCategory = existing.getCategory();
 				Product updated = applyUpdate(existing, request);
 				ProductByCategory oldProjection = productMapper.toProductByCategoryView(existing);
 				ProductByCategory newProjection = productMapper.toProductByCategoryView(updated);
-				Mono<Void> projectionOperation;
-
-				if (!oldCategory.equals(updated.getCategory())) {
-					projectionOperation = productByCategoryRepository.delete(oldProjection)
-						.then(productByCategoryRepository.save(newProjection))
-						.then();
-				} else {
-					projectionOperation = productByCategoryRepository.save(newProjection)
-						.then();
-				}
 
 				return productRepository.save(updated)
-					.then(projectionOperation)
-					.thenReturn(updated);
+					.flatMap(saved -> {
+						Mono<Void> projectionOperation;
+
+						if (!oldCategory.equals(saved.getCategory())) {
+							projectionOperation = productByCategoryRepository.delete(oldProjection)
+								.then(productByCategoryRepository.save(newProjection))
+								.then();
+						} else {
+							projectionOperation = productByCategoryRepository.save(newProjection)
+								.then();
+						}
+
+						return projectionOperation.then(
+							cacheService.evictProduct(getProductKey(id))
+								.onErrorResume(ex -> Mono.empty())
+						).thenReturn(saved);
+					});
 			})
 			.map(productMapper::toResponse);
 	}
 
 	public Mono<Void> delete(UUID id) {
 		return productRepository.findById(id)
-			.switchIfEmpty(Mono.error(new RuntimeException("Product not found")))
+			.switchIfEmpty(
+				Mono.error(new RuntimeException("Product not found")))
 			.flatMap(product -> {
 				ProductByCategoryKey key = ProductByCategoryKey.builder()
 					.category(product.getCategory())
@@ -107,7 +118,11 @@ final class ProductServiceImpl implements ProductService {
 					.build();
 
 				return productRepository.deleteById(id)
-					.then(productByCategoryRepository.deleteById(key));
+					.then(productByCategoryRepository.deleteById(key))
+					.then(
+						cacheService.evictProduct(getProductKey(id))
+							.onErrorResume(ex -> Mono.empty())
+					);
 			});
 	}
 
@@ -136,9 +151,9 @@ final class ProductServiceImpl implements ProductService {
 	}
 
 	private Mono<ProductResponse> getProductCached(UUID id) {
-		String key = "product:" + id;
+		String key = getProductKey(id);
 
-		return productCacheService.getProduct(key)
+		return cacheService.getProduct(key)
 			.doOnNext(response -> log.info("CACHE HIT product id={}", id))
 			.switchIfEmpty(
 				Mono.defer(() -> {
@@ -147,10 +162,14 @@ final class ProductServiceImpl implements ProductService {
 					return productRepository.findById(id)
 						.map(productMapper::toResponse)
 						.flatMap(dto ->
-							productCacheService.putProduct(key, dto)
+							cacheService.putProduct(key, dto)
 								.thenReturn(dto)
 						);
 				})
 			);
+	}
+
+	private String getProductKey(UUID id) {
+		return  "product:" + id;
 	}
 }
