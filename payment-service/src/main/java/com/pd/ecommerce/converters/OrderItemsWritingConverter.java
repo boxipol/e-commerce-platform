@@ -12,7 +12,7 @@ import java.util.List;
 
 @WritingConverter
 @RequiredArgsConstructor
-public class OrderItemsWritingConverter implements Converter<List<OrderItem>, Json> {
+public final class OrderItemsWritingConverter implements Converter<List<OrderItem>, Json> {
 
 	private final ObjectMapper objectMapper;
 

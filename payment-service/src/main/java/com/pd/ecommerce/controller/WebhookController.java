@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/webhooks")
+@RequestMapping("/api/v1/payments/webhooks")
 @RequiredArgsConstructor
 public final class WebhookController {
 
