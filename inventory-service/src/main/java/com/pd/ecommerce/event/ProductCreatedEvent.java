@@ -1,4 +1,4 @@
-package com.pd.ecommerce.dto;
+package com.pd.ecommerce.event;
 
 import lombok.Builder;
 import java.time.Instant;

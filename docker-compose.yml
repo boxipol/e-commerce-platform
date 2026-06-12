@@ -60,8 +60,6 @@ services:
       context: .
       dockerfile: order-service/Dockerfile
     container_name: order-service
-    ports:
-      - "8083:8083"
     depends_on:
       orders-db:
         condition: service_healthy
@@ -73,66 +71,19 @@ services:
   orders-db:
     image: postgres:16
     container_name: orders-db
-    restart: always
-    environment:
-      POSTGRES_DB: orders_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
+    restart: unless-stopped
     ports:
       - "5433:5432"
     volumes:
       - orders-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
+    environment:
+      POSTGRES_DB: orders_db
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_pass
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d orders_db" ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-
-  pgadmin:
-      image: dpage/pgadmin4
-      container_name: pgadmin
-      restart: always
-      environment:
-        PGADMIN_DEFAULT_EMAIL: admin@admin.com
-        PGADMIN_DEFAULT_PASSWORD: admin
-      ports:
-        - "5050:80"
-      depends_on:
-        - orders-db
-      networks:
-        - ecommerce-network
-
-
-  kafka:
-    image: apache/kafka:3.7.0
-    container_name: kafka
-    networks:
-      - ecommerce-network
-    ports:
-      - "29092:29092"
-    environment:
-      # KRaft mode ENABLED
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-
-      # Listeners
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-
-      # single-node cluster safety
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-
-    healthcheck:
-      test: [ "CMD-SHELL", "bash -c '</dev/tcp/localhost/9092'" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -185,6 +136,8 @@ services:
 #      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 128M
     healthcheck:
       test: [ "CMD-SHELL", "cqlsh localhost 9042 -e 'describe keyspaces'" ]
       interval: 20s
@@ -197,30 +150,33 @@ services:
       context: .
       dockerfile: payment-service/Dockerfile
     container_name: payment-service
-    ports:
-      - "8085:8085"
     depends_on:
-      kafka:
-        condition: service_healthy
       payments-db:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     networks:
       - ecommerce-network
+    environment:
+      STRIPE_API_KEY:
+      STRIPE_WEBHOOK_SECRET:
+      PAYPAL_CLIENT_ID:
+      PAYPAL_CLIENT_SECRET:
 
   payments-db:
     image: postgres:16
     container_name: payments-db
-    restart: always
-    environment:
-      POSTGRES_DB: payments_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
-    ports:
-      - "5434:5432"
+    restart: unless-stopped
+#    ports:
+#      - "5434:5432"
     volumes:
       - payments-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
+    environment:
+      POSTGRES_DB: payments_db
+      POSTGRES_USER: ecommerce_user
+      POSTGRES_PASSWORD: ecommerce_pass
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d payments_db" ]
       interval: 5s

@@ -10,8 +10,8 @@ spring:
     name: order-service
 
   r2dbc:
-    # localhost:5433
-    url: r2dbc:postgresql://postgres:5432/orders_db
+#    url: r2dbc:postgresql://localhost:5433/orders_db
+    url: r2dbc:postgresql://orders-db:5432/orders_db
     username: ecommerce_user
     password: ecommerce_pass
 
@@ -20,7 +20,7 @@ spring:
         mode: always
 
   kafka:
-    # localhost:29092
+#    bootstrap-servers: localhost:29092
     bootstrap-servers: kafka:9092
 
     producer:
@@ -45,5 +45,5 @@ spring:
 
 services:
   product:
-    # http://localhost:8084
+#    url: http://localhost:8084
     url: http://product-service:8084
