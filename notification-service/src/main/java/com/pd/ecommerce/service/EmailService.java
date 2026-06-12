@@ -6,6 +6,7 @@ import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
 import com.pd.ecommerce.event.UserCreatedEvent;
+import com.pd.ecommerce.event.UserDeletedEvent;
 
 public interface EmailService {
 
@@ -15,4 +16,5 @@ public interface EmailService {
 	void sendReservationCompletedEmail(InventoryReservationCompletedEvent event);
 	void sendReservationFailedEmail(InventoryReservationFailedEvent event);
 	void sendUserCreatedEmail(UserCreatedEvent event);
+	void sendUserDeletedEmail(UserDeletedEvent event);
 }

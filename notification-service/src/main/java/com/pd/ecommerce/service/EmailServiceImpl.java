@@ -7,6 +7,7 @@ import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
 import com.pd.ecommerce.event.UserCreatedEvent;
+import com.pd.ecommerce.event.UserDeletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -123,7 +124,7 @@ public final class EmailServiceImpl implements EmailService {
 		try {
 			SimpleMailMessage message = new SimpleMailMessage();
 			message.setFrom(mailProperties.getFrom());
-			message.setTo("petyo_dobrev@icloud.com");
+			message.setTo(event.email());
 			message.setSubject(subject);
 			message.setText(buildUserCreatedEmailBody(event));
 
@@ -134,6 +135,26 @@ public final class EmailServiceImpl implements EmailService {
 			throw ex;
 		}
 	}
+
+	@Override
+	public void sendUserDeletedEmail(UserDeletedEvent event) {
+		String subject = "User Confirmation: " + event.email();
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom(mailProperties.getFrom());
+			message.setTo(event.email());
+			message.setSubject(subject);
+			message.setText(buildUserDeletedEmailBody(event));
+
+			mailSender.send(message);
+			log.info("Email sent for user {}", event.email());
+		} catch (Exception ex) {
+			log.error("Failed to register email for user {}", event.email(), ex);
+			throw ex;
+		}
+	}
+
 //	==================== PRIVATE ====================
 
 	private String buildOrderEmailBody(OrderCreatedEvent event) {
@@ -193,7 +214,17 @@ public final class EmailServiceImpl implements EmailService {
 
 	private String buildUserCreatedEmailBody(UserCreatedEvent event) {
 		return """
-			User has created!
+			User has been created!
+			
+			Mail: %s
+			
+			Thank you for your registration.
+			""".formatted(event.email());
+	}
+
+	private String buildUserDeletedEmailBody(UserDeletedEvent event) {
+		return """
+			User has been deleted!
 			
 			Mail: %s
 			
