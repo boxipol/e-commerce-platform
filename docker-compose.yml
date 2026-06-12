@@ -11,6 +11,10 @@ services:
       - "8081:8081"
     networks:
       - ecommerce-network
+    secrets:
+      - jwt_secret
+    environment:
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
 
 
   user-service:

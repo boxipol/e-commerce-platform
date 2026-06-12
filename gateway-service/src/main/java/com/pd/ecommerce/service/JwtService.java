@@ -1,6 +1,6 @@
 package com.pd.ecommerce.service;
 
-import com.pd.ecommerce.security.JwtProperties;
+import com.pd.ecommerce.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -26,7 +26,11 @@ public final class JwtService {
 
 	public boolean isTokenValid(String token) {
 		try {
-			Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token);
+			Jwts.parser()
+				.verifyWith(getKey())
+				.build()
+				.parseSignedClaims(token);
+
 			return true;
 		} catch (Exception e) {
 			return false;

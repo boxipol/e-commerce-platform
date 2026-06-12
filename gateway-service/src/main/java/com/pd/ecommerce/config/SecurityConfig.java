@@ -1,4 +1,4 @@
-package com.pd.ecommerce.security;
+package com.pd.ecommerce.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,10 +15,10 @@ public class SecurityConfig {
 		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
 			.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 			.formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-			.authorizeExchange(exchange -> exchange
-				.pathMatchers("/api/v1/users/**").permitAll()
-				.pathMatchers("/actuator/**").permitAll()
-				.anyExchange().permitAll()) // IMPORTANT: let JWT filter handle security
+			.authorizeExchange(exchange ->
+				exchange.pathMatchers("/api/v1/users/**").permitAll()
+					.pathMatchers("/api/v1/payments/webhooks/**").permitAll()
+					.anyExchange().permitAll())
 			.build();
 	}
 }

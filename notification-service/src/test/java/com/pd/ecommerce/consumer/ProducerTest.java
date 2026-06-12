@@ -14,7 +14,7 @@ import java.util.UUID;
 class ProducerTest {
 
 	@Autowired
-	KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
+	private KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
 
 
 	@Test

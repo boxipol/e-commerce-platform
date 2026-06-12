@@ -22,22 +22,29 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
 
-		// skip auth endpoints
-		if (path.startsWith("/api/v1/users")) {
+		// skip now jwt endpoints
+		if (path.startsWith("/api/v1/users") || path.startsWith("/api/v1/payments/webhooks")) {
 			return chain.filter(exchange);
 		}
 
-		String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+		String authHeader = exchange.getRequest()
+			.getHeaders()
+			.getFirst(HttpHeaders.AUTHORIZATION);
 
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-			return exchange.getResponse().setComplete();
+			exchange.getResponse()
+				.setStatusCode(HttpStatus.UNAUTHORIZED);
+
+			return exchange.getResponse()
+				.setComplete();
 		}
 
 		String token = authHeader.substring(7);
 
 		if (!jwtService.isTokenValid(token)) {
-			exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+			exchange.getResponse()
+				.setStatusCode(HttpStatus.UNAUTHORIZED);
+
 			return exchange.getResponse().setComplete();
 		}
 

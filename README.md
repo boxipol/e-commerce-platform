@@ -208,3 +208,6 @@ docker compose build --no-cache some-service
 Stripe testing:
 stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe
 stripe trigger payment_intent.succeeded
+stripe listen --forward-to http://localhost:8081/api/v1/payments/webhooks/stripe
+stripe events list
+stripe events resend evt_3ThA101MX7CZ1Cce0kHDrneo

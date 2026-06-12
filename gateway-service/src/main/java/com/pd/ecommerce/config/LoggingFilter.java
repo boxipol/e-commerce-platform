@@ -42,10 +42,12 @@ public class LoggingFilter implements GlobalFilter, Ordered {
 
 		String finalCorrelationId = correlationId;
 
-		return chain.filter(mutatedExchange).doFinally(signal -> {
-			long duration = System.currentTimeMillis() - startTime;
-			Integer status = exchange.getResponse().getStatusCode() != null ? exchange.getResponse().getStatusCode().value() : 0;
-			log.info("⬅️ Response [{}] {} | status={} | time={}ms | CID={}", method, path, status, duration, finalCorrelationId);
+		return chain.filter(mutatedExchange)
+			.doFinally(signal -> {
+				long duration = System.currentTimeMillis() - startTime;
+				Integer status = exchange.getResponse().getStatusCode() != null ? exchange.getResponse().getStatusCode().value() : 0;
+
+				log.info("⬅️ Response [{}] {} | status={} | time={}ms | CID={}", method, path, status, duration, finalCorrelationId);
 		});
 	}
 
