@@ -49,7 +49,13 @@ public final class UserServiceImpl implements UserService {
 				Mono.<User>error(new EmailAlreadyExistsException(request.email()))
 			)
 			.switchIfEmpty(Mono.defer(() -> create(request)))
-			.map(this::buildResponse);
+			.doOnNext(user ->
+				log.info("Register successful for userId={}, email={}", user.getId(), user.getEmail())
+			)
+			.map(this::buildResponse)
+			.doOnError(e ->
+				log.warn("Register failed for email={}", request.email())
+			);
 	}
 
 	@Override
@@ -61,7 +67,13 @@ public final class UserServiceImpl implements UserService {
 				passwordEncoder.matches(request.password(), user.getPassword())
 			)
 			.switchIfEmpty(Mono.error(new RuntimeException("Invalid credentials")))
-			.map(this::buildResponse);
+			.doOnNext(user ->
+				log.info("Login successful for userId={}, email={}", user.getId(), user.getEmail())
+			)
+			.map(this::buildResponse)
+			.doOnError(e ->
+				log.warn("Login failed for email={}", request.email())
+			);
 	}
 
 	@Override
@@ -73,8 +85,10 @@ public final class UserServiceImpl implements UserService {
 				applyUpdate(user, request);
 				repository.save(user)
 					.doOnSuccess(saved -> {
-						var event = new UserUpdatedEvent(user.getEmail(), Instant.now());
+						var event = new UserUpdatedEvent(saved.getEmail(), Instant.now());
 						eventProducer.sendUserUpdated(event);
+
+						log.info("Update successful for userId={}, email={}", saved.getId(), saved.getEmail());
 					});
 
 				return Mono.empty();
@@ -91,6 +105,8 @@ public final class UserServiceImpl implements UserService {
 					.doOnSuccess(v -> {
 						var event = new UserDeletedEvent(user.getEmail(), Instant.now());
 						eventProducer.sendUserDeleted(event);
+
+						log.info("Delete successful for userId={}, email={}", user.getId(), user.getEmail());
 					})
 			);
 	}
@@ -131,7 +147,6 @@ public final class UserServiceImpl implements UserService {
 
 	private UserProfileResponse toResponse(User user) {
 		return UserProfileResponse.builder()
-			.id(user.getId())
 			.email(user.getEmail())
 			.firstName(user.getFirstName())
 			.lastName(user.getLastName())
