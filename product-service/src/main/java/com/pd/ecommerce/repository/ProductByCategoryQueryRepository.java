@@ -59,7 +59,7 @@ public class ProductByCategoryQueryRepository {
 
 	private ProductByCategoryView toView(ProductByCategory product) {
 		return ProductByCategoryView.builder()
-			.id(product.getKey().getProductId())
+			.sku(product.getKey().getSku())
 			.name(product.getName())
 			.brand(product.getBrand())
 			.price(product.getPrice())

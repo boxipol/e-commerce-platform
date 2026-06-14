@@ -11,8 +11,8 @@ import java.util.UUID;
 
 public interface ProductService {
 
-	Mono<ProductResponse> getById(UUID id);
-	Flux<ProductResponse> getProducts(List<UUID> ids);
+	Mono<ProductResponse> getById(String sku);
+	Flux<ProductResponse> getProducts(List<String> ids);
 	Mono<ProductPageResponse> getByCategory(String category, int pageSize, String pageNumber);
 	Mono<ProductResponse> create(ProductCreateRequest product);
 	Mono<ProductResponse> update(UUID id, ProductUpdateRequest product);

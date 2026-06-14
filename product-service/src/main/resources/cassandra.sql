@@ -1,69 +1,81 @@
 // local
 CREATE KEYSPACE ecommerce
-
-WITH replication = {
-    'class': 'SimpleStrategy',
-    'replication_factor': 1
-};
+    WITH replication = {
+        'class': 'SimpleStrategy',
+        'replication_factor': 1
+        };
 
 // production
 CREATE KEYSPACE ecommerce
-
-WITH replication = {
-    'class': 'NetworkTopologyStrategy',
-    'datacenter1': 3
-};
+    WITH replication = {
+        'class': 'NetworkTopologyStrategy',
+        'datacenter1': 3
+        };
 
 USE ecommerce;
 
-CREATE TABLE products (
-    id UUID PRIMARY KEY,
-    name text,
+CREATE TABLE products
+(
+    id    UUID PRIMARY KEY,
+    name  text,
     price decimal
 );
 
-CREATE TABLE products_by_id (
-    product_id UUID PRIMARY KEY,
+CREATE TABLE products_by_id
+(
+    product_id  UUID PRIMARY KEY,
 
-    sku TEXT,
-    name TEXT,
+    sku         TEXT,
+    name        TEXT,
     description TEXT,
 
-    brand TEXT,
-    category TEXT,
+    brand       TEXT,
+    category    TEXT,
 
-    price DECIMAL,
-    currency TEXT,
+    price       DECIMAL,
+    currency    TEXT,
 
-    stock INT,
+    stock       INT,
 
-    active BOOLEAN,
+    active      BOOLEAN,
 
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
 );
 
-SELECT * FROM products_by_id
-WHERE product_id = ?;
+CREATE TABLE products_by_sku
+(
+    sku         TEXT PRIMARY KEY,
 
-SELECT product_id, sku, name
-FROM products_by_id
-LIMIT 10;
+    product_id  UUID,
 
+    name        TEXT,
+    description TEXT,
 
-CREATE TABLE products_by_category (
-    category TEXT,
+    brand       TEXT,
+    category    TEXT,
+
+    price       DECIMAL,
+    currency    TEXT,
+
+    stock       INT,
+    active      BOOLEAN,
+
+    created_at  TIMESTAMP,
+    updated_at  TIMESTAMP
+);
+
+CREATE TABLE products_by_category
+(
+    category   TEXT,
     created_at TIMESTAMP,
-    product_id UUID,
+    sku        TEXT,
 
-    name TEXT,
-    brand TEXT,
-    price DECIMAL,
-    stock INT,
+    name       TEXT,
+    brand      TEXT,
+    price      DECIMAL,
+    stock      INT,
 
-    PRIMARY KEY ((category), created_at, product_id)
+    PRIMARY KEY ((category), created_at, sku)
 )
-WITH CLUSTERING ORDER BY (created_at DESC);
-
-SELECT * FROM products_by_category
-WHERE category = 'Phones';
+            WITH CLUSTERING ORDER BY (created_at DESC);

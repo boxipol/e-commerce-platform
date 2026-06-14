@@ -29,13 +29,13 @@ public final class ProductController {
 	private final ProductService productService;
 
 
-	@GetMapping("/{id}")
-	public Mono<ProductResponse> getById(@PathVariable UUID id) {
-		return productService.getById(id);
+	@GetMapping("/{sku}")
+	public Mono<ProductResponse> getById(@PathVariable String sku) {
+		return productService.getById(sku);
 	}
 
 	@GetMapping("/batch")
-	public Flux<ProductResponse> getProducts(@RequestParam List<UUID> ids) {
+	public Flux<ProductResponse> getProducts(@RequestParam List<String> ids) {
 		return productService.getProducts(ids);
 	}
 

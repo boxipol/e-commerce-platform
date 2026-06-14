@@ -7,9 +7,11 @@ import com.pd.ecommerce.dto.ProductUpdateRequest;
 import com.pd.ecommerce.entity.Product;
 import com.pd.ecommerce.entity.ProductByCategory;
 import com.pd.ecommerce.entity.ProductByCategoryKey;
+import com.pd.ecommerce.entity.ProductBySku;
 import com.pd.ecommerce.mapper.ProductMapper;
 import com.pd.ecommerce.repository.ProductByCategoryQueryRepository;
 import com.pd.ecommerce.repository.ProductByCategoryRepository;
+import com.pd.ecommerce.repository.ProductBySkuRepository;
 import com.pd.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.UUID;
 final class ProductServiceImpl implements ProductService {
 
 	private final ProductRepository productRepository;
+	private final ProductBySkuRepository productBySkuRepository;
 	private final ProductByCategoryRepository productByCategoryRepository;
 	private final ProductByCategoryQueryRepository productByCategoryQueryRepository;
 	private final ProductMapper productMapper;
@@ -33,13 +36,13 @@ final class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public Mono<ProductResponse> getById(UUID id) {
-		return getProductCached(id);
+	public Mono<ProductResponse> getById(String sku) {
+		return getProductCached(sku);
 	}
 
 	@Override
-	public Flux<ProductResponse> getProducts(List<UUID> ids) {
-		return Flux.fromIterable(ids)
+	public Flux<ProductResponse> getProducts(List<String> skus) {
+		return Flux.fromIterable(skus)
 			.flatMap(this::getProductCached, 32);
 	}
 
@@ -62,15 +65,22 @@ final class ProductServiceImpl implements ProductService {
 			);
 	}
 
+	// todo use event driven updates
 	public Mono<ProductResponse> create(ProductCreateRequest request) {
-		Product product = productMapper.toEntity(request);
+		Product product = productMapper.toProduct(request);
 
 		return productRepository.save(product)
-			.flatMap(saved ->
-				productByCategoryRepository.save(
+			.flatMap(saved -> {
+				ProductBySku productBySku = productMapper.toProductBySku(request);
+				Mono<ProductBySku> skuSave = productBySkuRepository.save(productBySku);
+
+				Mono<ProductByCategory> categorySave = productByCategoryRepository.save(
 					productMapper.toProductByCategoryView(saved)
-				).thenReturn(saved)
-			)
+				);
+
+				return Mono.when(skuSave, categorySave)
+					.thenReturn(saved);
+			})
 			.map(productMapper::toResponse);
 	}
 
@@ -98,7 +108,7 @@ final class ProductServiceImpl implements ProductService {
 						}
 
 						return projectionOperation.then(
-							cacheService.evictProduct(getProductKey(id))
+							cacheService.evictProduct(getProductKey(saved.getSku()))
 								.onErrorResume(ex -> Mono.empty())
 						).thenReturn(saved);
 					});
@@ -114,13 +124,13 @@ final class ProductServiceImpl implements ProductService {
 				ProductByCategoryKey key = ProductByCategoryKey.builder()
 					.category(product.getCategory())
 					.createdAt(product.getCreatedAt())
-					.productId(product.getProductId())
+					.sku(product.getSku())
 					.build();
 
 				return productRepository.deleteById(id)
 					.then(productByCategoryRepository.deleteById(key))
 					.then(
-						cacheService.evictProduct(getProductKey(id))
+						cacheService.evictProduct(getProductKey(product.getSku()))
 							.onErrorResume(ex -> Mono.empty())
 					);
 			});
@@ -150,16 +160,16 @@ final class ProductServiceImpl implements ProductService {
 		return existing;
 	}
 
-	private Mono<ProductResponse> getProductCached(UUID id) {
-		String key = getProductKey(id);
+	private Mono<ProductResponse> getProductCached(String sku) {
+		String key = getProductKey(sku);
 
 		return cacheService.getProduct(key)
-			.doOnNext(response -> log.info("CACHE HIT product id={}", id))
+			.doOnNext(response -> log.info("CACHE HIT product id={}", sku))
 			.switchIfEmpty(
 				Mono.defer(() -> {
-					log.info("CACHE MISS product id={}", id);
+					log.info("CACHE MISS product id={}", sku);
 
-					return productRepository.findById(id)
+					return productBySkuRepository.findById(sku)
 						.map(productMapper::toResponse)
 						.flatMap(dto ->
 							cacheService.putProduct(key, dto)
@@ -169,7 +179,7 @@ final class ProductServiceImpl implements ProductService {
 			);
 	}
 
-	private String getProductKey(UUID id) {
-		return  "product:" + id;
+	private String getProductKey(String sku) {
+		return  "product:" + sku;
 	}
 }

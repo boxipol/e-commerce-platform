@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProductRowMapper {
 
-	@Mapping(target = "id", expression = "java(row.getUuid(\"product_id\"))")
+	@Mapping(target = "sku", expression = "java(row.getString(\"product_id\"))")
 	@Mapping(target = "name", expression = "java(row.getString(\"name\"))")
 	@Mapping(target = "description", expression = "java(row.getString(\"description\"))")
 	@Mapping(target = "brand", expression = "java(row.getString(\"brand\"))")
