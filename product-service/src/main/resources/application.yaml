@@ -1,12 +1,8 @@
-server:
-  port: 8084
-
 spring:
   application:
     name: product-service
 
   cassandra:
-#    contact-points: localhost
     contact-points: products-db
     port: 9042
     keyspace-name: ecommerce
@@ -14,7 +10,6 @@ spring:
 
   data:
     redis:
-#      host: localhost
       host: redis
       port: 6379
       repositories:

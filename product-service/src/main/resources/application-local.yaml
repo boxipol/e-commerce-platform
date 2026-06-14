@@ -1,0 +1,10 @@
+server:
+  port: 8084
+
+spring:
+  cassandra:
+    contact-points: localhost
+
+  data:
+    redis:
+      host: localhost
