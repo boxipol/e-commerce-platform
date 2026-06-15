@@ -26,4 +26,6 @@ public interface OrderRepository extends ReactiveCrudRepository<Order, UUID> {
 		      AND status = 'CREATED'
 		""")
 	Mono<Integer> markAsCanceled(UUID orderId, Instant updatedAt);
+
+	Mono<Order> findByPublicOrderId(String publicOrderId);
 }

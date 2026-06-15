@@ -23,7 +23,9 @@ public final class PaymentEventProducer {
 	public Mono<Void> sendPaymentCompleted(Payment payment) {
 		PaymentCompletedEvent event = PaymentCompletedEvent.builder()
 			.paymentId(payment.getId())
+			.userMail(payment.getUserMail())
 			.orderId(payment.getOrderId())
+			.publicOrderId(payment.getPublicOrderId())
 			.items(payment.getItems())
 			.amount(payment.getAmount())
 			.build();
@@ -48,7 +50,9 @@ public final class PaymentEventProducer {
 	public Mono<Void> sendPaymentFailed(Payment payment) {
 		PaymentFailedEvent event = PaymentFailedEvent.builder()
 			.paymentId(payment.getId())
+			.userMail(payment.getUserMail())
 			.orderId(payment.getOrderId())
+			.publicOrderId(payment.getPublicOrderId())
 			.amount(payment.getAmount())
 			.build();
 

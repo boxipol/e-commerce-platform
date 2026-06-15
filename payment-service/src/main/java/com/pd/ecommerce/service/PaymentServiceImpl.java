@@ -31,7 +31,9 @@ public final class PaymentServiceImpl implements PaymentService {
 
 		Payment payment = Payment.builder()
 			.orderId(event.orderId())
+			.publicOrderId(event.publicOrderId())
 			.userId(event.userId())
+			.userMail(event.userMail())
 			.amount(event.totalPrice())
 			.items(event.items())
 			.currency("EUR") // todo add ccy provider
@@ -87,6 +89,7 @@ public final class PaymentServiceImpl implements PaymentService {
 		return PaymentResponse.builder()
 			.id(payment.getId())
 			.orderId(payment.getOrderId())
+			.publicOrderId(payment.getPublicOrderId())
 			.amount(payment.getAmount())
 			.currency(payment.getCurrency())
 			.status(payment.getStatus())

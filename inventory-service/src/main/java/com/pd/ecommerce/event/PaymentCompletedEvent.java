@@ -8,7 +8,9 @@ import java.util.UUID;
 @Builder
 public record PaymentCompletedEvent(
 	UUID paymentId,
+	String userMail,
 	UUID orderId,
-	List<OrderItem> items,
+	String publicOrderId,
+	List<OrderEventItem> items,
 	BigDecimal amount
 ) {}

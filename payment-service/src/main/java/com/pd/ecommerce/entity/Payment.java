@@ -1,6 +1,6 @@
 package com.pd.ecommerce.entity;
 
-import com.pd.ecommerce.event.OrderItem;
+import com.pd.ecommerce.event.OrderEventItem;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +20,11 @@ public class Payment {
 	@Id
 	private UUID id;
 	private UUID orderId;
+	private String publicOrderId;
 	private UUID userId;
+	private String userMail;
 	private BigDecimal amount;
-	private List<OrderItem> items;
+	private List<OrderEventItem> items;
 	private String currency;
 	private PaymentStatus status;
 	private PaymentProvider provider;

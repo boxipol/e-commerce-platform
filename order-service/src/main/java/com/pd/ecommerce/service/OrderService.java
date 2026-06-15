@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface OrderService {
 
-	Mono<OrderResponse> getOrder(UUID id);
-	Mono<OrderResponse> createOrder(CreateOrderRequest request);
+	Mono<OrderResponse> getOrder(String publicOrderId);
+	Mono<OrderResponse> createOrder(UUID userID, String userMail, CreateOrderRequest request);
 	Mono<Void> markAsPaid(UUID orderId);
 	Mono<Void> markAsFailed(UUID orderId);
 }

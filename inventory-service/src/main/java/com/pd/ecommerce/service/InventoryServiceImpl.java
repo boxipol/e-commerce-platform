@@ -4,7 +4,7 @@ import com.pd.ecommerce.dto.InventoryCreateRequest;
 import com.pd.ecommerce.dto.InventoryResponse;
 import com.pd.ecommerce.dto.InventoryUpdateRequest;
 import com.pd.ecommerce.entity.Inventory;
-import com.pd.ecommerce.event.OrderItem;
+import com.pd.ecommerce.event.OrderEventItem;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.exception.InsufficientInventoryException;
 import com.pd.ecommerce.exception.ProductAlreadyExistsException;
@@ -91,7 +91,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 //	==================== PRIVATE ====================
 
-	private Mono<Void> reserveItem(OrderItem item) {
+	private Mono<Void> reserveItem(OrderEventItem item) {
 		Instant now = Instant.now();
 
 		return repository.decreaseStock(item.productId(), item.quantity(), now)

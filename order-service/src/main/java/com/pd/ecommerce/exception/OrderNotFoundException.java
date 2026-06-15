@@ -2,7 +2,7 @@ package com.pd.ecommerce.exception;
 
 public class OrderNotFoundException extends RuntimeException {
 
-	public OrderNotFoundException(Long orderId) {
-		super("Order with ID " + orderId + " was not found");
+	public OrderNotFoundException(String publicOrderId) {
+		super("Order with ID " + publicOrderId + " was not found");
 	}
 }

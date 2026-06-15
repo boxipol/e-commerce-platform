@@ -17,7 +17,9 @@ public final class Order {
 
 	@Id
 	private UUID id;
+	private String publicOrderId;
 	private UUID userId;
+	private String userMail;
 	private OrderStatus status;
 	private BigDecimal totalAmount;
 	private Instant createdAt;

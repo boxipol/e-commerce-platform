@@ -7,6 +7,8 @@ import java.util.UUID;
 @Builder
 public record PaymentFailedEvent(
 	UUID paymentId,
+	String userMail,
 	UUID orderId,
+	String publicOrderId,
 	BigDecimal amount
 ) {}

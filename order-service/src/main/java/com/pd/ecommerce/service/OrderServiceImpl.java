@@ -3,8 +3,8 @@ package com.pd.ecommerce.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pd.ecommerce.client.ProductServiceClient;
-import com.pd.ecommerce.dto.CreateOrderItemRequest;
 import com.pd.ecommerce.dto.CreateOrderRequest;
+import com.pd.ecommerce.dto.OrderItemRequest;
 import com.pd.ecommerce.dto.OrderItemResponse;
 import com.pd.ecommerce.dto.OrderResponse;
 import com.pd.ecommerce.dto.ProductSnapshot;
@@ -12,8 +12,9 @@ import com.pd.ecommerce.entity.Order;
 import com.pd.ecommerce.entity.OrderItem;
 import com.pd.ecommerce.entity.OrderStatus;
 import com.pd.ecommerce.entity.OutboxEvent;
-import com.pd.ecommerce.entity.OutboxStatus;
+import com.pd.ecommerce.entity.OutboxEventStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
+import com.pd.ecommerce.exception.OrderNotFoundException;
 import com.pd.ecommerce.mapper.OrderMapper;
 import com.pd.ecommerce.repository.OrderItemRepository;
 import com.pd.ecommerce.repository.OrderRepository;
@@ -45,18 +46,15 @@ public class OrderServiceImpl implements OrderService {
 	private final ObjectMapper objectMapper;
 
 
-	public Mono<OrderResponse> getOrder(UUID id) {
-		Mono<Order> orderMono = orderRepository.findById(id);
-		Mono<List<OrderItem>> itemsMono = orderItemRepository.findByOrderId(id)
-			.collectList();
-
-		return Mono.zip(orderMono, itemsMono)
-			.map(tuple -> {
-				Order order = tuple.getT1();
-				List<OrderItem> items = tuple.getT2();
-
-			return buildResponse(order, items);
-		});
+	public Mono<OrderResponse> getOrder(String publicOrderId) {
+		return orderRepository.findByPublicOrderId(publicOrderId)
+			.switchIfEmpty(
+				Mono.error(new OrderNotFoundException(publicOrderId)))
+			.flatMap(order ->
+				orderItemRepository.findByOrderId(order.getId())
+					.collectList()
+					.map(items -> buildResponse(order, items))
+			);
 	}
 
 	@Transactional
@@ -76,7 +74,9 @@ public class OrderServiceImpl implements OrderService {
 				Instant createdAt = Instant.now();
 
 				Order order = Order.builder()
-					.userId(request.userId())
+					.userId(userId)
+					.userMail(userMail)
+					.publicOrderId(generatePublicOrderId())
 					.status(OrderStatus.CREATED)
 					.totalAmount(totalAmount)
 					.createdAt(createdAt)
@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
 							.aggregateId(savedOrder.getId())
 							.eventType("ORDER_CREATED")
 							.payload(Json.of(toJson(event)))
-							.status(OutboxStatus.PENDING)
+							.status(OutboxEventStatus.PENDING)
 							.createdAt(createdAt)
 							.publishedAt(createdAt)
 							.build();
@@ -104,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
 								outboxEventRepository.save(outboxEvent)
 							)
 							.thenReturn(
-								mapper.toResponse(savedOrder, items)
+								mapper.toResponse(event.userMail(), savedOrder, items)
 							);
 					});
 			});
@@ -133,17 +133,17 @@ public class OrderServiceImpl implements OrderService {
 //	==================== PRIVATE ====================
 
 	private OrderResponse buildResponse(Order order, List<OrderItem> items) {
-		List<OrderItemResponse> itemResponses = items.stream()
+		List<OrderItemResponse> itemsResponse = items.stream()
 			.map(mapper::toItemResponse)
 			.toList();
 
 		return OrderResponse.builder()
-			.id(order.getId())
-			.userId(order.getUserId())
+			.userMail(order.getUserMail())
+			.publicOrderId(order.getPublicOrderId())
 			.status(order.getStatus())
 			.totalAmount(order.getTotalAmount())
 			.createdAt(order.getCreatedAt())
-			.items(itemResponses)
+			.items(itemsResponse)
 			.build();
 	}
 
@@ -182,5 +182,15 @@ public class OrderServiceImpl implements OrderService {
 		} catch (JsonProcessingException e) {
 			throw new IllegalStateException("Failed to serialize outbox event", e);
 		}
+	}
+
+	private static String generatePublicOrderId() {
+		String shortUuid = UUID.randomUUID()
+			.toString()
+			.replace("-", "")
+			.substring(0, 8)
+			.toUpperCase();
+
+		return "ORD-" + shortUuid;
 	}
 }
