@@ -1,0 +1,9 @@
+server:
+  port: 8087
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5435/inventory_db
+
+  kafka:
+    bootstrap-servers: localhost:29092

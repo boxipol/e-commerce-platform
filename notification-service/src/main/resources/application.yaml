@@ -1,6 +1,3 @@
-server:
-  port: 8086
-
 logging:
   level:
     org.springframework.kafka: INFO
@@ -11,7 +8,6 @@ spring:
     name: notification-service
 
   kafka:
-#    bootstrap-servers: localhost:29092
     bootstrap-servers: kafka:9092
 
     # testing

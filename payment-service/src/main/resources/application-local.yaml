@@ -1,0 +1,9 @@
+server:
+  port: 8085
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5434/payments_db
+
+  kafka:
+    bootstrap-servers: localhost:29092
