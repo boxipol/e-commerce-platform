@@ -31,12 +31,12 @@ public final class ProductController {
 
 	@GetMapping("/{sku}")
 	public Mono<ProductResponse> getById(@PathVariable String sku) {
-		return productService.getById(sku);
+		return productService.getBySku(sku);
 	}
 
 	@GetMapping("/batch")
-	public Flux<ProductResponse> getProducts(@RequestParam List<String> ids) {
-		return productService.getProducts(ids);
+	public Flux<ProductResponse> getProducts(@RequestParam List<String> skus) {
+		return productService.getProducts(skus);
 	}
 
 	@GetMapping("/category/{category}")

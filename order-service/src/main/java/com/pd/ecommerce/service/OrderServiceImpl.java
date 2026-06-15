@@ -60,16 +60,16 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Transactional
-	public Mono<OrderResponse> createOrder(CreateOrderRequest request) {
-		List<UUID> productIds = request.items()
+	public Mono<OrderResponse> createOrder(UUID userId, String userMail, CreateOrderRequest request) {
+		List<String> productSkus = request.items()
 			.stream()
-			.map(CreateOrderItemRequest::productId)
+			.map(OrderItemRequest::sku)
 			.toList();
 
-		return productServiceClient.getProducts(productIds)
+		return productServiceClient.getProducts(productSkus)
 			.map(products -> products.stream()
 				.collect(Collectors
-					.toMap(ProductSnapshot::id, Function.identity())))
+					.toMap(ProductSnapshot::sku, Function.identity())))
 			.flatMap(productMap -> {
 				List<OrderItem> items = buildOrderItems(request, productMap);
 				BigDecimal totalAmount = calculateTotal(items);
@@ -147,18 +147,18 @@ public class OrderServiceImpl implements OrderService {
 			.build();
 	}
 
-	private List<OrderItem> buildOrderItems(CreateOrderRequest request, Map<UUID, ProductSnapshot> productMap) {
+	private List<OrderItem> buildOrderItems(CreateOrderRequest request, Map<String, ProductSnapshot> productMap) {
 		return request.items()
 			.stream()
 			.map(orderItemRequest -> {
-				ProductSnapshot product = productMap.get(orderItemRequest.productId());
+				ProductSnapshot product = productMap.get(orderItemRequest.sku());
 
 				if (product == null) {
-					throw new RuntimeException("Product not found: " + orderItemRequest.productId());
+					throw new RuntimeException("Product not found: " + orderItemRequest.sku());
 				}
-
 				return OrderItem.builder()
-					.productId(orderItemRequest.productId())
+					.productId(productMap.get(orderItemRequest.sku()).productId())
+					.sku(orderItemRequest.sku())
 					.quantity(orderItemRequest.quantity())
 					.unitPrice(product.price())
 					.subtotal(

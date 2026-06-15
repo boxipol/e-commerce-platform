@@ -1,6 +1,8 @@
 package com.pd.ecommerce.entity;
 
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 import java.math.BigDecimal;
@@ -9,11 +11,13 @@ import java.util.UUID;
 
 @Table("products_by_sku")
 @Getter
+@Setter
 public class ProductBySku {
 
 	@PrimaryKey
 	private String sku;
 
+	@Column("product_id")
 	private UUID productId;
 
 	private String name;
@@ -28,6 +32,8 @@ public class ProductBySku {
 	private Integer stock;
 	private Boolean active;
 
+	@Column("created_at")
 	private Instant createdAt;
+	@Column("updated_at")
 	private Instant updatedAt;
 }

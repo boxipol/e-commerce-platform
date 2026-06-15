@@ -36,7 +36,7 @@ final class ProductServiceImpl implements ProductService {
 
 
 	@Override
-	public Mono<ProductResponse> getById(String sku) {
+	public Mono<ProductResponse> getBySku(String sku) {
 		return getProductCached(sku);
 	}
 

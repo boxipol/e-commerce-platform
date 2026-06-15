@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ProductSnapshot(
-	UUID id,
+	UUID productId,
+	String sku,
 	BigDecimal price
 ) {}

@@ -18,6 +18,7 @@ public final class OrderItem {
 	private UUID id;
 	private UUID orderId;
 	private UUID productId;
+	private String sku;
 	private Integer quantity;
 	private BigDecimal unitPrice;
 	private BigDecimal subtotal;

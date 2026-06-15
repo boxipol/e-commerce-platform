@@ -1,10 +1,11 @@
 package com.pd.ecommerce.dto;
 
+import lombok.Builder;
 import java.math.BigDecimal;
-import java.util.UUID;
 
+@Builder
 public record OrderItemResponse(
-	UUID productId,
+	String sku,
 	Integer quantity,
 	BigDecimal unitPrice,
 	BigDecimal subtotal

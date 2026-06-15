@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public final class ProductServiceClientImpl implements ProductServiceClient {
@@ -19,10 +18,10 @@ public final class ProductServiceClientImpl implements ProductServiceClient {
 	}
 
 	@Override
-	public Mono<List<ProductSnapshot>> getProducts(List<UUID> productIds) {
+	public Mono<List<ProductSnapshot>> getProducts(List<String> productSkus) {
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder.path("/api/v1/products/batch")
-				.queryParam("ids", productIds)
+				.queryParam("skus", productSkus)
 				.build())
 			.retrieve()
 			.bodyToFlux(ProductSnapshot.class)

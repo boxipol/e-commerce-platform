@@ -8,7 +8,9 @@ import java.util.UUID;
 @Builder
 public record OrderCreatedEvent(
 	UUID orderId,
+	String publicOrderId,
 	UUID userId,
-	List<OrderItem> items,
+	String userMail,
+	List<OrderItemEvent> items,
 	BigDecimal totalPrice
 ) {}
