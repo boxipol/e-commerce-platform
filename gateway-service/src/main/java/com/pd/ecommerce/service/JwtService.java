@@ -16,12 +16,16 @@ public final class JwtService {
 	private final JwtProperties jwtProperties;
 
 
-	public String extractRole(String token) {
-		return extractClaims(token).get("role", String.class);
+	public String extractUserId(String token) {
+		return extractClaims(token).getSubject();
 	}
 
-	public String extractUsername(String token) {
-		return extractClaims(token).getSubject();
+	public String extractUserMail(String token) {
+		return extractClaims(token).get("email", String.class);
+	}
+
+	public String extractRole(String token) {
+		return extractClaims(token).get("role", String.class);
 	}
 
 	public boolean isTokenValid(String token) {

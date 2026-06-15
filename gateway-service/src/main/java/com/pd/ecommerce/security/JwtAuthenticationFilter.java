@@ -48,12 +48,14 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 			return exchange.getResponse().setComplete();
 		}
 
-		String username = jwtService.extractUsername(token);
+		String userId = jwtService.extractUserId(token);
+		String userMail = jwtService.extractUserMail(token);
 		String role = jwtService.extractRole(token);
 
 		ServerHttpRequest mutatedRequest = exchange.getRequest()
 			.mutate()
-			.header("X-User", username)
+			.header("X-User-Id", userId)
+			.header("X-User-Email", userMail)
 			.header("X-Role", role)
 			.build();
 
