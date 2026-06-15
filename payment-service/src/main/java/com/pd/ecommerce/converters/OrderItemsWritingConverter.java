@@ -2,7 +2,7 @@ package com.pd.ecommerce.converters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pd.ecommerce.event.OrderItem;
+import com.pd.ecommerce.event.OrderEventItem;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -12,13 +12,13 @@ import java.util.List;
 
 @WritingConverter
 @RequiredArgsConstructor
-public final class OrderItemsWritingConverter implements Converter<List<OrderItem>, Json> {
+public final class OrderItemsWritingConverter implements Converter<List<OrderEventItem>, Json> {
 
 	private final ObjectMapper objectMapper;
 
 
 	@Override
-	public Json convert(List<OrderItem> source) {
+	public Json convert(List<OrderEventItem> source) {
 		try {
 			return Json.of(objectMapper.writeValueAsString(source));
 		} catch (JsonProcessingException e) {
