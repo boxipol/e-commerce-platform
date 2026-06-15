@@ -65,14 +65,14 @@ Docker
 Spring Boot
 - starters
 - WebFlux for reactive REST
-- reactive CRUD repos
+- R2DBC CRUD repos
 - security
 
 
 Gateway service (8081)
 - entry point
 - JWT validation - Spring Security OAuth2 resource server
-- routing requests - /products, /orders/, /auth
+- routing requests - /products, /orders/, /users, inventories
 - rate limiting and throttling 
 - logging and monitoring(OpenTelemetry), providing correlation ID, request start/end
 simple flow:
@@ -147,7 +147,7 @@ Order status updated
 Notification service (8086)
 - handles notifications
 simple flow:
-- kafka event->notification->mail
+- kafka event->notification->mail/push
 
 
 Inventory service (8087)
@@ -161,7 +161,8 @@ Logging and monitoring
 - OpenTelemetry auto-instrumentation -javaagent:/Users/user/IdeaProjects/opentelemetry-javaagent.jar 
     - docker run --rm -p 4317:4317 -p 4318:4318 otel/opentelemetry-collector:latest
 - Jaeger (trace visualization)
-- Elasticsearch
+- Elasticsearch (analytics)
+- ClickHouse (kafka analytics)
 - Prometheus (data collection)
 - Grafana (dashboards)
 

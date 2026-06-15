@@ -62,14 +62,17 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 	}
 
 	private Mono<Void> handleSuccess(StripeEvent event) {
-		String paymentId = event.data().object().metadata().get("paymentId");
+		String paymentId = event.data()
+			.object()
+			.metadata()
+			.get("paymentId");
 
 		log.info("Processing successful payment webhook paymentId={}", paymentId);
 
 		return findPaymentById(paymentId)
 			.flatMap(this::completePayment)
 			.doOnError(PaymentNotFoundException.class, ex ->
-				log.error("stripe.webhook.orphan_event payment_not_found providerPaymentId={}", paymentId)
+				log.error("Stripe webhook orphan_event payment_not_found providerPaymentId={}", paymentId)
 			)
 			.then();
 	}
@@ -82,7 +85,7 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 		return findPaymentById(paymentId)
 			.flatMap(this::failPayment)
 			.doOnError(PaymentNotFoundException.class, ex ->
-				log.error("stripe.webhook.failure orphan_event payment_not_found providerPaymentId={}", paymentId)
+				log.error("Stripe webhook failure orphan_event payment_not_found providerPaymentId={}", paymentId)
 			)
 			.then();
 	}
@@ -94,17 +97,17 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 
 	private Mono<Void> completePayment(Payment payment) {
 		if (payment.getStatus() == PaymentStatus.COMPLETED) {
-			log.info("stripe.webhook.duplicate ignored paymentId={}", payment.getId());
+			log.info("Stripe webhook duplicate ignored paymentId={}", payment.getId());
 			return Mono.empty();
 		}
 
-		log.info("stripe.webhook.mark_completed paymentId={}", payment.getId());
+		log.info("Stripe webhook mark_completed paymentId={}", payment.getId());
 
 		Instant updatedAt = Instant.now();
 
 		return paymentRepository.updateStatus(payment.getId(), PaymentStatus.COMPLETED, updatedAt)
 			.doOnNext(rows ->
-				log.info("stripe.webhook.saved_completed paymentId={}", payment.getId())
+				log.info("Stripe webhook saved_completed paymentId={}", payment.getId())
 			)
 			.then(Mono.fromRunnable(() -> {
 				payment.setStatus(PaymentStatus.COMPLETED);
@@ -112,7 +115,7 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 			}))
 			.then(paymentEventProducer.sendPaymentCompleted(payment))
 			.doOnSuccess(v ->
-				log.info("stripe.webhook.event_published paymentId={}", payment.getId())
+				log.info("Stripe webhook event_published paymentId={}", payment.getId())
 			);
 	}
 
@@ -123,7 +126,7 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 			.flatMap(rows -> {
 				if (rows == 0) {
 					log.info(
-						"stripe.webhook.failure already_failed paymentId={}",
+						"Stripe webhook failure already_failed paymentId={}",
 						payment.getId()
 					);
 
@@ -133,11 +136,11 @@ final class StripeWebhookServiceImpl implements StripeWebhookService {
 				payment.setStatus(PaymentStatus.FAILED);
 				payment.setUpdatedAt(updatedAt);
 
-				log.info("stripe.webhook.failure saved_failed paymentId={}", payment.getId());
+				log.info("Stripe webhook failure saved_failed paymentId={}", payment.getId());
 
 				return paymentEventProducer.sendPaymentFailed(payment)
 					.doOnSuccess(v ->
-						log.info("stripe.webhook.failure event_published paymentId={}", payment.getId())
+						log.info("Stripe webhook failure event_published paymentId={}", payment.getId())
 					);
 			});
 	}

@@ -33,7 +33,7 @@ public class OutboxEvent {
 	 * PUBLISHED
 	 * FAILED
 	 */
-	private OutboxStatus status;
+	private OutboxEventStatus status;
 	private Instant createdAt;
 	private Instant publishedAt;
 }

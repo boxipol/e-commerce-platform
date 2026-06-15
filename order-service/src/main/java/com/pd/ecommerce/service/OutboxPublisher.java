@@ -2,7 +2,7 @@ package com.pd.ecommerce.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pd.ecommerce.entity.OutboxEvent;
-import com.pd.ecommerce.entity.OutboxStatus;
+import com.pd.ecommerce.entity.OutboxEventStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +23,21 @@ public final class OutboxPublisher {
 	private final ObjectMapper objectMapper;
 
 
-	@Scheduled(fixedDelay = 2_000)
+	@Scheduled(fixedDelay = 10_000)
 	public void publishOutboxEvents() {
-		outboxRepository.findByStatus(OutboxStatus.PENDING)
+		outboxRepository.findByStatus(OutboxEventStatus.PENDING)
 			.flatMap(this::processEvent)
 			.onErrorContinue((err, obj) -> log.error("Outbox processing failed for event {}", obj, err))
 			.subscribe();
 	}
+
+//	@Scheduled(fixedDelay = 60_000)
+//	public void publishOutboxProcessingEvents() {
+//		outboxRepository.findByStatus(OutboxEventStatus.PROCESSING)
+//			.flatMap(this::processEvent)
+//			.onErrorContinue((err, obj) -> log.error("Outbox processing failed for event {}", obj, err))
+//			.subscribe();
+//	}
 
 //	==================== PRIVATE ====================
 
@@ -40,7 +48,7 @@ public final class OutboxPublisher {
 	}
 
 	private Mono<OutboxEvent> markProcessing(OutboxEvent event) {
-		event.setStatus(OutboxStatus.PROCESSING);
+		event.setStatus(OutboxEventStatus.PROCESSING);
 		return outboxRepository.save(event);
 	}
 
@@ -61,11 +69,11 @@ public final class OutboxPublisher {
 	private Mono<OutboxEvent> markPublished(OutboxEvent event) {
 		log.info("Marking {} as PROCESSING", event.getId());
 
-		event.setStatus(OutboxStatus.PROCESSING);
+		event.setStatus(OutboxEventStatus.PROCESSING);
 
 		return outboxRepository.save(event)
-			.doOnNext(saved ->
-				log.info("Saved {} as PROCESSING", saved.getId())
+			.doOnError(saved ->
+				log.info("Error mark {} as PROCESSING", event.getId())
 			);
 	}
 }
