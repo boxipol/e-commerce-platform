@@ -46,10 +46,10 @@ services:
       - ecommerce-network
     environment:
       POSTGRES_DB: users_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d users_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d users_db" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -72,18 +72,18 @@ services:
     image: postgres:16
     container_name: orders-db
     restart: unless-stopped
-    ports:
-      - "5433:5432"
+#    ports:
+#      - "5433:5432"
     volumes:
       - orders-db-data:/var/lib/postgresql/data
     networks:
       - ecommerce-network
     environment:
       POSTGRES_DB: orders_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d orders_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d orders_db" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -136,10 +136,17 @@ services:
 #      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
+      CASSANDRA_USERNAME: ${CASSANDRA_USERNAME}
+      CASSANDRA_PASSWORD: ${CASSANDRA_PASSWORD}
+      CASSANDRA_AUTHENTICATOR: PasswordAuthenticator
+      CASSANDRA_AUTHORIZER: CassandraAuthorizer
       MAX_HEAP_SIZE: 512M
       HEAP_NEWSIZE: 128M
     healthcheck:
-      test: [ "CMD-SHELL", "cqlsh localhost 9042 -e 'describe keyspaces'" ]
+      test: [
+        "CMD-SHELL",
+        "cqlsh localhost 9042 -u $$CASSANDRA_USERNAME -p $$CASSANDRA_PASSWORD -e 'describe keyspaces'"
+      ]
       interval: 20s
       timeout: 10s
       retries: 10
@@ -158,8 +165,8 @@ services:
     networks:
       - ecommerce-network
     environment:
-      STRIPE_API_KEY:
-      STRIPE_WEBHOOK_SECRET:
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       PAYPAL_CLIENT_ID:
       PAYPAL_CLIENT_SECRET:
 
@@ -175,10 +182,10 @@ services:
       - ecommerce-network
     environment:
       POSTGRES_DB: payments_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d payments_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d payments_db" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -209,10 +216,10 @@ services:
       - ecommerce-network
     environment:
       POSTGRES_DB: inventory_db
-      POSTGRES_USER: ecommerce_user
-      POSTGRES_PASSWORD: ecommerce_pass
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ecommerce_user -d inventory_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d inventory_db" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -226,14 +233,11 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-#    secrets:
-#      - smtp_pass
     networks:
       - ecommerce-network
     environment:
-      SMTP_PASSWORD_FILE: /run/secrets/smtp_password
-      SMTP_USER: petyo_dobrev@icloud.com
-      SMTP_PASSWORD: trgh-nogq-cerh-svrb
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
 
 
   kafka:
@@ -241,8 +245,8 @@ services:
     container_name: kafka
     networks:
       - ecommerce-network
-    ports:
-      - "29092:29092"
+#    ports:
+#      - "29092:29092"
     environment:
       # KRaft mode ENABLED
       KAFKA_NODE_ID: 1
@@ -271,8 +275,6 @@ services:
 secrets:
   jwt_secret:
     file: ./secrets/jwt_secret.txt
-#  smtp_pass:
-#    external: true
 
 volumes:
   cassandra_data:
