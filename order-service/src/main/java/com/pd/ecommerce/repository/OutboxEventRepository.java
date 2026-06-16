@@ -2,6 +2,7 @@ package com.pd.ecommerce.repository;
 
 import com.pd.ecommerce.entity.OutboxEvent;
 import com.pd.ecommerce.entity.OutboxEventStatus;
+import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
@@ -10,9 +11,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface OutboxEventRepository extends ReactiveCrudRepository<OutboxEvent, UUID> {
-
 	Flux<OutboxEvent> findByStatus(OutboxEventStatus status);
 
+	@Modifying
 	@Query("""
 		    UPDATE outbox_events
 		    SET status = 'PROCESSED',
@@ -22,6 +23,7 @@ public interface OutboxEventRepository extends ReactiveCrudRepository<OutboxEven
 		""")
 	Mono<Integer> markProcessed(UUID orderId, Instant updatedAt);
 
+	@Modifying
 	@Query("""
 		    UPDATE outbox_events
 		    SET status = 'FAILED',
