@@ -116,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
 		Instant updatedAt = Instant.now();
 
 		return orderRepository.markAsPaid(orderId, updatedAt)
-			.then(outboxEventRepository.markProcessed(orderId, updatedAt))
+			.flatMap(rows -> outboxEventRepository.markProcessed(orderId, updatedAt))
 			.then();
 	}
 
@@ -126,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
 		Instant updatedAt = Instant.now();
 
 		return orderRepository.markAsCanceled(orderId, updatedAt)
-			.then(outboxEventRepository.markAsFailed(orderId, updatedAt))
+			.flatMap(rows -> outboxEventRepository.markAsFailed(orderId, updatedAt))
 			.then();
 	}
 

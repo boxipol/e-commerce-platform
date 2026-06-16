@@ -78,21 +78,19 @@ public final class UserServiceImpl implements UserService {
 
 	@Override
 	public Mono<Void> update(UserUpdateRequest request) {
-		return repository.findByEmail(request.email())
+		return SecurityUtils.getCurrentUserId()
+			.flatMap(repository::findById)
 			.switchIfEmpty(
 				Mono.error(new IllegalStateException("User not found")))
 			.flatMap(user -> {
 				applyUpdate(user, request);
-				repository.save(user)
-					.doOnSuccess(saved -> {
-						var event = new UserUpdatedEvent(saved.getEmail(), Instant.now());
-						eventProducer.sendUserUpdated(event);
 
-						log.info("Update successful for userId={}, email={}", saved.getId(), saved.getEmail());
-					});
-
-				return Mono.empty();
-			});
+				return repository.save(user).doOnSuccess(saved -> {
+					var event = new UserUpdatedEvent(saved.getEmail(), Instant.now());
+					eventProducer.sendUserUpdated(event);
+					log.info("Update successful for userId={}, email={}", saved.getId(), saved.getEmail());
+				});
+			}).then();
 	}
 
 	@Override
