@@ -230,10 +230,3 @@ class JwtServiceTest {
 		assertThat(token.split("\\.")).hasSize(3);
 	}
 }
-
-
-
-
-
-
-

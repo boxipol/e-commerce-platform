@@ -3,10 +3,12 @@ package com.pd.ecommerce.service;
 import com.pd.ecommerce.dto.UserDeleteRequest;
 import com.pd.ecommerce.dto.UserLoginRequest;
 import com.pd.ecommerce.dto.UserRegisterRequest;
+import com.pd.ecommerce.dto.UserUpdateRequest;
 import com.pd.ecommerce.entity.User;
 import com.pd.ecommerce.entity.UserRole;
 import com.pd.ecommerce.event.UserCreatedEvent;
 import com.pd.ecommerce.event.UserDeletedEvent;
+import com.pd.ecommerce.event.UserUpdatedEvent;
 import com.pd.ecommerce.exception.EmailAlreadyExistsException;
 import com.pd.ecommerce.kafka.UserEventProducer;
 import com.pd.ecommerce.repository.UserRepository;
@@ -18,10 +20,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -202,48 +207,38 @@ class UserServiceImplTest {
 	// Note: Tests focus on verifiable scenario paths. getProfile() requires
 	// SecurityContext mocking which is better tested in integration tests.
 
-//	@Test
-//	@DisplayName("update - should successfully update user")
-//	void testUpdateSuccess() {
-//		// Given
-//		UserUpdateRequest request = new UserUpdateRequest("newemail@example.com", "password123");
-//		String oldEmail = "test@example.com";
-//
-//		// Setup the test user with old email
-//		User userToUpdate = testUser;
-//		userToUpdate.setEmail(oldEmail);
-//
-//		when(userRepository.findByEmail(oldEmail)).thenReturn(Mono.just(userToUpdate));
-//		when(userRepository.save(any(User.class))).thenReturn(Mono.just(userToUpdate));
-//
-//		// When & Then
-//		StepVerifier.create(userService.update(request))
-//			.verifyComplete();
-//
-//		// Verify save was called
-//		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-//		verify(userRepository, times(1)).save(userCaptor.capture());
-//
-//		// Verify the event was produced
-//		verify(eventProducer, times(1)).sendUserUpdated(any(UserUpdatedEvent.class));
-//	}
-//
-//	@Test
-//	@DisplayName("update - should fail when user not found")
-//	void testUpdateUserNotFound() {
-//		// Given
-//		UserUpdateRequest request = new UserUpdateRequest("newemail@example.com", "password123");
-//		when(userRepository.findByEmail("test@example.com")).thenReturn(Mono.empty());
-//
-//		// When & Then
-//		StepVerifier.create(userService.update(request))
-//			.expectError(IllegalStateException.class)
-//			.verify();
-//
-//		// Verify no save or event produced
-//		verify(userRepository, never()).save(any());
-//		verify(eventProducer, never()).sendUserUpdated(any());
-//	}
+	@Test
+	@DisplayName("update - should successfully update user")
+	void testUpdateSuccess() {
+		// Given
+		UserUpdateRequest request = new UserUpdateRequest("newemail@example.com", "password123");
+		// Inject the current user's ID into the reactive security context
+		var auth = new UsernamePasswordAuthenticationToken(testUserId.toString(), null, List.of());
+		when(userRepository.findById(testUserId)).thenReturn(Mono.just(testUser));
+		when(userRepository.save(any(User.class))).thenReturn(Mono.just(testUser));
+		// When & Then — subscribe with a security context that provides the user ID
+		StepVerifier.create(userService.update(request).contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth))).verifyComplete();
+		// Verify save was called
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository, times(1)).save(userCaptor.capture());
+		assertThat(userCaptor.getValue().getEmail()).isEqualTo("newemail@example.com");
+		// Verify the event was produced
+		verify(eventProducer, times(1)).sendUserUpdated(any(UserUpdatedEvent.class));
+	}
+
+	@Test
+	@DisplayName("update - should fail when user not found")
+	void testUpdateUserNotFound() {
+		// Given
+		UserUpdateRequest request = new UserUpdateRequest("newemail@example.com", "password123");
+		var auth = new UsernamePasswordAuthenticationToken(testUserId.toString(), null, List.of());
+		when(userRepository.findById(testUserId)).thenReturn(Mono.empty());
+		// When & Then
+		StepVerifier.create(userService.update(request).contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth))).expectError(IllegalStateException.class).verify();
+		// Verify no save or event produced
+		verify(userRepository, never()).save(any());
+		verify(eventProducer, never()).sendUserUpdated(any());
+	}
 
 	// ===================== DELETE TESTS =====================
 
@@ -285,5 +280,3 @@ class UserServiceImplTest {
 		verify(eventProducer, never()).sendUserDeleted(any());
 	}
 }
-
-

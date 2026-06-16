@@ -35,6 +35,7 @@ class OrderEventProducerTest {
 	private OrderEventProducer producer;
 
 	private final CountDownLatch latch = new CountDownLatch(1);
+
 	private OrderCreatedEvent receivedEvent;
 
 
@@ -42,10 +43,9 @@ class OrderEventProducerTest {
 	void shouldPublishOrderCreatedEvent() throws Exception {
 		OrderCreatedEvent event = OrderCreatedEvent.builder()
 			.orderId(UUID.randomUUID())
-			.userId(UUID.randomUUID())
-			.items(List.of(
-				new OrderItem(UUID.randomUUID(), 3),
-				new OrderItem(UUID.randomUUID(), 2)))
+			.userId(UUID.randomUUID()).items(List.of(
+				new OrderItemEvent("SKU-001", 3),
+				new OrderItemEvent("SKU-002", 2)))
 			.totalPrice(BigDecimal.valueOf(199.99))
 			.build();
 
