@@ -26,6 +26,7 @@ class UserRepositoryIntegrationTest extends AbstractPostgresIntegrationTest {
 	@Autowired
 	private UserRepository repository;
 
+
 	@BeforeEach
 	void setUp() {
 		repository.deleteAll().block();

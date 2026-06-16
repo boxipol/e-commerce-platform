@@ -1,7 +1,5 @@
 package com.pd.ecommerce.integration;
 
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -15,17 +13,15 @@ import org.testcontainers.utility.DockerImageName;
  * application's R2DBC connection at it. The container is started once and shared across all
  * subclasses (static singleton pattern) to keep the suite fast.
  *
- * <p>Requires a running Docker daemon. When Docker is unavailable the tests that extend this class
- * are skipped rather than failing the build (see {@code @EnabledIf} usage on the concrete tests).
+ * <p>Requires a running Docker daemon.
  */
 @Testcontainers
 public abstract class AbstractPostgresIntegrationTest {
 
-	static final PostgreSQLContainer<?> POSTGRES =
-		new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-			.withDatabaseName("inventory_db")
-			.withUsername("ecommerce_user")
-			.withPassword("ecommerce_pass");
+	static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+		.withDatabaseName("inventory_db")
+		.withUsername("ecommerce_user")
+		.withPassword("ecommerce_pass");
 
 	static {
 		POSTGRES.start();

@@ -31,14 +31,6 @@ public final class OutboxPublisher {
 			.subscribe();
 	}
 
-//	@Scheduled(fixedDelay = 60_000)
-//	public void publishOutboxProcessingEvents() {
-//		outboxRepository.findByStatus(OutboxEventStatus.PROCESSING)
-//			.flatMap(this::processEvent)
-//			.onErrorContinue((err, obj) -> log.error("Outbox processing failed for event {}", obj, err))
-//			.subscribe();
-//	}
-
 //	==================== PRIVATE ====================
 
 	private Mono<Void> processEvent(OutboxEvent event) {
@@ -48,7 +40,7 @@ public final class OutboxPublisher {
 	}
 
 	private Mono<OutboxEvent> markProcessing(OutboxEvent event) {
-		event.setStatus(OutboxEventStatus.PROCESSING);
+		event.setStatus(OutboxEventStatus.PROCESSED);
 		return outboxRepository.save(event);
 	}
 
@@ -67,13 +59,13 @@ public final class OutboxPublisher {
 	}
 
 	private Mono<OutboxEvent> markPublished(OutboxEvent event) {
-		log.info("Marking {} as PROCESSING", event.getId());
+		log.info("Marking {} as PROCESSED", event.getId());
 
-		event.setStatus(OutboxEventStatus.PROCESSING);
+		event.setStatus(OutboxEventStatus.PROCESSED);
 
 		return outboxRepository.save(event)
 			.doOnError(saved ->
-				log.info("Error mark {} as PROCESSING", event.getId())
+				log.info("Error mark {} as PROCESSED", event.getId())
 			);
 	}
 }

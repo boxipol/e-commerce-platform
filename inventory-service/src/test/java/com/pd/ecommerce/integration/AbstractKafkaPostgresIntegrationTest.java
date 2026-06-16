@@ -21,14 +21,12 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public abstract class AbstractKafkaPostgresIntegrationTest {
 
-	static final PostgreSQLContainer<?> POSTGRES =
-		new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-			.withDatabaseName("inventory_db")
-			.withUsername("ecommerce_user")
-			.withPassword("ecommerce_pass");
+	static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+		.withDatabaseName("inventory_db")
+		.withUsername("ecommerce_user")
+		.withPassword("ecommerce_pass");
 
-	static final KafkaContainer KAFKA =
-		new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
+	static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
 
 	static {
 		POSTGRES.start();
@@ -41,6 +39,7 @@ public abstract class AbstractKafkaPostgresIntegrationTest {
 			POSTGRES.getHost(),
 			POSTGRES.getFirstMappedPort(),
 			POSTGRES.getDatabaseName()));
+
 		registry.add("spring.r2dbc.username", POSTGRES::getUsername);
 		registry.add("spring.r2dbc.password", POSTGRES::getPassword);
 

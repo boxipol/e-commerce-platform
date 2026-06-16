@@ -88,7 +88,7 @@ class OutboxPublisherTest {
 		ArgumentCaptor<OutboxEvent> captor = ArgumentCaptor.forClass(OutboxEvent.class);
 		verify(outboxRepository, atLeastOnce()).save(captor.capture());
 		assertThat(captor.getAllValues())
-			.allMatch(e -> e.getStatus() == OutboxEventStatus.PROCESSING);
+			.allMatch(e -> e.getStatus() == OutboxEventStatus.PROCESSED);
 	}
 
 	@Test

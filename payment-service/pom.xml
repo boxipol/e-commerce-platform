@@ -57,6 +57,7 @@
 			<artifactId>checkout-sdk</artifactId>
 		</dependency>
 
+		<!-- TESTING -->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka-test</artifactId>

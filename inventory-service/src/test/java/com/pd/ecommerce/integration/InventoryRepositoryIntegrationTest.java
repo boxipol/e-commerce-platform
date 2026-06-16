@@ -1,6 +1,5 @@
 package com.pd.ecommerce.integration;
 
-import com.pd.ecommerce.entity.Inventory;
 import com.pd.ecommerce.repository.InventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -28,6 +26,7 @@ class InventoryRepositoryIntegrationTest extends AbstractPostgresIntegrationTest
 	private InventoryRepository repository;
 
 	private UUID productId;
+
 
 	@BeforeEach
 	void setUp() {

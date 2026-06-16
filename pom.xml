@@ -27,6 +27,7 @@
 		<openapi.version>2.8.9</openapi.version>
 		<stripe.version>29.0.0</stripe.version>
 		<paypal.version>1.0.3</paypal.version>
+		<testcontainers.version>1.20.4</testcontainers.version>
 	</properties>
 
 	<parent>
@@ -41,6 +42,13 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
 				<version>2025.0.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>${testcontainers.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -95,12 +103,17 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka-test</artifactId>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -147,23 +160,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-<!--	<repositories>-->
-<!--		<repository>-->
-<!--			<id>gitlab-maven</id>-->
-<!--			<url>https://gitlab.com/api/v4/projects/71609779/packages/maven</url>-->
-<!--		</repository>-->
-<!--	</repositories>-->
-
-<!--	<distributionManagement>-->
-<!--		<repository>-->
-<!--			<id>gitlab-maven</id>-->
-<!--			<url>https://gitlab.com/api/v4/projects/71609779/packages/maven</url>-->
-<!--		</repository>-->
-<!--		<snapshotRepository>-->
-<!--			<id>gitlab-maven</id>-->
-<!--			<url>https://gitlab.com/api/v4/projects/71609779/packages/maven</url>-->
-<!--		</snapshotRepository>-->
-<!--	</distributionManagement>-->
 
 </project>

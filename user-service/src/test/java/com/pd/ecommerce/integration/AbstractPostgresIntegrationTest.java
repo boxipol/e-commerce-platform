@@ -16,11 +16,10 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 public abstract class AbstractPostgresIntegrationTest {
 
-	static final PostgreSQLContainer<?> POSTGRES =
-		new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
-			.withDatabaseName("users_db")
-			.withUsername("ecommerce_user")
-			.withPassword("ecommerce_pass");
+	static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+		.withDatabaseName("users_db")
+		.withUsername("ecommerce_user")
+		.withPassword("ecommerce_pass");
 
 	static {
 		POSTGRES.start();
@@ -32,6 +31,7 @@ public abstract class AbstractPostgresIntegrationTest {
 			POSTGRES.getHost(),
 			POSTGRES.getFirstMappedPort(),
 			POSTGRES.getDatabaseName()));
+
 		registry.add("spring.r2dbc.username", POSTGRES::getUsername);
 		registry.add("spring.r2dbc.password", POSTGRES::getPassword);
 
