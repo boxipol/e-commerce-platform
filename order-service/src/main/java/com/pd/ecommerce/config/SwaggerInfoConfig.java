@@ -12,8 +12,8 @@ public class SwaggerInfoConfig {
 	public OpenAPI baseOpenAPI() {
 		return new OpenAPI()
 			.info(new Info()
-				.title("SmartShop Order API")
+				.title("SmartShop Gateway API")
 				.version("1.0")
-				.description("Order management service with versioned APIs"));
+				.description("Gateway management service with versioned APIs"));
 	}
 }
