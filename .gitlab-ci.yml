@@ -3,7 +3,6 @@ image: maven:3.9.11-eclipse-temurin-17
 stages:
   - validate
   - test
-  - package
   - docker
 
 variables:
@@ -48,36 +47,26 @@ test:
 # =====================================================
 
 .docker-template:
-  stage: package
+  stage: docker
   image: docker:27
   services:
     - docker:27-dind
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" -f "$MODULE_PATH/Dockerfile" .
+    - docker push "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
 
 
 # =====================================================
 # API GATEWAY
 # =====================================================
 
-package:gateway:
-  extends: .package-template
-  variables:
-    MODULE_NAME: gateway-service
-    MODULE_PATH: gateway-service
-  rules:
-    - changes:
-        - gateway-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:gateway:
   extends: .docker-template
   variables:
     IMAGE_NAME: gateway-service
     MODULE_PATH: gateway-service
-  needs:
-    - package:gateway
   rules:
     - changes:
         - gateway-service/**/*
@@ -89,24 +78,11 @@ docker:gateway:
 # USER SERVICE
 # =====================================================
 
-package:user:
-  extends: .package-template
-  variables:
-    MODULE_NAME: user-service
-    MODULE_PATH: user-service
-  rules:
-    - changes:
-        - user-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:user:
   extends: .docker-template
   variables:
     IMAGE_NAME: user-service
     MODULE_PATH: user-service
-  needs:
-    - package:user
   rules:
     - changes:
         - user-service/**/*
@@ -118,24 +94,11 @@ docker:user:
 # PRODUCT SERVICE
 # =====================================================
 
-package:product:
-  extends: .package-template
-  variables:
-    MODULE_NAME: product-service
-    MODULE_PATH: product-service
-  rules:
-    - changes:
-        - product-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:product:
   extends: .docker-template
   variables:
     IMAGE_NAME: product-service
     MODULE_PATH: product-service
-  needs:
-    - package:product
   rules:
     - changes:
         - product-service/**/*
@@ -147,24 +110,11 @@ docker:product:
 # ORDER SERVICE
 # =====================================================
 
-package:order:
-  extends: .package-template
-  variables:
-    MODULE_NAME: order-service
-    MODULE_PATH: order-service
-  rules:
-    - changes:
-        - order-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:order:
   extends: .docker-template
   variables:
     IMAGE_NAME: order-service
     MODULE_PATH: order-service
-  needs:
-    - package:order
   rules:
     - changes:
         - order-service/**/*
@@ -176,24 +126,11 @@ docker:order:
 # PAYMENT SERVICE
 # =====================================================
 
-package:payment:
-  extends: .package-template
-  variables:
-    MODULE_NAME: payment-service
-    MODULE_PATH: payment-service
-  rules:
-    - changes:
-        - payment-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:payment:
   extends: .docker-template
   variables:
     IMAGE_NAME: payment-service
     MODULE_PATH: payment-service
-  needs:
-    - package:payment
   rules:
     - changes:
         - payment-service/**/*
@@ -205,24 +142,11 @@ docker:payment:
 # INVENTORY SERVICE
 # =====================================================
 
-package:inventory:
-  extends: .package-template
-  variables:
-    MODULE_NAME: inventory-service
-    MODULE_PATH: inventory-service
-  rules:
-    - changes:
-        - inventory-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:inventory:
   extends: .docker-template
   variables:
     IMAGE_NAME: inventory-service
     MODULE_PATH: inventory-service
-  needs:
-    - package:inventory
   rules:
     - changes:
         - inventory-service/**/*
@@ -233,24 +157,11 @@ docker:inventory:
 # NOTIFICATION SERVICE
 # =====================================================
 
-package:notification:
-  extends: .package-template
-  variables:
-    MODULE_NAME: notification-service
-    MODULE_PATH: notification-service
-  rules:
-    - changes:
-        - notification-service/**/*
-        - pom.xml
-        - common/**/*
-
 docker:notification:
   extends: .docker-template
   variables:
     IMAGE_NAME: notification-service
     MODULE_PATH: notification-service
-  needs:
-    - package:notification
   rules:
     - changes:
         - notification-service/**/*
