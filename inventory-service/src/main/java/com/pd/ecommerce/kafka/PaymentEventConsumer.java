@@ -24,9 +24,10 @@ public final class PaymentEventConsumer {
 			.then(Mono.defer(() ->
 				eventProducer.sendInventoryReserved(event.orderId())
 			))
-			.onErrorResume(InsufficientInventoryException.class,
-				ex -> eventProducer.sendInventoryFailed(event.orderId(), ex.getMessage())
-			)
+			.onErrorResume(InsufficientInventoryException.class, ex -> {
+				log.error("Failed to reserve inventory for order {}", event.orderId(), ex);
+				return eventProducer.sendInventoryFailed(event.orderId(), ex.getMessage());
+			})
 			.then();
 	}
 }
