@@ -1,30 +1,47 @@
+image: maven:3.9.11-eclipse-temurin-17
 
 stages:
-  - build
+  - validate
+  - test
   - package
+  - docker
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   DOCKER_TLS_CERTDIR: "/certs"
 
 cache:
+  key: maven
   paths:
     - .m2/repository
 
 default:
   interruptible: true
 
+validate:
+  stage: validate
+  script:
+    - mvn -B validate
+
+test:
+  stage: test
+  script:
+    - mvn -B test
+
+
 # =====================================================
-# COMMON BUILD TEMPLATE
+# COMMON PACKAGE TEMPLATE
 # =====================================================
 
-.maven-build-template:
-  stage: build
-
-  image: maven:3.9.9-eclipse-temurin-17
-
+.package-template:
+  stage: package
+  script:
+    - mvn -B -pl :$MODULE_NAME -am clean package -DskipTests
   artifacts:
-    expire_in: 1 day
+    paths:
+      - $MODULE_PATH/target/*.jar
+    expire_in: 1 hour
+
 
 # =====================================================
 # COMMON DOCKER TEMPLATE
@@ -32,227 +49,210 @@ default:
 
 .docker-template:
   stage: package
-
   image: docker:27
-
   services:
     - docker:27-dind
-
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
 
 # =====================================================
 # API GATEWAY
 # =====================================================
 
-api-gateway-build:
-  extends: .maven-build-template
-
+package:gateway:
+  extends: .package-template
+  variables:
+    MODULE_NAME: gateway-service
+    MODULE_PATH: gateway-service
   rules:
     - changes:
-        - api-gateway/**
+        - gateway-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - mvn clean package -DskipTests -pl :api-gateway -am
-
-  artifacts:
-    paths:
-      - api-gateway/target/*.jar
-
-api-gateway-image:
+docker:gateway:
   extends: .docker-template
-
+  variables:
+    IMAGE_NAME: gateway-service
+    MODULE_PATH: gateway-service
   needs:
-    - api-gateway-build
-
+    - package:gateway
   rules:
     - changes:
-        - api-gateway/**
+        - gateway-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA ./api-gateway
-    - docker push $CI_REGISTRY_IMAGE/api-gateway:$CI_COMMIT_SHA
 
 # =====================================================
 # USER SERVICE
 # =====================================================
 
-user-service-build:
-  extends: .maven-build-template
-
+package:user:
+  extends: .package-template
+  variables:
+    MODULE_NAME: user-service
+    MODULE_PATH: user-service
   rules:
     - changes:
-        - user-service/**
+        - user-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - mvn clean package -DskipTests -pl :user-service -am
-
-  artifacts:
-    paths:
-      - user-service/target/*.jar
-
-user-service-image:
+docker:user:
   extends: .docker-template
-
+  variables:
+    IMAGE_NAME: user-service
+    MODULE_PATH: user-service
   needs:
-    - user-service-build
-
+    - package:user
   rules:
     - changes:
-        - user-service/**
+        - user-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA ./user-service
-    - docker push $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHA
 
 # =====================================================
 # PRODUCT SERVICE
 # =====================================================
 
-product-service-build:
-  extends: .maven-build-template
-
+package:product:
+  extends: .package-template
+  variables:
+    MODULE_NAME: product-service
+    MODULE_PATH: product-service
   rules:
     - changes:
-        - product-service/**
+        - product-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - mvn clean package -DskipTests -pl :product-service -am
-
-  artifacts:
-    paths:
-      - product-service/target/*.jar
-
-product-service-image:
+docker:product:
   extends: .docker-template
-
+  variables:
+    IMAGE_NAME: product-service
+    MODULE_PATH: product-service
   needs:
-    - product-service-build
-
+    - package:product
   rules:
     - changes:
-        - product-service/**
+        - product-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA ./product-service
-    - docker push $CI_REGISTRY_IMAGE/product-service:$CI_COMMIT_SHA
-
-# =====================================================
-# INVENTORY SERVICE
-# =====================================================
-
-inventory-service-build:
-  extends: .maven-build-template
-
-  rules:
-    - changes:
-        - inventory-service/**
-        - pom.xml
-        - common/**
-
-  script:
-    - mvn clean package -DskipTests -pl :inventory-service -am
-
-  artifacts:
-    paths:
-      - inventory-service/target/*.jar
-
-inventory-service-image:
-  extends: .docker-template
-
-  needs:
-    - inventory-service-build
-
-  rules:
-    - changes:
-        - inventory-service/**
-        - pom.xml
-        - common/**
-
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA ./inventory-service
-    - docker push $CI_REGISTRY_IMAGE/inventory-service:$CI_COMMIT_SHA
 
 # =====================================================
 # ORDER SERVICE
 # =====================================================
 
-order-service-build:
-  extends: .maven-build-template
-
+package:order:
+  extends: .package-template
+  variables:
+    MODULE_NAME: order-service
+    MODULE_PATH: order-service
   rules:
     - changes:
-        - order-service/**
+        - order-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - mvn clean package -DskipTests -pl :order-service -am
-
-  artifacts:
-    paths:
-      - order-service/target/*.jar
-
-order-service-image:
+docker:order:
   extends: .docker-template
-
+  variables:
+    IMAGE_NAME: order-service
+    MODULE_PATH: order-service
   needs:
-    - order-service-build
-
+    - package:order
   rules:
     - changes:
-        - order-service/**
+        - order-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA ./order-service
-    - docker push $CI_REGISTRY_IMAGE/order-service:$CI_COMMIT_SHA
+
+# =====================================================
+# PAYMENT SERVICE
+# =====================================================
+
+package:payment:
+  extends: .package-template
+  variables:
+    MODULE_NAME: payment-service
+    MODULE_PATH: payment-service
+  rules:
+    - changes:
+        - payment-service/**/*
+        - pom.xml
+        - common/**/*
+
+docker:payment:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: payment-service
+    MODULE_PATH: payment-service
+  needs:
+    - package:payment
+  rules:
+    - changes:
+        - payment-service/**/*
+        - pom.xml
+        - common/**/*
+
+
+# =====================================================
+# INVENTORY SERVICE
+# =====================================================
+
+package:inventory:
+  extends: .package-template
+  variables:
+    MODULE_NAME: inventory-service
+    MODULE_PATH: inventory-service
+  rules:
+    - changes:
+        - inventory-service/**/*
+        - pom.xml
+        - common/**/*
+
+docker:inventory:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: inventory-service
+    MODULE_PATH: inventory-service
+  needs:
+    - package:inventory
+  rules:
+    - changes:
+        - inventory-service/**/*
+        - pom.xml
+        - common/**/*
 
 # =====================================================
 # NOTIFICATION SERVICE
 # =====================================================
 
-notification-service-build:
-  extends: .maven-build-template
-
+package:notification:
+  extends: .package-template
+  variables:
+    MODULE_NAME: notification-service
+    MODULE_PATH: notification-service
   rules:
     - changes:
-        - notification-service/**
+        - notification-service/**/*
         - pom.xml
-        - common/**
+        - common/**/*
 
-  script:
-    - mvn clean package -DskipTests -pl :notification-service -am
-
-  artifacts:
-    paths:
-      - notification-service/target/*.jar
-
-notification-service-image:
+docker:notification:
   extends: .docker-template
-
+  variables:
+    IMAGE_NAME: notification-service
+    MODULE_PATH: notification-service
   needs:
-    - notification-service-build
-
+    - package:notification
   rules:
     - changes:
-        - notification-service/**
+        - notification-service/**/*
         - pom.xml
-        - common/**
-
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA ./notification-service
-    - docker push $CI_REGISTRY_IMAGE/notification-service:$CI_COMMIT_SHA
+        - common/**/*
