@@ -1,15 +1,15 @@
+# syntax=docker/dockerfile:1
 
-# -------- BUILD STAGE --------
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-# copy full monorepo (important for multi-module build)
+# Copy full source (needed for multi-module resolution)
 COPY . .
-# build ONLY user-service module
-RUN mvn clean package -DskipTests -pl :inventory-service -am
+# Persist Maven repo across builds
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn clean package -DskipTests -pl :inventory-service -am -B
 
-# -------- RUNTIME STAGE --------
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/inventory-service/target/*.jar app.jar
-EXPOSE 8082
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","app.jar"]
