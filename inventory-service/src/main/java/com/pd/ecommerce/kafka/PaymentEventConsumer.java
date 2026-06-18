@@ -26,7 +26,7 @@ public final class PaymentEventConsumer {
 			))
 			.onErrorResume(InsufficientInventoryException.class, ex -> {
 				log.error("Failed to reserve inventory for order {}", event.orderId(), ex);
-				return eventProducer.sendInventoryFailed(event.orderId(), ex.getMessage());
+				return eventProducer.sendInventoryFailed(event.orderId(), event.paymentId(), ex.getMessage());
 			})
 			.then();
 	}

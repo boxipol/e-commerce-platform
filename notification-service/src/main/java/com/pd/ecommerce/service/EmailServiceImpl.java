@@ -60,7 +60,7 @@ public final class EmailServiceImpl implements EmailService {
 
 	@Override
 	public void sendPaymentFailedEmail(PaymentFailedEvent event) {
-		String subject = "Payment Confirmation: " + event.publicOrderId();
+		String subject = "Payment failed for order: " + event.publicOrderId();
 
 		try {
 			SimpleMailMessage message = new SimpleMailMessage();
@@ -143,6 +143,7 @@ public final class EmailServiceImpl implements EmailService {
 	private String buildPaymentFailedEmailBody(PaymentFailedEvent event) {
 		return """
 			Your payment has failed!
+			A refund has been issued!
 			
 			Order ID: %s
 			Amount: %s

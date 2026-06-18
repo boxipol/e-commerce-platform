@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface PaymentRepository extends ReactiveCrudRepository<Payment, UUID> {
+
 	@Modifying
 	@Query("""
 		    UPDATE payments

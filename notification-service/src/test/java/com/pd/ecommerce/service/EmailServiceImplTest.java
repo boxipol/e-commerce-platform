@@ -160,7 +160,7 @@ class EmailServiceImplTest {
 			SimpleMailMessage sent = captor.getValue();
 			assertThat(sent.getFrom()).isEqualTo(FROM);
 			assertThat(sent.getTo()).containsExactly(TO_MAIL);
-			assertThat(sent.getSubject()).isEqualTo("Payment Confirmation: ORD-ABCD1234");
+			assertThat(sent.getSubject()).isEqualTo("Payment failed for order: ORD-ABCD1234");
 		}
 
 		@Test

@@ -34,11 +34,13 @@ class InventoryEventProducerTest {
 	private InventoryEventProducer producer;
 
 	private UUID orderId;
+	private UUID productId;
 
 
 	@BeforeEach
 	void setUp() {
 		orderId = UUID.randomUUID();
+		productId = UUID.randomUUID();
 	}
 
 	@Test
@@ -60,7 +62,7 @@ class InventoryEventProducerTest {
 		when(kafkaTemplate.send(eq("reservation.failed"), eq(orderId.toString()), any()))
 			.thenReturn(CompletableFuture.completedFuture(mock()));
 
-		StepVerifier.create(producer.sendInventoryFailed(orderId, "out of stock")).verifyComplete();
+		StepVerifier.create(producer.sendInventoryFailed(orderId, productId, "out of stock")).verifyComplete();
 
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(kafkaTemplate).send(eq("reservation.failed"), eq(orderId.toString()), eventCaptor.capture());

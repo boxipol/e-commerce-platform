@@ -36,8 +36,12 @@ public final class InventoryEventProducer {
 			.then();
 	}
 
-	public Mono<Void> sendInventoryFailed(UUID orderId, String message) {
-		InventoryReservationFailedEvent event = new InventoryReservationFailedEvent(orderId, message);
+	public Mono<Void> sendInventoryFailed(UUID orderId, UUID paymentId, String message) {
+		InventoryReservationFailedEvent event = InventoryReservationFailedEvent.builder()
+			.orderId(orderId)
+			.paymentId(paymentId)
+			.reason(message)
+			.build();
 
 		return Mono.fromFuture(
 				kafkaTemplate.send(

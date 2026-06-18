@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -57,6 +58,20 @@ public final class PaymentServiceImpl implements PaymentService {
 				log.error("Failed to create payment for order {}", payment.getOrderId(), ex)
 			)
 			.map(response -> toResponse(payment, response));
+	}
+
+	@Override
+	public Mono<Void> markForRefund(UUID paymentId) {
+		repository.updateStatus(paymentId, PaymentStatus.REFUNDING, Instant.now())
+			.flatMap(rows -> {
+				if (rows == 0) {
+					log.info("Failed to mark paymentId: {}, for refund!", paymentId);
+				}
+
+				return Mono.empty();
+			});
+
+		return Mono.empty();
 	}
 
 //	==================== PRIVATE ====================

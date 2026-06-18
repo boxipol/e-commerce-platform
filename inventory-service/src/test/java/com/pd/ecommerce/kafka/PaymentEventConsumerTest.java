@@ -36,13 +36,15 @@ class PaymentEventConsumerTest {
 
 	private PaymentCompletedEvent event;
 	private UUID orderId;
+	private UUID paymentId;
 
 
 	@BeforeEach
 	void setUp() {
 		orderId = UUID.randomUUID();
+		paymentId = UUID.randomUUID();
 		event = PaymentCompletedEvent.builder()
-			.paymentId(UUID.randomUUID())
+			.paymentId(paymentId)
 			.userMail("buyer@example.com")
 			.orderId(orderId)
 			.publicOrderId("ORD-1")
@@ -61,7 +63,7 @@ class PaymentEventConsumerTest {
 
 		verify(service).reserveInventory(event);
 		verify(eventProducer).sendInventoryReserved(orderId);
-		verify(eventProducer, never()).sendInventoryFailed(any(), any());
+		verify(eventProducer, never()).sendInventoryFailed(any(), any(), any());
 	}
 
 	@Test
@@ -69,11 +71,11 @@ class PaymentEventConsumerTest {
 	void testOnPaymentCompletedInsufficient() {
 		when(service.reserveInventory(event))
 			.thenReturn(Mono.error(new InsufficientInventoryException("no stock")));
-		when(eventProducer.sendInventoryFailed(eq(orderId), eq("no stock"))).thenReturn(Mono.empty());
+		when(eventProducer.sendInventoryFailed(eq(orderId), eq(paymentId), eq("no stock"))).thenReturn(Mono.empty());
 
 		StepVerifier.create(consumer.onPaymentCompleted(event)).verifyComplete();
 
-		verify(eventProducer).sendInventoryFailed(orderId, "no stock");
+		verify(eventProducer).sendInventoryFailed(orderId, paymentId, "no stock");
 		verify(eventProducer, never()).sendInventoryReserved(any());
 	}
 }
