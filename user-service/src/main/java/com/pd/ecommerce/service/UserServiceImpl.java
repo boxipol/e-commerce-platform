@@ -17,8 +17,10 @@ import com.pd.ecommerce.repository.UserRepository;
 import com.pd.ecommerce.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
 
@@ -61,12 +63,11 @@ public final class UserServiceImpl implements UserService {
 	@Override
 	public Mono<AuthResponse> login(UserLoginRequest request) {
 		return repository.findByEmail(request.email())
-			.switchIfEmpty(
-				Mono.error(new IllegalStateException("User not found")))
+			.switchIfEmpty(Mono.error(invalidCredentials()))
 			.filter(user ->
 				passwordEncoder.matches(request.password(), user.getPassword())
 			)
-			.switchIfEmpty(Mono.error(new RuntimeException("Invalid credentials")))
+			.switchIfEmpty(Mono.error(invalidCredentials()))
 			.doOnNext(user ->
 				log.info("Login successful for userId={}, email={}", user.getId(), user.getEmail())
 			)
@@ -110,6 +111,13 @@ public final class UserServiceImpl implements UserService {
 	}
 
 //	==================== PRIVATE ====================
+
+	private ResponseStatusException invalidCredentials() {
+		return new ResponseStatusException(
+			HttpStatus.UNAUTHORIZED,
+			"Invalid email or password"
+		);
+	}
 
 	private Mono<User> create(UserRegisterRequest request) {
 		var user = User.builder()

@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import java.time.Instant;
@@ -170,7 +171,7 @@ class UserServiceImplTest {
 
 		// When & Then
 		StepVerifier.create(userService.login(request))
-			.expectError(IllegalStateException.class)
+			.expectError(ResponseStatusException.class)
 			.verify();
 	}
 
