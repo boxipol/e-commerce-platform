@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
 
@@ -27,6 +28,22 @@ public class GlobalExceptionHandler {
 		return Mono.just(
 			ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(response));
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	public Mono<ResponseEntity<ErrorResponse>> handleResponseStatus(ResponseStatusException ex) {
+		ErrorResponse response = ErrorResponse.builder()
+			.timestamp(Instant.now())
+			.status(ex.getStatusCode().value())
+			.error(ex.getStatusCode().toString())
+			.message(ex.getReason())
+			.build();
+
+		return Mono.just(
+			ResponseEntity
+				.status(ex.getStatusCode())
+				.body(response)
+		);
 	}
 
 	@ExceptionHandler(Exception.class)
