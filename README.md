@@ -206,6 +206,8 @@ Docker:
 docker volume inspect cassandra_data
 docker compose build --no-cache some-service
 
+docker compose -f docker-compose.local.yml up -d
+
 Stripe testing:
 stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe
 stripe trigger payment_intent.succeeded
