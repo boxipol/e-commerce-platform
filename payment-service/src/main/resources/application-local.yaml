@@ -2,8 +2,13 @@ server:
   port: 8085
 
 spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+
   r2dbc:
     url: r2dbc:postgresql://localhost:5434/payments_db
 
-  kafka:
-    bootstrap-servers: localhost:29092
+  flyway:
+    url: jdbc:postgresql://localhost:5434/payments_db
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}

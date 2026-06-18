@@ -40,7 +40,7 @@ public final class OutboxPublisher {
 	}
 
 	private Mono<OutboxEvent> markProcessing(OutboxEvent event) {
-		event.setStatus(OutboxEventStatus.PROCESSED);
+		event.setStatus(OutboxEventStatus.PROCESSING);
 		return outboxRepository.save(event);
 	}
 

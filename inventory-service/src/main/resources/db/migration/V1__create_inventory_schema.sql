@@ -1,0 +1,7 @@
+CREATE TABLE inventory
+(
+    product_id UUID PRIMARY KEY,
+    quantity   INTEGER     NOT NULL CHECK (quantity >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

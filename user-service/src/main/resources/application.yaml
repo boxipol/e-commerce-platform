@@ -1,19 +1,12 @@
 logging:
   level:
-    org.springframework.r2dbc: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+    org.springframework.r2dbc: WARN
 
 spring:
   application:
     name: user-service
-
-  r2dbc:
-    url: r2dbc:postgresql://users-db:5432/users_db
-    username: ecommerce_user
-    password: ecommerce_pass
-
-    sql:
-      init:
-        mode: always
 
   kafka:
     bootstrap-servers: kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -32,6 +25,20 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+  r2dbc:
+    url: r2dbc:postgresql://users-db:5432/users_db
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+  flyway:
+    enabled: true
+
+  datasource:
+    url: jdbc:postgresql://users-db:5432/users_db
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   config:
     import: optional:file:/run/secrets/jwt_secret

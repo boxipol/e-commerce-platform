@@ -1,7 +1,7 @@
 logging:
   level:
-    org.springframework.kafka: INFO
-    org.apache.kafka.clients: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
 
 spring:
   application:

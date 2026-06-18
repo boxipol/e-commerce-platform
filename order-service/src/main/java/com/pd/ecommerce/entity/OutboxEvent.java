@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table("outbox_events")
-public class OutboxEvent {
+public final class OutboxEvent {
 
 	@Id
 	private UUID id;

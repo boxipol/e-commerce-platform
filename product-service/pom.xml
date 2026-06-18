@@ -42,7 +42,7 @@
 			<artifactId>mapstruct-processor</artifactId>
 		</dependency>
 
-		<!-- TESTING -->
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka-test</artifactId>

@@ -1,19 +1,12 @@
 logging:
   level:
-    org.springframework.r2dbc: DEBUG
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+    org.springframework.r2dbc: WARN
 
 spring:
   application:
     name: inventory-service
-
-  r2dbc:
-    url: r2dbc:postgresql://inventory-db:5432/inventory_db
-    username: ecommerce_user
-    password: ecommerce_pass
-
-    sql:
-      init:
-        mode: always
 
   kafka:
     bootstrap-servers: kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -37,3 +30,17 @@ spring:
           json:
             trusted:
               packages: com.pd.ecommerce.event
+
+  r2dbc:
+    url: r2dbc:postgresql://inventory-db:5432/inventory_db
+    username: ecommerce_user
+    password: ecommerce_pass
+
+  flyway:
+    enabled: true
+
+  datasource:
+    url: jdbc:postgresql://inventory-db:5432/inventory-db
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver

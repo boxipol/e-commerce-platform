@@ -40,13 +40,13 @@ CREATE INDEX idx_order_items_order_id
 CREATE TABLE outbox_events
 (
     id             UUID PRIMARY KEY                  DEFAULT gen_random_uuid(),
-    aggregate_type VARCHAR(100),
-    aggregate_id   UUID,
-    event_type     VARCHAR(100),
-    payload        JSONB,
-    status         VARCHAR(20),
-    published_at   TIMESTAMP,
+    aggregate_type VARCHAR(100)             NOT NULL,
+    aggregate_id   UUID                     NOT NULL,
+    event_type     VARCHAR(100)             NOT NULL,
+    payload        JSONB                    NOT NULL,
+    status         VARCHAR(20)              NOT NULL,
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    published_at   TIMESTAMP WITH TIME ZONE,
     updated_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 

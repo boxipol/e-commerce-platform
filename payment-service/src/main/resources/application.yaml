@@ -1,19 +1,12 @@
 logging:
   level:
-    org.springframework.r2dbc: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+    org.springframework.r2dbc: WARN
 
 spring:
   application:
     name: payment-service
-
-  r2dbc:
-    url: r2dbc:postgresql://payments-db:5432/payments_db
-    username: ecommerce_user
-    password: ecommerce_pass
-
-    sql:
-      init:
-        mode: always
 
   kafka:
     bootstrap-servers: kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -37,6 +30,21 @@ spring:
           json:
             trusted:
               packages: com.pd.ecommerce.event
+
+  r2dbc:
+    url: r2dbc:postgresql://payments-db:5432/payments_db
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+
+  flyway:
+    enabled: true
+
+  datasource:
+    url: jdbc:postgresql://payments-db:5432/payments-db
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
 
 payment:
   stripe:

@@ -2,11 +2,16 @@ server:
   port: 8083
 
 spring:
+  kafka:
+    bootstrap-servers: localhost:29092
+
   r2dbc:
     url: r2dbc:postgresql://localhost:5433/orders_db
 
-  kafka:
-    bootstrap-servers: localhost:29092
+  flyway:
+    url: jdbc:postgresql://localhost:5433/orders_db
+    user: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
 services:
   product:
