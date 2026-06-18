@@ -72,7 +72,6 @@ docker:gateway:
         - gateway-service/**/*
         - pom.xml
         - common/**/*
-        - .gitlab-ci.yml
 
 
 # =====================================================

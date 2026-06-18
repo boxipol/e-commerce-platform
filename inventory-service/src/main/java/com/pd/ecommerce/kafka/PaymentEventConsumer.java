@@ -1,5 +1,6 @@
 package com.pd.ecommerce.kafka;
 
+import com.pd.ecommerce.event.InventoryReservationFailedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.exception.InsufficientInventoryException;
 import com.pd.ecommerce.service.InventoryService;
@@ -26,7 +27,16 @@ public final class PaymentEventConsumer {
 			))
 			.onErrorResume(InsufficientInventoryException.class, ex -> {
 				log.error("Failed to reserve inventory for order {}", event.orderId(), ex);
-				return eventProducer.sendInventoryFailed(event.orderId(), event.paymentId(), ex.getMessage());
+
+				InventoryReservationFailedEvent failedEvent = InventoryReservationFailedEvent.builder()
+					.orderId(event.orderId())
+					.publicOrderId(event.publicOrderId())
+					.paymentId(event.paymentId())
+					.userMail(event.userMail())
+					.reason(ex.getMessage())
+					.build();
+
+				return eventProducer.sendInventoryFailed(failedEvent);
 			})
 			.then();
 	}

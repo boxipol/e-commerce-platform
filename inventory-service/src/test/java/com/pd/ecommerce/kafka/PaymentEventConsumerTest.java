@@ -1,5 +1,6 @@
 package com.pd.ecommerce.kafka;
 
+import com.pd.ecommerce.event.InventoryReservationFailedEvent;
 import com.pd.ecommerce.event.OrderEventItem;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.exception.InsufficientInventoryException;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,16 +34,17 @@ class PaymentEventConsumerTest {
 	@InjectMocks
 	private PaymentEventConsumer consumer;
 
-	private PaymentCompletedEvent event;
+	private PaymentCompletedEvent completedEvent;
+
 	private UUID orderId;
-	private UUID paymentId;
 
 
 	@BeforeEach
 	void setUp() {
 		orderId = UUID.randomUUID();
-		paymentId = UUID.randomUUID();
-		event = PaymentCompletedEvent.builder()
+		UUID paymentId = UUID.randomUUID();
+
+		completedEvent = PaymentCompletedEvent.builder()
 			.paymentId(paymentId)
 			.userMail("buyer@example.com")
 			.orderId(orderId)
@@ -56,26 +57,35 @@ class PaymentEventConsumerTest {
 	@Test
 	@DisplayName("onPaymentCompleted - should reserve inventory then publish reserved event")
 	void testOnPaymentCompletedSuccess() {
-		when(service.reserveInventory(event)).thenReturn(Mono.empty());
+		when(service.reserveInventory(completedEvent)).thenReturn(Mono.empty());
 		when(eventProducer.sendInventoryReserved(orderId)).thenReturn(Mono.empty());
 
-		StepVerifier.create(consumer.onPaymentCompleted(event)).verifyComplete();
+		StepVerifier.create(consumer.onPaymentCompleted(completedEvent)).verifyComplete();
 
-		verify(service).reserveInventory(event);
+		verify(service).reserveInventory(completedEvent);
 		verify(eventProducer).sendInventoryReserved(orderId);
-		verify(eventProducer, never()).sendInventoryFailed(any(), any(), any());
+		verify(eventProducer, never()).sendInventoryFailed(any());
 	}
 
 	@Test
 	@DisplayName("onPaymentCompleted - should publish failed event when inventory is insufficient")
 	void testOnPaymentCompletedInsufficient() {
-		when(service.reserveInventory(event))
+		when(service.reserveInventory(completedEvent))
 			.thenReturn(Mono.error(new InsufficientInventoryException("no stock")));
-		when(eventProducer.sendInventoryFailed(eq(orderId), eq(paymentId), eq("no stock"))).thenReturn(Mono.empty());
 
-		StepVerifier.create(consumer.onPaymentCompleted(event)).verifyComplete();
+		InventoryReservationFailedEvent failedEvent = InventoryReservationFailedEvent.builder()
+			.orderId(completedEvent.orderId())
+			.publicOrderId(completedEvent.publicOrderId())
+			.paymentId(completedEvent.paymentId())
+			.userMail(completedEvent.userMail())
+			.reason("no stock")
+			.build();
 
-		verify(eventProducer).sendInventoryFailed(orderId, paymentId, "no stock");
+		when(eventProducer.sendInventoryFailed(failedEvent)).thenReturn(Mono.empty());
+
+		StepVerifier.create(consumer.onPaymentCompleted(completedEvent)).verifyComplete();
+
+		verify(eventProducer).sendInventoryFailed(failedEvent);
 		verify(eventProducer, never()).sendInventoryReserved(any());
 	}
 }

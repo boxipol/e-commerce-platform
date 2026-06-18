@@ -19,11 +19,6 @@ final class InventoryEventConsumer {
 	@KafkaListener(topics = "reservation.failed", groupId = "payment-group")
 	public Mono<Void> onReservationFailed(InventoryReservationFailedEvent event) {
 		return paymentService.markForRefund(event.paymentId())
-			.doOnSuccess(response ->
-				log.info("Marked order: {}, for refund", event.orderId())
-			)
-			.doOnError(error ->
-				log.error("Failed to mark order: {}, for refund", event.orderId(), error)
-			);
+			.then();
 	}
 }

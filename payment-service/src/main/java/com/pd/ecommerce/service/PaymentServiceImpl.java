@@ -62,16 +62,15 @@ public final class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public Mono<Void> markForRefund(UUID paymentId) {
-		repository.updateStatus(paymentId, PaymentStatus.REFUNDING, Instant.now())
-			.flatMap(rows -> {
+		return repository.updateStatus(paymentId, PaymentStatus.REFUNDING, Instant.now())
+			.doOnNext(rows -> {
 				if (rows == 0) {
-					log.info("Failed to mark paymentId: {}, for refund!", paymentId);
+					log.warn("Failed to make payment for refund, paymentId={}", paymentId);
+				} else {
+					log.info("Payment marked for refund, paymentId={}", paymentId);
 				}
-
-				return Mono.empty();
-			});
-
-		return Mono.empty();
+			})
+			.then();
 	}
 
 //	==================== PRIVATE ====================

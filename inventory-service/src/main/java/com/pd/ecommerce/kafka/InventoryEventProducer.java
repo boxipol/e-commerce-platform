@@ -31,27 +31,45 @@ public final class InventoryEventProducer {
 				)
 			)
 			.doOnSuccess(result ->
-				log.info("Published InventoryReservationCompletedEvent orderId={}", orderId)
+				log.info(
+					"Published InventoryReservationCompletedEvent orderId={}, topic={}, partition={}, offset={}",
+					orderId,
+					result.getRecordMetadata().topic(),
+					result.getRecordMetadata().partition(),
+					result.getRecordMetadata().offset()
+				)
+			)
+			.doOnError(error ->
+				log.error("Failed to publish InventoryReservationCompletedEvent orderId={}", orderId, error)
 			)
 			.then();
 	}
 
-	public Mono<Void> sendInventoryFailed(UUID orderId, UUID paymentId, String message) {
-		InventoryReservationFailedEvent event = InventoryReservationFailedEvent.builder()
-			.orderId(orderId)
-			.paymentId(paymentId)
-			.reason(message)
-			.build();
-
+	public Mono<Void> sendInventoryFailed(InventoryReservationFailedEvent event) {
 		return Mono.fromFuture(
 				kafkaTemplate.send(
 					FAILED_TOPIC,
-					orderId.toString(),
+					event.orderId().toString(),
 					event
 				)
 			)
 			.doOnSuccess(result ->
-				log.info("Published InventoryReservationFailedEvent orderId={}", orderId)
+				log.info(
+					"Published InventoryReservationFailedEvent orderId={}, paymentId={}, topic={}, partition={}, offset={}",
+					event.orderId(),
+					event.paymentId(),
+					result.getRecordMetadata().topic(),
+					result.getRecordMetadata().partition(),
+					result.getRecordMetadata().offset()
+				)
+			)
+			.doOnError(error ->
+				log.error(
+					"Failed to publish InventoryReservationFailedEvent orderId={}, paymentId={}",
+					event.orderId(),
+					event.paymentId(),
+					error
+				)
 			)
 			.then();
 	}

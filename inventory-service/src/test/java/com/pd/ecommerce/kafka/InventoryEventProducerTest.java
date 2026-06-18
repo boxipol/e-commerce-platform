@@ -2,6 +2,8 @@ package com.pd.ecommerce.kafka;
 
 import com.pd.ecommerce.event.InventoryReservationCompletedEvent;
 import com.pd.ecommerce.event.InventoryReservationFailedEvent;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import reactor.test.StepVerifier;
-
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,20 +35,18 @@ class InventoryEventProducerTest {
 	private InventoryEventProducer producer;
 
 	private UUID orderId;
-	private UUID productId;
 
 
 	@BeforeEach
 	void setUp() {
 		orderId = UUID.randomUUID();
-		productId = UUID.randomUUID();
 	}
 
 	@Test
 	@DisplayName("sendInventoryReserved - should publish completed event to reservation.completed")
 	void testSendInventoryReserved() {
 		when(kafkaTemplate.send(eq("reservation.completed"), eq(orderId.toString()), any()))
-			.thenReturn(CompletableFuture.completedFuture(mock()));
+			.thenReturn(CompletableFuture.completedFuture(mockSendResult("reservation.completed")));
 
 		StepVerifier.create(producer.sendInventoryReserved(orderId)).verifyComplete();
 
@@ -60,17 +59,32 @@ class InventoryEventProducerTest {
 	@DisplayName("sendInventoryFailed - should publish failed event to reservation.failed")
 	void testSendInventoryFailed() {
 		when(kafkaTemplate.send(eq("reservation.failed"), eq(orderId.toString()), any()))
-			.thenReturn(CompletableFuture.completedFuture(mock()));
+			.thenReturn(CompletableFuture.completedFuture(mockSendResult("reservation.failed")));
 
-		StepVerifier.create(producer.sendInventoryFailed(orderId, productId, "out of stock")).verifyComplete();
+		InventoryReservationFailedEvent event = InventoryReservationFailedEvent.builder()
+			.orderId(orderId)
+			.publicOrderId("ORD-1")
+			.paymentId(UUID.randomUUID())
+			.userMail("buyer@example.com")
+			.reason("out of stock")
+			.build();
+
+		StepVerifier.create(producer.sendInventoryFailed(event)).verifyComplete();
 
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(kafkaTemplate).send(eq("reservation.failed"), eq(orderId.toString()), eventCaptor.capture());
 		assertThat(eventCaptor.getValue()).isInstanceOf(InventoryReservationFailedEvent.class);
 	}
 
-	@SuppressWarnings("unchecked")
-	private SendResult<String, Object> mock() {
-		return (SendResult<String, Object>) org.mockito.Mockito.mock(SendResult.class);
+	private SendResult<String, Object> mockSendResult(String topic) {
+		RecordMetadata metadata = new RecordMetadata(
+			new TopicPartition(topic, 0),
+			0,
+			1,
+			System.currentTimeMillis(),
+			0,
+			0
+		);
+		return new SendResult<>(null, metadata);
 	}
 }

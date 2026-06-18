@@ -1,6 +1,7 @@
 package com.pd.ecommerce.service;
 
 import com.pd.ecommerce.config.MailProperties;
+import com.pd.ecommerce.event.InventoryReservationFailedEvent;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.PaymentCompletedEvent;
 import com.pd.ecommerce.event.PaymentFailedEvent;
@@ -97,6 +98,25 @@ public final class EmailServiceImpl implements EmailService {
 	}
 
 	@Override
+	public void sendReservationFailedEmail(InventoryReservationFailedEvent event) {
+		String subject = "Reservation Failed for order: " + event.publicOrderId();
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom(mailProperties.getFrom());
+			message.setTo(event.userMail());
+			message.setSubject(subject);
+			message.setText(buildReservationFailedEmailBody(event));
+
+			mailSender.send(message);
+			log.info("Email sent for order: {}", event.publicOrderId());
+		} catch (Exception ex) {
+			log.error("Failed to send email for order {}", event.publicOrderId(), ex);
+			throw ex;
+		}
+	}
+
+	@Override
 	public void sendUserDeletedEmail(UserDeletedEvent event) {
 		String subject = "User Confirmation: " + event.email();
 
@@ -143,13 +163,23 @@ public final class EmailServiceImpl implements EmailService {
 	private String buildPaymentFailedEmailBody(PaymentFailedEvent event) {
 		return """
 			Your payment has failed!
-			A refund has been issued!
 			
 			Order ID: %s
 			Amount: %s
 			
 			Please try again!.
 			""".formatted(event.publicOrderId(), event.amount());
+	}
+
+	private String buildReservationFailedEmailBody(InventoryReservationFailedEvent event) {
+		return """
+			Product reservation has failed!
+			A refund has been issued!
+			
+			Order ID: %s
+			
+			Please try again!.
+			""".formatted(event.publicOrderId());
 	}
 
 	private String buildUserCreatedEmailBody(UserCreatedEvent event) {
