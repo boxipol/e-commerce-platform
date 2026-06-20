@@ -52,6 +52,6 @@ spring:
                 - Path=/api/v1/inventories/**
 
 jwt:
-  secret-file: ${JWT_SECRET_FILE}
+  secret: ${JWT_SECRET}
   # 1 hour
   expiration: 3600000
