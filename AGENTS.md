@@ -22,9 +22,9 @@ Gateway (8081) → Routes to specialized services
 ## Project Structure & Conventions
 
 ### Multi-Module Maven
-- **Root `pom.xml`**: Parent with dependency management (JJWT, MapStruct, Stripe, PayPal)
+- **Root `pom.xml`**: Parent with dependency management (JJWT, MapStruct, Stripe, PayPal, Testcontainers BOM)
 - **Service modules**: Each has own `pom.xml` inheriting from root
-- **Package structure**: `com.pd.ecommerce.<service>` with subdirectories:
+- **Package structure**: `com.pd.ecommerce` with subdirectories:
   - `controller/` - REST endpoints with `@RestController`, path `/api/v1/<resource>`
   - `service/` - Interfaces + implementations (Interface-Implementation pattern)
   - `repository/` - Data access (R2DBC for Postgres, Cassandra for products)
@@ -52,7 +52,7 @@ Gateway (8081) → Routes to specialized services
 ### PostgreSQL Services (User, Order, Payment, Inventory)
 - **Driver**: R2DBC with pgpool connection pooling for reactivity
 - **Config**: `spring.r2dbc.url: r2dbc:postgresql://<service>-db:5432/<db_name>`
-- **Initialization**: SQL init scripts in `resources/<service>.sql`, auto-loaded via `sql.init.mode: always`
+- **Initialization**: Flyway migrations in `src/main/resources/db/migration/V*__*.sql` (enabled via `spring.flyway.enabled: true`)
 - **Repository pattern**: Extend `ReactiveCrudRepository<Entity, ID>`
 
 ### Cassandra (Product Service)
@@ -92,9 +92,10 @@ Gateway (8081) → Routes to specialized services
 - Use `Mono.just()`, `Mono.empty()`, `Mono.error()` for creating publishers
 
 ### Security & JWT
-- **Gateway**: OAuth2 Resource Server, validates JWT token in header
-- **Services**: Trust gateway auth, extract user context from JWT claims
-- **JWT Config**: Secret loaded from `JWT_SECRET_FILE` env var, 1-hour expiration default
+- **Gateway**: WebFlux Security + `JwtAuthenticationFilter` (`gateway-service/src/main/java/com/pd/ecommerce/security/JwtAuthenticationFilter.java`) validates Bearer JWT on non-public routes
+- **Public routes at gateway**: `/api/v1/users/**` and `/api/v1/payments/webhooks/**`
+- **Services**: Consume forwarded user context headers (`X-User-Id`, `X-User-Email`, `X-Role`) from gateway
+- **JWT Config**: Secret loaded from `JWT_SECRET` env var, 1-hour expiration default
 
 ### Actuator & Monitoring
 - Enabled on all services for readiness/liveness probes
@@ -112,8 +113,11 @@ Gateway (8081) → Routes to specialized services
 # Build all services
 mvn clean package
 
-# Docker Compose (starts all infrastructure: PostgreSQL, Cassandra, Redis, Kafka)
+# Start full stack (all services + infra)
 docker compose up
+
+# Start infra only for local IDE service runs
+docker compose -f docker-compose.local.yml up -d
 
 # Single service rebuild without cache
 docker compose build --no-cache <service-name>
@@ -131,20 +135,23 @@ cqlsh                                  # Cassandra
   - IMAGE_PLACEHOLDER for container image
 
 ### Testing
-- Kafka test dependencies: `spring-kafka-test` in all services
-- No unit test files in repository currently (TODO item)
+- Unit and integration tests exist under `src/test/java` in multiple services (e.g., `user-service`, `order-service`, `gateway-service`, `product-service`)
+- Integration tests use Testcontainers (PostgreSQL/Kafka/Cassandra depending on service)
+- Quick runs:
+  - `mvn test`
+  - `mvn -f <service>/pom.xml test`
 
 ## Critical Integration Points
 
 ### Cross-Service Communication
-1. **Gateway routing**: Maps `/products`, `/orders/`, `/users`, `/inventory/*` to respective services
+1. **Gateway routing**: Maps `/api/v1/products/**`, `/api/v1/orders/**`, `/api/v1/users/**`, `/api/v1/inventories/**`, `/api/v1/payments/**`, `/api/v1/notifications/**`
 2. **Order → Payment**: Sync via HTTP, then async via Kafka for webhook responses
 3. **Payment → Inventory**: One-way Kafka event (`payment.completed` triggers stock deduction)
 4. **Inventory → Order**: Kafka event consumer updates order completion status
 
 ### Stripe/PayPal Integration
-- **Payment Service endpoints**: `/api/v1/webhooks/stripe` for webhook callbacks
-- **Test command**: `stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe`
+- **Payment Service endpoints**: `/api/v1/payments/webhooks/stripe` and `/api/v1/payments/webhooks/paypal`
+- **Gateway path for Stripe tests**: `stripe listen --forward-to http://localhost:8081/api/v1/payments/webhooks/stripe`
 - **Secrets**: `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` in docker-compose (test keys hardcoded)
 
 ### Rate Limiting & Throttling
@@ -153,11 +160,12 @@ cqlsh                                  # Cassandra
 
 ## Key Files & Examples
 
-- **Gateway config**: `gateway-service/src/main/java/com/pd/ecommerce/config/` (JWT, routing)
-- **User auth flow**: `user-service/UserService.java` (register/login JWT generation)
-- **Order event handling**: `order-service/kafka/OrderEventProducer.java` + consumers
-- **Product caching**: `product-service` - Redis + Cassandra dual-layer setup
-- **Payment webhook**: `payment-service/controller/` (Stripe callback handler)
+- **Gateway JWT filter + routing**: `gateway-service/src/main/java/com/pd/ecommerce/security/JwtAuthenticationFilter.java`, `gateway-service/src/main/resources/application.yaml`
+- **User auth flow**: `user-service/src/main/java/com/pd/ecommerce/service/UserService.java` and `user-service/src/main/java/com/pd/ecommerce/service/UserServiceImpl.java`
+- **Order event handling**: `order-service/src/main/java/com/pd/ecommerce/kafka/OrderEventProducer.java` + consumers
+- **Product caching**: `product-service/src/main/java/com/pd/ecommerce/service/` (Redis + Cassandra dual-layer)
+- **Payment webhook**: `payment-service/src/main/java/com/pd/ecommerce/controller/WebhookController.java`
+- **PostgreSQL migrations**: `user-service/src/main/resources/db/migration/`, `order-service/src/main/resources/db/migration/`, `payment-service/src/main/resources/db/migration/`, `inventory-service/src/main/resources/db/migration/`
 
 ## Common Developer Tasks
 
@@ -179,15 +187,13 @@ cqlsh                                  # Cassandra
 3. Process event, update service state, publish new events if needed
 
 ### Database Schema Changes
-- For PostgreSQL: Add SQL to `resources/<service>.sql` init script
+- For PostgreSQL: Add a new Flyway script in `src/main/resources/db/migration/` using `V<next>__<description>.sql`
 - For Cassandra: Update CQL in seed query file + product service config
-- Migrations: Flyway TODO (not yet implemented)
 
 ## Important TODOs & Known Gaps
 - Exception handling framework not centralized
 - AOP for cross-cutting concerns (logging, monitoring)
 - Cache invalidation on product updates
-- DB Flyway migrations
 - Admin control panel
 - ElasticSearch for product discovery
 - RabbitMQ as alternative messaging
@@ -198,5 +204,3 @@ cqlsh                                  # Cassandra
 - **HA & Resilience** → Multi-replica deployments, circuit breakers, event retries
 - **Secure payments** → Stripe/PayPal integration, webhook validation
 - **Monitoring** → OpenTelemetry + Prometheus + Grafana
-
-

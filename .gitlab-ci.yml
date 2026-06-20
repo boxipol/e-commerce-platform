@@ -3,41 +3,38 @@ image: maven:3.9.11-eclipse-temurin-17
 stages:
   - test
   - docker
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
+# Per-branch+job cache so branches don't pollute each other.
 cache:
-  key: maven
+  key: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}"
   paths:
     - .m2/repository
 
 default:
   interruptible: true
 
+
+# =====================================================
+# TEST
+# =====================================================
+
 test:
   stage: test
   services:
-    - docker:27-dind
+    - name: docker:27-dind
   variables:
+    # Disable TLS so the Maven image can reach the DinD socket over plain TCP.
     DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
     TESTCONTAINERS_HOST_OVERRIDE: docker
+    # Ryuk (Testcontainers reaper) cannot reach back to the DinD host in CI.
+    TESTCONTAINERS_RYUK_DISABLED: "true"
   script:
     - mvn -B test
-
-
-# =====================================================
-# COMMON PACKAGE TEMPLATE
-# =====================================================
-
-.package-template:
-  stage: package
-  script:
-    - mvn -B -pl :$MODULE_NAME -am clean package -DskipTests
-  artifacts:
-    paths:
-      - $MODULE_PATH/target/*.jar
-    expire_in: 1 hour
 
 
 # =====================================================
@@ -48,14 +45,66 @@ test:
   stage: docker
   image: docker:27
   services:
-    - docker:27-dind
+    - name: docker:27-dind
   variables:
     DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    # Required for RUN --mount=type=cache in Dockerfiles.
+    DOCKER_BUILDKIT: "1"
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
   script:
     - docker build -t "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" -f "$MODULE_PATH/Dockerfile" .
     - docker push "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+    - docker tag  "$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE/$IMAGE_NAME:latest"
+    - docker push "$CI_REGISTRY_IMAGE/$IMAGE_NAME:latest"
+
+
+# =====================================================
+# COMMON DEPLOY TEMPLATE
+# =====================================================
+
+.deploy-template:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+  script:
+    - kubectl set image deployment/$SERVICE_NAME $SERVICE_NAME=$CI_REGISTRY_IMAGE/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA -n ecommerce
+    - kubectl rollout status deployment/$SERVICE_NAME -n ecommerce --timeout=120s
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+
+#=====================================================
+# K8S SECRETS
+#====================================================
+
+deploy:k8s-secrets:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+  script:
+    - kubectl get ns ecommerce >/dev/null 2>&1 || kubectl create ns ecommerce
+    - |
+      kubectl -n ecommerce create secret generic ecommerce-secrets \
+        --from-literal=JWT_SECRET="$JWT_SECRET" \
+        --from-literal=POSTGRES_USER="$POSTGRES_USER" \
+        --from-literal=POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+        --from-literal=CASSANDRA_USERNAME="$CASSANDRA_USERNAME" \
+        --from-literal=CASSANDRA_PASSWORD="$CASSANDRA_PASSWORD" \
+        --from-literal=SMTP_USER="$SMTP_USER" \
+        --from-literal=SMTP_PASSWORD="$SMTP_PASSWORD" \
+        --from-literal=STRIPE_API_KEY="$STRIPE_API_KEY" \
+        --from-literal=STRIPE_WEBHOOK_SECRET="$STRIPE_WEBHOOK_SECRET" \
+        --from-literal=PAYPAL_CLIENT_ID="$PAYPAL_CLIENT_ID" \
+        --from-literal=PAYPAL_CLIENT_SECRET="$PAYPAL_CLIENT_SECRET" \
+        --dry-run=client -o yaml | kubectl apply -f -
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 
 # =====================================================
@@ -68,10 +117,24 @@ docker:gateway:
     IMAGE_NAME: gateway-service
     MODULE_PATH: gateway-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - gateway-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:gateway:
+  extends: .deploy-template
+  needs:
+    - "docker:gateway"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: gateway-service
+    IMAGE_NAME: gateway-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - gateway-service/**/*
+        - pom.xml
 
 
 # =====================================================
@@ -84,10 +147,24 @@ docker:user:
     IMAGE_NAME: user-service
     MODULE_PATH: user-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - user-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:user:
+  extends: .deploy-template
+  needs:
+    - "docker:user"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: user-service
+    IMAGE_NAME: user-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - user-service/**/*
+        - pom.xml
 
 
 # =====================================================
@@ -100,10 +177,24 @@ docker:product:
     IMAGE_NAME: product-service
     MODULE_PATH: product-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - product-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:product:
+  extends: .deploy-template
+  needs:
+    - "docker:product"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: product-service
+    IMAGE_NAME: product-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - product-service/**/*
+        - pom.xml
 
 
 # =====================================================
@@ -116,10 +207,24 @@ docker:order:
     IMAGE_NAME: order-service
     MODULE_PATH: order-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - order-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:order:
+  extends: .deploy-template
+  needs:
+    - "docker:order"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: order-service
+    IMAGE_NAME: order-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - order-service/**/*
+        - pom.xml
 
 
 # =====================================================
@@ -132,10 +237,24 @@ docker:payment:
     IMAGE_NAME: payment-service
     MODULE_PATH: payment-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - payment-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:payment:
+  extends: .deploy-template
+  needs:
+    - "docker:payment"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: payment-service
+    IMAGE_NAME: payment-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - payment-service/**/*
+        - pom.xml
 
 
 # =====================================================
@@ -148,10 +267,25 @@ docker:inventory:
     IMAGE_NAME: inventory-service
     MODULE_PATH: inventory-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - inventory-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:inventory:
+  extends: .deploy-template
+  needs:
+    - "docker:inventory"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: inventory-service
+    IMAGE_NAME: inventory-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - inventory-service/**/*
+        - pom.xml
+
 
 # =====================================================
 # NOTIFICATION SERVICE
@@ -163,7 +297,21 @@ docker:notification:
     IMAGE_NAME: notification-service
     MODULE_PATH: notification-service
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - notification-service/**/*
         - pom.xml
-        - common/**/*
+
+deploy:notification:
+  extends: .deploy-template
+  needs:
+    - "docker:notification"
+    - "deploy:k8s-secrets"
+  variables:
+    SERVICE_NAME: notification-service
+    IMAGE_NAME: notification-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - notification-service/**/*
+        - pom.xml

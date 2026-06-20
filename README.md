@@ -209,8 +209,39 @@ docker compose build --no-cache some-service
 docker compose -f docker-compose.local.yml up -d
 
 Stripe testing:
-stripe listen --forward-to http://localhost:8085/api/v1/webhooks/stripe
 stripe trigger payment_intent.succeeded
 stripe listen --forward-to http://localhost:8081/api/v1/payments/webhooks/stripe
 stripe events list
 stripe events resend evt_3ThA101MX7CZ1Cce0kHDrneo
+
+
+kubectl apply -k /Users/user/IdeaProjects/e-commerce-platform/k8s
+kubectl -n ecommerce get pods
+kubectl -n ecommerce get svc
+kubectl -n ecommerce get jobs
+
+K8s manifests:
+- 00-namespace.yaml
+- 01-infra.yaml
+- 02-apps.yaml
+
+Secrets:
+- CI/CD creates `ecommerce-secrets` from GitLab variables via `deploy:k8s-secrets`.
+- For local-only deployment, copy `k8s/03-secrets.template.yaml` to `k8s/01-secrets.yaml`, set values, then apply manually.
+
+# PostgreSQL databases
+kubectl port-forward svc/users-db 5432:5432 -n ecommerce
+kubectl port-forward svc/orders-db 5433:5432 -n ecommerce
+kubectl port-forward svc/payments-db 5434:5432 -n ecommerce
+kubectl port-forward svc/inventory-db 5435:5432 -n ecommerce
+
+# Cassandra
+kubectl port-forward svc/products-db 9042:9042 -n ecommerce
+
+# Redis
+kubectl port-forward svc/redis 6379:6379 -n ecommerce
+
+# Kafka
+kubectl port-forward svc/kafka-1 29092:9092 -n ecommerce
+kubectl port-forward svc/kafka-2 29092:9092 -n ecommerce
+kubectl port-forward svc/kafka-3 29092:9092 -n ecommerce
