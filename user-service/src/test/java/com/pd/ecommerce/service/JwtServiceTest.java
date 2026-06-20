@@ -59,7 +59,7 @@ class JwtServiceTest {
 		base64EncodedSecret = Base64.getEncoder().encodeToString(secretKey.getEncoded());
 		tokenExpiration = 3_600_000; // 1 hour in milliseconds
 
-		when(jwtProperties.readSecret()).thenReturn(base64EncodedSecret);
+		when(jwtProperties.getSecret()).thenReturn(base64EncodedSecret);
 		when(jwtProperties.getExpiration()).thenReturn(tokenExpiration);
 	}
 

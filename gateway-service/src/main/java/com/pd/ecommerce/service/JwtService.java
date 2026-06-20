@@ -52,7 +52,7 @@ public final class JwtService {
 	}
 
 	private SecretKey getKey() {
-		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.readSecret());
+		byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
 		return Keys.hmacShaKeyFor(keyBytes);
 	}
 }

@@ -43,7 +43,7 @@ class JwtServiceTest {
 		secretKey = Keys.hmacShaKeyFor(secretBytes);
 		base64EncodedSecret = Base64.getEncoder().encodeToString(secretKey.getEncoded());
 
-		lenient().when(jwtProperties.readSecret()).thenReturn(base64EncodedSecret);
+		lenient().when(jwtProperties.getSecret()).thenReturn(base64EncodedSecret);
 	}
 
 	private String buildToken(String subject, String email, String role, long ttlMillis) {

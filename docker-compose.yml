@@ -14,7 +14,7 @@ services:
     secrets:
       - jwt_secret
     environment:
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      JWT_SECRET: ${JWT_SECRET}
 
 
   user-service:
@@ -36,7 +36,7 @@ services:
     networks:
       - ecommerce-network
     environment:
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      JWT_SECRET: ${JWT_SECRET}
 
   users-db:
     image: postgres:16
