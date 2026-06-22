@@ -81,6 +81,25 @@ test:
 # K8S SECRETS
 #====================================================
 
+deploy:k8s-registry-secret:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - echo "$KUBECONFIG_B64" | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+  script:
+    - kubectl get ns ecommerce >/dev/null 2>&1 || kubectl create ns ecommerce
+    - |
+      kubectl -n ecommerce create secret docker-registry gitlab-registry \
+        --docker-server="$CI_REGISTRY" \
+        --docker-username="$CI_REGISTRY_USER" \
+        --docker-password="$CI_REGISTRY_PASSWORD" \
+        --docker-email="petyo_dobrev@icloud.com" \
+        --dry-run=client -o yaml | kubectl apply -f -
+    - kubectl -n ecommerce patch serviceaccount default --type merge -p '{"imagePullSecrets":[{"name":"gitlab-registry"}]}'
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 deploy:k8s-secrets:
   stage: deploy
   image: bitnami/kubectl:latest
@@ -126,6 +145,7 @@ deploy:gateway:
   extends: .deploy-template
   needs:
     - "docker:gateway"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: gateway-service
@@ -156,6 +176,7 @@ deploy:user:
   extends: .deploy-template
   needs:
     - "docker:user"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: user-service
@@ -186,6 +207,7 @@ deploy:product:
   extends: .deploy-template
   needs:
     - "docker:product"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: product-service
@@ -216,6 +238,7 @@ deploy:order:
   extends: .deploy-template
   needs:
     - "docker:order"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: order-service
@@ -246,6 +269,7 @@ deploy:payment:
   extends: .deploy-template
   needs:
     - "docker:payment"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: payment-service
@@ -276,6 +300,7 @@ deploy:inventory:
   extends: .deploy-template
   needs:
     - "docker:inventory"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: inventory-service
@@ -306,6 +331,7 @@ deploy:notification:
   extends: .deploy-template
   needs:
     - "docker:notification"
+    - "deploy:k8s-registry-secret"
     - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: notification-service
