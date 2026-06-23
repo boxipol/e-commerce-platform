@@ -77,6 +77,7 @@ test:
     - kubectl rollout status deployment/$SERVICE_NAME -n ecommerce --timeout=120s
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 
 #=====================================================
@@ -103,6 +104,7 @@ deploy:k8s-registry-secret:
     - kubectl -n ecommerce patch serviceaccount default --type merge -p '{"imagePullSecrets":[{"name":"gitlab-registry"}]}'
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 deploy:k8s-secrets:
   stage: deploy
@@ -130,6 +132,7 @@ deploy:k8s-secrets:
         --dry-run=client -o yaml | kubectl apply -f -
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
 
 
 # =====================================================
@@ -158,6 +161,7 @@ deploy:gateway:
     IMAGE_NAME: gateway-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - gateway-service/**/*
         - pom.xml
@@ -189,6 +193,7 @@ deploy:user:
     IMAGE_NAME: user-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - user-service/**/*
         - pom.xml
@@ -220,6 +225,7 @@ deploy:product:
     IMAGE_NAME: product-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - product-service/**/*
         - pom.xml
@@ -251,6 +257,7 @@ deploy:order:
     IMAGE_NAME: order-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - order-service/**/*
         - pom.xml
@@ -282,6 +289,7 @@ deploy:payment:
     IMAGE_NAME: payment-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - payment-service/**/*
         - pom.xml
@@ -313,6 +321,7 @@ deploy:inventory:
     IMAGE_NAME: inventory-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - inventory-service/**/*
         - pom.xml
@@ -344,6 +353,7 @@ deploy:notification:
     IMAGE_NAME: notification-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
       changes:
         - notification-service/**/*
         - pom.xml
