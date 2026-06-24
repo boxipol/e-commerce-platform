@@ -77,7 +77,6 @@ test:
     - kubectl rollout status deployment/$SERVICE_NAME -n ecommerce --timeout=120s
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
 
 
 #=====================================================
@@ -154,14 +153,11 @@ deploy:gateway:
   extends: .deploy-template
   needs:
     - "docker:gateway"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: gateway-service
     IMAGE_NAME: gateway-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - gateway-service/**/*
         - pom.xml
@@ -186,14 +182,11 @@ deploy:user:
   extends: .deploy-template
   needs:
     - "docker:user"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: user-service
     IMAGE_NAME: user-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - user-service/**/*
         - pom.xml
@@ -218,14 +211,11 @@ deploy:product:
   extends: .deploy-template
   needs:
     - "docker:product"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: product-service
     IMAGE_NAME: product-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - product-service/**/*
         - pom.xml
@@ -250,14 +240,11 @@ deploy:order:
   extends: .deploy-template
   needs:
     - "docker:order"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: order-service
     IMAGE_NAME: order-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - order-service/**/*
         - pom.xml
@@ -282,14 +269,11 @@ deploy:payment:
   extends: .deploy-template
   needs:
     - "docker:payment"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: payment-service
     IMAGE_NAME: payment-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - payment-service/**/*
         - pom.xml
@@ -314,14 +298,11 @@ deploy:inventory:
   extends: .deploy-template
   needs:
     - "docker:inventory"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: inventory-service
     IMAGE_NAME: inventory-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - inventory-service/**/*
         - pom.xml
@@ -346,14 +327,11 @@ deploy:notification:
   extends: .deploy-template
   needs:
     - "docker:notification"
-    - "deploy:k8s-registry-secret"
-    - "deploy:k8s-secrets"
   variables:
     SERVICE_NAME: notification-service
     IMAGE_NAME: notification-service
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
       changes:
         - notification-service/**/*
         - pom.xml
