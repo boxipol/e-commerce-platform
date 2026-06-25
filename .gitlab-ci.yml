@@ -77,6 +77,217 @@ test:
     - kubectl rollout status deployment/$SERVICE_NAME -n ecommerce --timeout=120s
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+
+
+# =====================================================
+# API GATEWAY
+# =====================================================
+
+docker:gateway:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: gateway-service
+    MODULE_PATH: gateway-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - gateway-service/**/*
+        - pom.xml
+
+deploy:gateway:
+  extends: .deploy-template
+  needs:
+    - "docker:gateway"
+  variables:
+    SERVICE_NAME: gateway-service
+    IMAGE_NAME: gateway-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - gateway-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# USER SERVICE
+# =====================================================
+
+docker:user:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: user-service
+    MODULE_PATH: user-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - user-service/**/*
+        - pom.xml
+
+deploy:user:
+  extends: .deploy-template
+  needs:
+    - "docker:user"
+  variables:
+    SERVICE_NAME: user-service
+    IMAGE_NAME: user-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - user-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# PRODUCT SERVICE
+# =====================================================
+
+docker:product:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: product-service
+    MODULE_PATH: product-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - product-service/**/*
+        - pom.xml
+
+deploy:product:
+  extends: .deploy-template
+  needs:
+    - "docker:product"
+  variables:
+    SERVICE_NAME: product-service
+    IMAGE_NAME: product-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - product-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# ORDER SERVICE
+# =====================================================
+
+docker:order:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: order-service
+    MODULE_PATH: order-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - order-service/**/*
+        - pom.xml
+
+deploy:order:
+  extends: .deploy-template
+  needs:
+    - "docker:order"
+  variables:
+    SERVICE_NAME: order-service
+    IMAGE_NAME: order-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - order-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# PAYMENT SERVICE
+# =====================================================
+
+docker:payment:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: payment-service
+    MODULE_PATH: payment-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - payment-service/**/*
+        - pom.xml
+
+deploy:payment:
+  extends: .deploy-template
+  needs:
+    - "docker:payment"
+  variables:
+    SERVICE_NAME: payment-service
+    IMAGE_NAME: payment-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - payment-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# INVENTORY SERVICE
+# =====================================================
+
+docker:inventory:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: inventory-service
+    MODULE_PATH: inventory-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - inventory-service/**/*
+        - pom.xml
+
+deploy:inventory:
+  extends: .deploy-template
+  needs:
+    - "docker:inventory"
+  variables:
+    SERVICE_NAME: inventory-service
+    IMAGE_NAME: inventory-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - inventory-service/**/*
+        - pom.xml
+
+
+# =====================================================
+# NOTIFICATION SERVICE
+# =====================================================
+
+docker:notification:
+  extends: .docker-template
+  variables:
+    IMAGE_NAME: notification-service
+    MODULE_PATH: notification-service
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - notification-service/**/*
+        - pom.xml
+
+deploy:notification:
+  extends: .deploy-template
+  needs:
+    - "docker:notification"
+  variables:
+    SERVICE_NAME: notification-service
+    IMAGE_NAME: notification-service
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      changes:
+        - notification-service/**/*
+        - pom.xml
 
 
 #=====================================================
@@ -132,206 +343,3 @@ deploy:k8s-secrets:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       when: manual
-
-
-# =====================================================
-# API GATEWAY
-# =====================================================
-
-docker:gateway:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: gateway-service
-    MODULE_PATH: gateway-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - gateway-service/**/*
-        - pom.xml
-
-deploy:gateway:
-  extends: .deploy-template
-  needs:
-    - "docker:gateway"
-  variables:
-    SERVICE_NAME: gateway-service
-    IMAGE_NAME: gateway-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - gateway-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# USER SERVICE
-# =====================================================
-
-docker:user:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: user-service
-    MODULE_PATH: user-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - user-service/**/*
-        - pom.xml
-
-deploy:user:
-  extends: .deploy-template
-  needs:
-    - "docker:user"
-  variables:
-    SERVICE_NAME: user-service
-    IMAGE_NAME: user-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - user-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# PRODUCT SERVICE
-# =====================================================
-
-docker:product:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: product-service
-    MODULE_PATH: product-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - product-service/**/*
-        - pom.xml
-
-deploy:product:
-  extends: .deploy-template
-  needs:
-    - "docker:product"
-  variables:
-    SERVICE_NAME: product-service
-    IMAGE_NAME: product-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - product-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# ORDER SERVICE
-# =====================================================
-
-docker:order:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: order-service
-    MODULE_PATH: order-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - order-service/**/*
-        - pom.xml
-
-deploy:order:
-  extends: .deploy-template
-  needs:
-    - "docker:order"
-  variables:
-    SERVICE_NAME: order-service
-    IMAGE_NAME: order-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - order-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# PAYMENT SERVICE
-# =====================================================
-
-docker:payment:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: payment-service
-    MODULE_PATH: payment-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - payment-service/**/*
-        - pom.xml
-
-deploy:payment:
-  extends: .deploy-template
-  needs:
-    - "docker:payment"
-  variables:
-    SERVICE_NAME: payment-service
-    IMAGE_NAME: payment-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - payment-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# INVENTORY SERVICE
-# =====================================================
-
-docker:inventory:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: inventory-service
-    MODULE_PATH: inventory-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - inventory-service/**/*
-        - pom.xml
-
-deploy:inventory:
-  extends: .deploy-template
-  needs:
-    - "docker:inventory"
-  variables:
-    SERVICE_NAME: inventory-service
-    IMAGE_NAME: inventory-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - inventory-service/**/*
-        - pom.xml
-
-
-# =====================================================
-# NOTIFICATION SERVICE
-# =====================================================
-
-docker:notification:
-  extends: .docker-template
-  variables:
-    IMAGE_NAME: notification-service
-    MODULE_PATH: notification-service
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - notification-service/**/*
-        - pom.xml
-
-deploy:notification:
-  extends: .deploy-template
-  needs:
-    - "docker:notification"
-  variables:
-    SERVICE_NAME: notification-service
-    IMAGE_NAME: notification-service
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - notification-service/**/*
-        - pom.xml
