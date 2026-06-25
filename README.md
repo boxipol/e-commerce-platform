@@ -198,6 +198,11 @@ psql -U ecommerce_user -d orders_db
 psql -U ecommerce_user -d payments_db
 psql -U ecommerce_user -d inventory_db
 
+docker volume rm e-commerce-platform_users-db-data
+docker volume rm e-commerce-platform_orders-db-data
+docker volume rm e-commerce-platform_payments-db-data
+docker volume rm e-commerce-platform_inventory-db-data
+
 Cassandra:
 cqlsh
 cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
@@ -226,6 +231,9 @@ kubectl exec -it payments-db-0 -- psql -U ecommerce_user -d payments_db
 kubectl exec -it inventory-db-0 -- psql -U ecommerce_user -d inventory_db
 
 kubectl exec -it products-db-0 -n ecommerce -- sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD"'
+
+kubectl port-forward -n ecommerce svc/gateway-service 8081:80
+
 
 K8s manifests:
 - 00-namespace.yaml
