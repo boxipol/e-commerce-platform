@@ -220,6 +220,13 @@ kubectl -n ecommerce get pods
 kubectl -n ecommerce get svc
 kubectl -n ecommerce get jobs
 
+kubectl exec -it users-db-0 -- psql -U ecommerce_user -d users_db
+kubectl exec -it orders-db-0 -- psql -U ecommerce_user -d orders_db
+kubectl exec -it payments-db-0 -- psql -U ecommerce_user -d payments_db
+kubectl exec -it inventory-db-0 -- psql -U ecommerce_user -d inventory_db
+
+kubectl exec -it products-db-0 -n ecommerce -- sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD"'
+
 K8s manifests:
 - 00-namespace.yaml
 - 01-infra.yaml
@@ -245,3 +252,4 @@ kubectl port-forward svc/redis 6379:6379 -n ecommerce
 kubectl port-forward svc/kafka-1 29092:9092 -n ecommerce
 kubectl port-forward svc/kafka-2 29092:9092 -n ecommerce
 kubectl port-forward svc/kafka-3 29092:9092 -n ecommerce
+
