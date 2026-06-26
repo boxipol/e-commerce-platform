@@ -46,6 +46,7 @@ public abstract class AbstractKafkaPostgresIntegrationTest {
 		registry.add("spring.sql.init.mode", () -> "always");
 		registry.add("spring.sql.init.schema-locations", () -> "classpath:schema-it.sql");
 		registry.add("spring.sql.init.data-locations", () -> "");
+		registry.add("spring.flyway.enabled", () -> "false");
 
 		registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
 	}

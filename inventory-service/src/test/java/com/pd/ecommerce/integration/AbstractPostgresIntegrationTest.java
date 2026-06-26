@@ -40,6 +40,7 @@ public abstract class AbstractPostgresIntegrationTest {
 		registry.add("spring.sql.init.mode", () -> "always");
 		registry.add("spring.sql.init.schema-locations", () -> "classpath:schema-it.sql");
 		registry.add("spring.sql.init.data-locations", () -> "");
+		registry.add("spring.flyway.enabled", () -> "false");
 
 		// Avoid needing a real Kafka broker for repository-level tests.
 		registry.add("spring.kafka.bootstrap-servers", () -> "localhost:0");

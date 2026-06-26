@@ -25,6 +25,7 @@ public abstract class AbstractPostgresIntegrationTest {
 		POSTGRES.start();
 	}
 
+
 	@DynamicPropertySource
 	static void registerProperties(DynamicPropertyRegistry registry) {
 		registry.add("spring.r2dbc.url", () -> "r2dbc:postgresql://%s:%d/%s".formatted(
@@ -38,6 +39,7 @@ public abstract class AbstractPostgresIntegrationTest {
 		registry.add("spring.sql.init.mode", () -> "always");
 		registry.add("spring.sql.init.schema-locations", () -> "classpath:schema-it.sql");
 		registry.add("spring.sql.init.data-locations", () -> "");
+		registry.add("spring.flyway.enabled", () -> "false");
 
 		registry.add("spring.kafka.bootstrap-servers", () -> "localhost:0");
 		registry.add("spring.autoconfigure.exclude",
