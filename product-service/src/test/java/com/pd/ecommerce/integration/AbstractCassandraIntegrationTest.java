@@ -1,33 +1,28 @@
 package com.pd.ecommerce.integration;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.config.DefaultDriverOption;
+import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Arrays;
 
-/**
- * Base class for product-service integration tests.
- *
- * <p>Starts a real Apache Cassandra node via Testcontainers, creates the {@code ecommerce} keyspace
- * and the product tables, then points the application's Cassandra connection at the container. The
- * container is a shared static singleton, started once for the whole suite. Requires a running
- * Docker daemon.
- *
- * <p>Redis and Kafka auto-configuration are excluded so these tests focus purely on the Cassandra
- * persistence layer.
- */
 @Testcontainers
 public abstract class AbstractCassandraIntegrationTest {
 
 	private static final String KEYSPACE = "ecommerce";
 	private static final String DATACENTER = "datacenter1";
 
-	static final CassandraContainer<?> CASSANDRA =
-		new CassandraContainer<>(DockerImageName.parse("cassandra:4.1"));
+	static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>(DockerImageName.parse("cassandra:4.1"));
 
 	static {
 		CASSANDRA.start();
@@ -35,59 +30,18 @@ public abstract class AbstractCassandraIntegrationTest {
 	}
 
 	private static void initSchema() {
-		try (CqlSession session = CqlSession.builder()
-			.addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getFirstMappedPort()))
-			.withLocalDatacenter(CASSANDRA.getLocalDatacenter())
-			.build()) {
+		try (
+			CqlSession session = CqlSession.builder().addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getFirstMappedPort())).withLocalDatacenter(CASSANDRA.getLocalDatacenter()).withConfigLoader(DriverConfigLoader.programmaticBuilder().withDuration(DefaultDriverOption.REQUEST_TIMEOUT, Duration.ofSeconds(30)).build()).build();
+			InputStream is = AbstractCassandraIntegrationTest.class.getClassLoader().getResourceAsStream("db/migration/V1__create_products_schema.cql")
+		) {
+			if (is == null) {
+				throw new IllegalStateException("Migration file not found");
+			}
 
-			session.execute("""
-				CREATE KEYSPACE IF NOT EXISTS %s
-				WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
-				""".formatted(KEYSPACE));
-
-			session.execute("""
-				CREATE TABLE IF NOT EXISTS %s.products_by_id (
-				    product_id  UUID PRIMARY KEY,
-				    sku         TEXT,
-				    name        TEXT,
-				    description TEXT,
-				    brand       TEXT,
-				    category    TEXT,
-				    price       DECIMAL,
-				    currency    TEXT,
-				    stock       INT,
-				    active      BOOLEAN,
-				    created_at  TIMESTAMP,
-				    updated_at  TIMESTAMP
-				)""".formatted(KEYSPACE));
-
-			session.execute("""
-				CREATE TABLE IF NOT EXISTS %s.products_by_sku (
-				    sku         TEXT PRIMARY KEY,
-				    product_id  UUID,
-				    name        TEXT,
-				    description TEXT,
-				    brand       TEXT,
-				    category    TEXT,
-				    price       DECIMAL,
-				    currency    TEXT,
-				    stock       INT,
-				    active      BOOLEAN,
-				    created_at  TIMESTAMP,
-				    updated_at  TIMESTAMP
-				)""".formatted(KEYSPACE));
-
-			session.execute("""
-				CREATE TABLE IF NOT EXISTS %s.products_by_category (
-				    category   TEXT,
-				    created_at TIMESTAMP,
-				    sku        TEXT,
-				    name       TEXT,
-				    brand      TEXT,
-				    price      DECIMAL,
-				    stock      INT,
-				    PRIMARY KEY ((category), created_at, sku)
-				) WITH CLUSTERING ORDER BY (created_at DESC)""".formatted(KEYSPACE));
+			String cql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+			Arrays.stream(cql.split(";")).map(String::trim).filter(s -> !s.isBlank()).forEach(session::execute);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -97,5 +51,7 @@ public abstract class AbstractCassandraIntegrationTest {
 		registry.add("spring.cassandra.port", CASSANDRA::getFirstMappedPort);
 		registry.add("spring.cassandra.keyspace-name", () -> KEYSPACE);
 		registry.add("spring.cassandra.local-datacenter", () -> DATACENTER);
+		registry.add("spring.cassandra.username", () -> "cassandra");
+		registry.add("spring.cassandra.password", () -> "cassandra");
 	}
 }

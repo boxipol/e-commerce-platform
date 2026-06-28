@@ -4,6 +4,8 @@ server:
 spring:
   cassandra:
     contact-points: localhost
+    username: ${CASSANDRA_USERNAME}
+    password: ${CASSANDRA_PASSWORD}
 
   data:
     redis:

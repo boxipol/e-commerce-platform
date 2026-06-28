@@ -220,6 +220,8 @@ stripe events list
 stripe events resend evt_3ThA101MX7CZ1Cce0kHDrneo
 
 
+while true; do printf "kubectl> "; read cmd; kubectl ${=cmd}; done
+
 kubectl apply -k /Users/user/IdeaProjects/e-commerce-platform/k8s
 kubectl -n ecommerce get pods
 kubectl -n ecommerce get svc

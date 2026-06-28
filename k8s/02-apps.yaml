@@ -16,7 +16,7 @@ spec:
       containers:
         - name: gateway-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/gateway-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -66,7 +66,7 @@ spec:
       containers:
         - name: user-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/user-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -125,7 +125,7 @@ spec:
       containers:
         - name: product-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/product-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -168,7 +168,7 @@ spec:
       containers:
         - name: order-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/order-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -222,7 +222,7 @@ spec:
       containers:
         - name: payment-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/payment-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -296,7 +296,7 @@ spec:
       containers:
         - name: inventory-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/inventory-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -350,7 +350,7 @@ spec:
       containers:
         - name: notification-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/notification-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -368,8 +368,10 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
 ---
 apiVersion: v1
 kind: Service
