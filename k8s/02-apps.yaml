@@ -70,6 +70,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -128,6 +130,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
           readinessProbe:
             httpGet:
               path: /actuator/health
@@ -172,6 +177,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -226,6 +233,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -300,6 +309,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -354,6 +365,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-1:9092,kafka-2:9092,kafka-3:9092
             - name: SMTP_USER
               valueFrom:
                 secretKeyRef:
