@@ -42,6 +42,24 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
+management:
+  otlp:
+    metrics:
+      export:
+        url: http://otel-lgtm:4318/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: http://otel-lgtm:4318/v1/traces
+    logging:
+      endpoint: http://otel-lgtm:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
 app:
   mail:
     from: ${SMTP_USER}

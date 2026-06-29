@@ -38,6 +38,24 @@ spring:
     password: ${POSTGRES_PASSWORD}
 
 
+management:
+  otlp:
+    metrics:
+      export:
+        url: http://otel-lgtm:4318/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: http://otel-lgtm:4318/v1/traces
+    logging:
+      endpoint: http://otel-lgtm:4318/v1/logs
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
 jwt:
   secret: ${JWT_SECRET}
   # 1 hour

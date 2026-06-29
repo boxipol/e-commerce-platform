@@ -208,6 +208,8 @@ docker volume inspect cassandra_data
 docker compose build some-service
 
 docker compose -f docker-compose.local.yml up -d
+docker compose build 2>&1
+
 
 Stripe testing:
 stripe trigger payment_intent.succeeded
