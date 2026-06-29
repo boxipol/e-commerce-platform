@@ -188,10 +188,6 @@ client requests product(product service)
 
 
 
-Brew:
-brew services start postgresql
-brew services start cassandra
-
 Postgres:
 psql -U ecommerce_user -d users_db
 psql -U ecommerce_user -d orders_db

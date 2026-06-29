@@ -38,6 +38,8 @@ public class ProductStockSyncService {
 			.then();
 	}
 
+
+
 	private Mono<Void> decreaseSingleItem(UUID orderId, OrderEventItem item) {
 		if (item.quantity() <= 0) {
 			return Mono.error(new IllegalArgumentException(
@@ -52,9 +54,11 @@ public class ProductStockSyncService {
 			)))
 			.flatMap(productBySku -> {
 				Integer currentStock = productBySku.getStock();
+
 				if (currentStock == null) {
 					return Mono.error(new IllegalStateException("Stock is null for sku: " + item.sku()));
 				}
+
 				if (currentStock < item.quantity()) {
 					return Mono.error(new IllegalStateException(
 						"Insufficient product stock in product-service for sku %s: current=%d requested=%d"
@@ -71,11 +75,12 @@ public class ProductStockSyncService {
 					.flatMap(savedSku ->
 						productRepository.findById(savedSku.getProductId())
 							.switchIfEmpty(Mono.error(new IllegalStateException(
-								"Product not found by id for sku: " + savedSku.getSku()
+								"Product not found by id: " + savedSku.getProductId()
 							)))
 							.flatMap(product -> {
 								product.setStock(newStock);
 								product.setUpdatedAt(now);
+
 								return productRepository.save(product);
 							})
 							.then(productByCategoryRepository.save(
