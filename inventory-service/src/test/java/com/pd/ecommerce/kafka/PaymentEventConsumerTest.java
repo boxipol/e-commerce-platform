@@ -58,12 +58,12 @@ class PaymentEventConsumerTest {
 	@DisplayName("onPaymentCompleted - should reserve inventory then publish reserved event")
 	void testOnPaymentCompletedSuccess() {
 		when(service.reserveInventory(completedEvent)).thenReturn(Mono.empty());
-		when(eventProducer.sendInventoryReserved(orderId)).thenReturn(Mono.empty());
+		when(eventProducer.sendInventoryReserved(orderId, completedEvent.items())).thenReturn(Mono.empty());
 
 		StepVerifier.create(consumer.onPaymentCompleted(completedEvent)).verifyComplete();
 
 		verify(service).reserveInventory(completedEvent);
-		verify(eventProducer).sendInventoryReserved(orderId);
+		verify(eventProducer).sendInventoryReserved(orderId, completedEvent.items());
 		verify(eventProducer, never()).sendInventoryFailed(any());
 	}
 
@@ -86,6 +86,6 @@ class PaymentEventConsumerTest {
 		StepVerifier.create(consumer.onPaymentCompleted(completedEvent)).verifyComplete();
 
 		verify(eventProducer).sendInventoryFailed(failedEvent);
-		verify(eventProducer, never()).sendInventoryReserved(any());
+		verify(eventProducer, never()).sendInventoryReserved(any(), any());
 	}
 }

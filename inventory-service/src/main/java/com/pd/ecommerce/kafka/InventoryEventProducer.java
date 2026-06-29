@@ -2,11 +2,13 @@ package com.pd.ecommerce.kafka;
 
 import com.pd.ecommerce.event.InventoryReservationCompletedEvent;
 import com.pd.ecommerce.event.InventoryReservationFailedEvent;
+import com.pd.ecommerce.event.OrderEventItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -20,8 +22,8 @@ public final class InventoryEventProducer {
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
-	public Mono<Void> sendInventoryReserved(UUID orderId) {
-		InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(orderId);
+	public Mono<Void> sendInventoryReserved(UUID orderId, List<OrderEventItem> items) {
+		InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(orderId, items);
 
 		return Mono.fromFuture(
 				kafkaTemplate.send(

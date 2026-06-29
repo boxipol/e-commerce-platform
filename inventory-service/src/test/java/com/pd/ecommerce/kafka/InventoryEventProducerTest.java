@@ -2,6 +2,7 @@ package com.pd.ecommerce.kafka;
 
 import com.pd.ecommerce.event.InventoryReservationCompletedEvent;
 import com.pd.ecommerce.event.InventoryReservationFailedEvent;
+import com.pd.ecommerce.event.OrderEventItem;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import reactor.test.StepVerifier;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,11 +50,14 @@ class InventoryEventProducerTest {
 		when(kafkaTemplate.send(eq("reservation.completed"), eq(orderId.toString()), any()))
 			.thenReturn(CompletableFuture.completedFuture(mockSendResult("reservation.completed")));
 
-		StepVerifier.create(producer.sendInventoryReserved(orderId)).verifyComplete();
+		List<OrderEventItem> items = List.of(new OrderEventItem(UUID.randomUUID(), "SKU-1", 2));
+		StepVerifier.create(producer.sendInventoryReserved(orderId, items)).verifyComplete();
 
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(kafkaTemplate).send(eq("reservation.completed"), eq(orderId.toString()), eventCaptor.capture());
 		assertThat(eventCaptor.getValue()).isInstanceOf(InventoryReservationCompletedEvent.class);
+		InventoryReservationCompletedEvent event = (InventoryReservationCompletedEvent) eventCaptor.getValue();
+		assertThat(event.items()).hasSize(1);
 	}
 
 	@Test

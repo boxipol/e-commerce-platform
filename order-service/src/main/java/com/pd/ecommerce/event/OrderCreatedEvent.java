@@ -11,6 +11,6 @@ public record OrderCreatedEvent(
 	String publicOrderId,
 	UUID userId,
 	String userMail,
-	List<OrderItemEvent> items,
+	List<OrderEventItem> items,
 	BigDecimal totalPrice
 ) {}

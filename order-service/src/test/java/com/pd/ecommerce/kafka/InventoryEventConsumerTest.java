@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
@@ -37,7 +38,7 @@ class InventoryEventConsumerTest {
 		@Test
 		@DisplayName("delegates to orderService.markAsPaid and completes")
 		void delegatesToMarkAsPaid() {
-			InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(ORDER_ID);
+			InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(ORDER_ID, List.of());
 			when(orderService.markAsPaid(ORDER_ID)).thenReturn(Mono.empty());
 			StepVerifier.create(consumer.onReservationCompleted(event)).verifyComplete();
 			verify(orderService).markAsPaid(ORDER_ID);
@@ -46,7 +47,7 @@ class InventoryEventConsumerTest {
 		@Test
 		@DisplayName("propagates error from orderService.markAsPaid")
 		void propagatesServiceError() {
-			InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(ORDER_ID);
+			InventoryReservationCompletedEvent event = new InventoryReservationCompletedEvent(ORDER_ID, List.of());
 			when(orderService.markAsPaid(ORDER_ID)).thenReturn(Mono.error(new RuntimeException("DB error")));
 			StepVerifier.create(consumer.onReservationCompleted(event)).expectError(RuntimeException.class).verify();
 		}

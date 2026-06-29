@@ -14,7 +14,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -76,6 +74,14 @@ class PaymentInventoryChoreographyIntegrationTest extends AbstractKafkaPostgresI
 		await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
 			assertThat(recorder.completed).extracting(InventoryReservationCompletedEvent::orderId)
 				.contains(orderId));
+		await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
+			assertThat(recorder.completed)
+				.anySatisfy(completed -> {
+					assertThat(completed.orderId()).isEqualTo(orderId);
+					assertThat(completed.items()).hasSize(1);
+					assertThat(completed.items().get(0).sku()).isEqualTo("SKU-1");
+					assertThat(completed.items().get(0).quantity()).isEqualTo(3);
+				}));
 
 		// Stock was decremented in the database.
 		await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
