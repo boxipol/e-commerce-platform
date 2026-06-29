@@ -205,11 +205,11 @@ docker volume rm e-commerce-platform_inventory-db-data
 
 Cassandra:
 cqlsh
-cqlsh -f /Users/user/Downloads/full_iphone_seed_query.sql
+cqlsh -f /Users/user/Downloads/full_iphone_seed_query_products_by_id.sql
 
 Docker:
 docker volume inspect cassandra_data
-docker compose build --no-cache some-service
+docker compose build some-service
 
 docker compose -f docker-compose.local.yml up -d
 

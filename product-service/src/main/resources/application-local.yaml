@@ -2,11 +2,14 @@ server:
   port: 8084
 
 spring:
-  cassandra:
-    contact-points: localhost
-    username: ${CASSANDRA_USERNAME}
-    password: ${CASSANDRA_PASSWORD}
+  kafka:
+    bootstrap-servers: localhost:29092
 
   data:
     redis:
       host: localhost
+
+  cassandra:
+    contact-points: localhost
+    username: ${CASSANDRA_USERNAME}
+    password: ${CASSANDRA_PASSWORD}

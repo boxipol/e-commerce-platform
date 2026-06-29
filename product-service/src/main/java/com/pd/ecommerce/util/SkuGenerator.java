@@ -22,9 +22,18 @@ public final class SkuGenerator {
 	}
 
 	private static String extractColor(String description) {
-		if (description.toLowerCase().contains("silver")) return "S";
-		if (description.toLowerCase().contains("black")) return "B";
-		if (description.toLowerCase().contains("white")) return "W";
+		if (description.toLowerCase().contains("silver")) {
+			return "S";
+		}
+
+		if (description.toLowerCase().contains("black")) {
+			return "B";
+		}
+
+		if (description.toLowerCase().contains("white")) {
+			return "W";
+		}
+
 		return "X";
 	}
 }

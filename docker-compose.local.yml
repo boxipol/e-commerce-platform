@@ -63,12 +63,11 @@ services:
     ports:
       - "9042:9042"
     volumes:
-      - ./cassandra-data:/var/lib/cassandra
+      - products-db-data:/var/lib/cassandra
     networks:
       - ecommerce-network
     environment:
-      CASSANDRA_CLUSTER_NAME: "Test Cluster"
-      #      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
+      CASSANDRA_CLUSTER_NAME: ecommerce-cluster
       CASSANDRA_DC: datacenter1
       CASSANDRA_RACK: rack1
       CASSANDRA_USERNAME: ${CASSANDRA_USERNAME}
@@ -158,16 +157,13 @@ services:
       retries: 10
 
 
-secrets:
-  jwt_secret:
-    file: ./secrets/jwt_secret.txt
-
 volumes:
-  cassandra_data:
+  products-db-data:
   orders-db-data:
   users-db-data:
   payments-db-data:
   inventory-db-data:
+
 
 networks:
   ecommerce-network:
