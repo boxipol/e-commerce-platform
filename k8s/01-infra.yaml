@@ -97,6 +97,20 @@ spec:
               value: 1G
             - name: HEAP_NEWSIZE
               value: 256M
+            - name: CASSANDRA_AUTHENTICATOR
+              value: PasswordAuthenticator
+            - name: CASSANDRA_AUTHORIZER
+              value: CassandraAuthorizer
+            - name: CASSANDRA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: CASSANDRA_USERNAME
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: CASSANDRA_PASSWORD
           resources:
             requests:
               memory: "2Gi"

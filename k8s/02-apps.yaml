@@ -13,6 +13,8 @@ spec:
       labels:
         app: gateway-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: gateway-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/gateway-service:latest
@@ -63,6 +65,8 @@ spec:
       labels:
         app: user-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: user-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/user-service:latest
@@ -124,6 +128,8 @@ spec:
       labels:
         app: product-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: product-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/product-service:latest
@@ -180,6 +186,8 @@ spec:
       labels:
         app: order-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: order-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/order-service:latest
@@ -236,6 +244,8 @@ spec:
       labels:
         app: payment-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: payment-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/payment-service:latest
@@ -312,6 +322,8 @@ spec:
       labels:
         app: inventory-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: inventory-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/inventory-service:latest
@@ -368,6 +380,8 @@ spec:
       labels:
         app: notification-service
     spec:
+      imagePullSecrets:
+        - name: gitlab-registry
       containers:
         - name: notification-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/notification-service:latest
