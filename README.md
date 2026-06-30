@@ -43,14 +43,44 @@ User point of view:
 - receive notifications
 
 
-Tech stack:
-Kubernetes
-Docker
-Spring Boot
-Kafka
-Redis
-Cassandra
-Postgres
+# E-Commerce Platform
+
+Distributed e-commerce platform built with:
+- Java 17
+- Spring Boot
+- WebFlux
+- PostgreSQL
+- Cassandra
+- Redis
+- Kafka
+- Docker
+- Kubernetes
+- GitLab CI/CD
+- Grafana LGTM
+
+## Architecture
+
+[Architecture Diagram]
+
+## Services
+
+| Service | Purpose |
+|----------|----------|
+| Gateway | API Gateway |
+| User | Authentication and users |
+| Product | Product catalog |
+| Order | Order management |
+| Payment | Stripe integration |
+| Inventory | Stock management |
+| Notification | Email notifications |
+
+## Documentation
+- docs/architecture.md
+- docs/deployment.md
+- docs/observability.md
+- docs/security.md
+- docs/development.md
+
 
 Kubernetes
 - orchestration

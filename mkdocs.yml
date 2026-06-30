@@ -1,0 +1,83 @@
+site_name: SmartShop E-Commerce Platform
+site_description: Reactive microservices e-commerce platform — architecture, operations, and API reference
+site_author: Petyo
+repo_url: https://gitlab.com/pd/e-commerce-platform
+repo_name: e-commerce-platform
+edit_uri: ""
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/gitlab
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Local Development: getting-started/local-dev.md
+    - Full Stack (Docker): getting-started/full-stack.md
+  - Architecture:
+    - architecture/index.md
+    - Data Flows:
+      - Auth (JWT): architecture/flows/auth.md
+      - Order Saga: architecture/flows/order-saga.md
+      - Product Reads: architecture/flows/product-reads.md
+    - Design Patterns: architecture/patterns.md
+  - Services:
+    - services/index.md
+    - Gateway: services/gateway.md
+    - User: services/user.md
+    - Order: services/order.md
+    - Product: services/product.md
+    - Payment: services/payment.md
+    - Inventory: services/inventory.md
+    - Notification: services/notification.md
+  - Infrastructure:
+    - infrastructure/index.md
+    - Databases: infrastructure/databases.md
+    - Kafka: infrastructure/kafka.md
+    - Observability: infrastructure/observability.md
+  - Deployment:
+    - deployment/index.md
+    - Kubernetes: deployment/kubernetes.md
+  - API Reference: api/index.md
