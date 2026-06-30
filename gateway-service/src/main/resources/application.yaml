@@ -64,6 +64,68 @@ spring:
               predicates:
                 - Path=/api/v1/inventories/**
 
+            # API docs routes for gateway aggregation
+            - id: user-service-docs
+              uri: http://user-service:8080
+              predicates:
+                - Path=/user-service/v3/api-docs
+              filters:
+                - RewritePath=/user-service/(?<segment>.*), /${segment}
+
+            - id: order-service-docs
+              uri: http://order-service:8080
+              predicates:
+                - Path=/order-service/v3/api-docs
+              filters:
+                - RewritePath=/order-service/(?<segment>.*), /${segment}
+
+            - id: product-service-docs
+              uri: http://product-service:8080
+              predicates:
+                - Path=/product-service/v3/api-docs
+              filters:
+                - RewritePath=/product-service/(?<segment>.*), /${segment}
+
+            - id: payment-service-docs
+              uri: http://payment-service:8080
+              predicates:
+                - Path=/payment-service/v3/api-docs
+              filters:
+                - RewritePath=/payment-service/(?<segment>.*), /${segment}
+
+            - id: inventory-service-docs
+              uri: http://inventory-service:8080
+              predicates:
+                - Path=/inventory-service/v3/api-docs
+              filters:
+                - RewritePath=/inventory-service/(?<segment>.*), /${segment}
+
+            - id: notification-service-docs
+              uri: http://notification-service:8080
+              predicates:
+                - Path=/notification-service/v3/api-docs
+              filters:
+                - RewritePath=/notification-service/(?<segment>.*), /${segment}
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: gateway
+        url: /v3/api-docs
+      - name: user-service
+        url: /user-service/v3/api-docs
+      - name: order-service
+        url: /order-service/v3/api-docs
+      - name: product-service
+        url: /product-service/v3/api-docs
+      - name: payment-service
+        url: /payment-service/v3/api-docs
+      - name: inventory-service
+        url: /inventory-service/v3/api-docs
+      - name: notification-service
+        url: /notification-service/v3/api-docs
+    disable-swagger-default-url: true
+
 jwt:
   secret: ${JWT_SECRET}
   # 1 hour

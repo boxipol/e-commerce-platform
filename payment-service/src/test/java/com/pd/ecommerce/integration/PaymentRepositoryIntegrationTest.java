@@ -12,12 +12,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.boot.test.context.TestConfiguration;
 import reactor.test.StepVerifier;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -109,6 +108,27 @@ class PaymentRepositoryIntegrationTest extends AbstractPostgresIntegrationTest {
 	void testUpdateStatusMissing() {
 		StepVerifier.create(repository.updateStatus(UUID.randomUUID(), PaymentStatus.FAILED, Instant.now()))
 			.expectNext(0)
+			.verifyComplete();
+	}
+
+	@Test
+	@DisplayName("findByOrderId - returns the payment matching the given order ID")
+	void testFindByOrderId() {
+		Payment saved = repository.save(newPayment(PaymentStatus.PENDING)).block();
+
+		StepVerifier.create(repository.findByOrderId(saved.getOrderId()))
+			.assertNext(found -> {
+				assertThat(found.getId()).isEqualTo(saved.getId());
+				assertThat(found.getOrderId()).isEqualTo(saved.getOrderId());
+				assertThat(found.getStatus()).isEqualTo(PaymentStatus.PENDING);
+			})
+			.verifyComplete();
+	}
+
+	@Test
+	@DisplayName("findByOrderId - returns empty when no payment exists for the order")
+	void testFindByOrderIdMissing() {
+		StepVerifier.create(repository.findByOrderId(UUID.randomUUID()))
 			.verifyComplete();
 	}
 

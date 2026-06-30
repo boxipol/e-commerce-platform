@@ -1,12 +1,14 @@
 package com.pd.ecommerce.service;
 
 import com.pd.ecommerce.dto.CreateProviderPaymentRequest;
+import com.pd.ecommerce.dto.PaymentResponse;
 import com.pd.ecommerce.dto.ProviderPaymentResponse;
 import com.pd.ecommerce.entity.Payment;
 import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
 import com.pd.ecommerce.event.OrderEventItem;
+import com.pd.ecommerce.mapper.PaymentMapper;
 import com.pd.ecommerce.providers.PaymentProviderRegistry;
 import com.pd.ecommerce.providers.PaymentProviderService;
 import com.pd.ecommerce.repository.PaymentRepository;
@@ -19,6 +21,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import java.math.BigDecimal;
@@ -45,6 +49,9 @@ class PaymentServiceImplTest {
 	@Mock
 	private PaymentProviderService paymentProviderService;
 
+	@Mock
+	private PaymentMapper mapper;
+
 	@InjectMocks
 	private PaymentServiceImpl paymentService;
 	private static final UUID ORDER_ID = UUID.randomUUID();
@@ -61,6 +68,75 @@ class PaymentServiceImplTest {
 		orderEvent = OrderCreatedEvent.builder().orderId(ORDER_ID).publicOrderId("ORD-PUBLIC-001").userId(USER_ID).userMail("user@example.com").items(List.of(item)).totalPrice(new BigDecimal("99.99")).build();
 		savedPayment = Payment.builder().id(PAYMENT_ID).orderId(ORDER_ID).publicOrderId("ORD-PUBLIC-001").userId(USER_ID).userMail("user@example.com").amount(new BigDecimal("99.99")).items(List.of(item)).currency("EUR").status(PaymentStatus.PENDING).provider(PaymentProvider.STRIPE).createdAt(Instant.now()).updatedAt(Instant.now()).build();
 		providerResponse = new ProviderPaymentResponse("stripe-pi-123", "https://stripe.com/pay/123");
+	}
+
+	@Nested
+	@DisplayName("getById")
+	class GetById {
+
+		@Test
+		@DisplayName("returns payment response when found")
+		void returnsPaymentWhenFound() {
+			PaymentResponse response = PaymentResponse.builder().id(PAYMENT_ID).orderId(ORDER_ID)
+				.publicOrderId("ORD-PUBLIC-001").amount(new BigDecimal("99.99")).currency("EUR")
+				.status(PaymentStatus.PENDING).provider(PaymentProvider.STRIPE).paymentUrl("https://pay.example/1").build();
+			when(repository.findById(PAYMENT_ID)).thenReturn(Mono.just(savedPayment));
+			when(mapper.toResponse(savedPayment)).thenReturn(response);
+
+			StepVerifier.create(paymentService.getById(PAYMENT_ID))
+				.assertNext(r -> {
+					assertThat(r.id()).isEqualTo(PAYMENT_ID);
+					assertThat(r.orderId()).isEqualTo(ORDER_ID);
+					assertThat(r.status()).isEqualTo(PaymentStatus.PENDING);
+				})
+				.verifyComplete();
+		}
+
+		@Test
+		@DisplayName("returns 404 when payment not found by ID")
+		void returns404WhenNotFound() {
+			when(repository.findById(PAYMENT_ID)).thenReturn(Mono.empty());
+
+			StepVerifier.create(paymentService.getById(PAYMENT_ID))
+				.expectErrorMatches(ex -> ex instanceof ResponseStatusException rse
+					&& rse.getStatusCode() == HttpStatus.NOT_FOUND
+					&& rse.getReason().contains(PAYMENT_ID.toString()))
+				.verify();
+		}
+	}
+
+	@Nested
+	@DisplayName("getByOrderId")
+	class GetByOrderId {
+
+		@Test
+		@DisplayName("returns payment response when found by order ID")
+		void returnsPaymentWhenFound() {
+			PaymentResponse response = PaymentResponse.builder().id(PAYMENT_ID).orderId(ORDER_ID)
+				.publicOrderId("ORD-PUBLIC-001").amount(new BigDecimal("99.99")).currency("EUR")
+				.status(PaymentStatus.COMPLETED).provider(PaymentProvider.STRIPE).paymentUrl("https://pay.example/1").build();
+			when(repository.findByOrderId(ORDER_ID)).thenReturn(Mono.just(savedPayment));
+			when(mapper.toResponse(savedPayment)).thenReturn(response);
+
+			StepVerifier.create(paymentService.getByOrderId(ORDER_ID))
+				.assertNext(r -> {
+					assertThat(r.orderId()).isEqualTo(ORDER_ID);
+					assertThat(r.id()).isEqualTo(PAYMENT_ID);
+				})
+				.verifyComplete();
+		}
+
+		@Test
+		@DisplayName("returns 404 when no payment exists for the order")
+		void returns404WhenNotFound() {
+			when(repository.findByOrderId(ORDER_ID)).thenReturn(Mono.empty());
+
+			StepVerifier.create(paymentService.getByOrderId(ORDER_ID))
+				.expectErrorMatches(ex -> ex instanceof ResponseStatusException rse
+					&& rse.getStatusCode() == HttpStatus.NOT_FOUND
+					&& rse.getReason().contains(ORDER_ID.toString()))
+				.verify();
+		}
 	}
 
 	@Nested

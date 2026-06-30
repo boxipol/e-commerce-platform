@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -48,8 +49,17 @@ public class OrderServiceImpl implements OrderService {
 
 	public Mono<OrderResponse> getOrder(String publicOrderId) {
 		return orderRepository.findByPublicOrderId(publicOrderId)
-			.switchIfEmpty(
-				Mono.error(new OrderNotFoundException(publicOrderId)))
+			.switchIfEmpty(Mono.error(new OrderNotFoundException(publicOrderId)))
+			.flatMap(order ->
+				orderItemRepository.findByOrderId(order.getId())
+					.collectList()
+					.map(items -> buildResponse(order, items))
+			);
+	}
+
+	@Override
+	public Flux<OrderResponse> getOrdersByUser(UUID userId) {
+		return orderRepository.findByUserId(userId)
 			.flatMap(order ->
 				orderItemRepository.findByOrderId(order.getId())
 					.collectList()

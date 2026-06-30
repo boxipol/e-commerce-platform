@@ -7,12 +7,15 @@ import com.pd.ecommerce.entity.Payment;
 import com.pd.ecommerce.entity.PaymentProvider;
 import com.pd.ecommerce.entity.PaymentStatus;
 import com.pd.ecommerce.event.OrderCreatedEvent;
+import com.pd.ecommerce.mapper.PaymentMapper;
 import com.pd.ecommerce.providers.PaymentProviderRegistry;
 import com.pd.ecommerce.providers.PaymentProviderService;
 import com.pd.ecommerce.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.util.UUID;
@@ -24,6 +27,7 @@ public final class PaymentServiceImpl implements PaymentService {
 
 	private final PaymentRepository repository;
 	private final PaymentProviderRegistry paymentProviderRegistry;
+	private final PaymentMapper mapper;
 
 
 	public Mono<PaymentResponse> createPayment(OrderCreatedEvent event) {
@@ -58,6 +62,20 @@ public final class PaymentServiceImpl implements PaymentService {
 				log.error("Failed to create payment for order {}", payment.getOrderId(), ex)
 			)
 			.map(response -> toResponse(payment, response));
+	}
+
+	@Override
+	public Mono<PaymentResponse> getById(UUID id) {
+		return repository.findById(id)
+			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found: " + id)))
+			.map(mapper::toResponse);
+	}
+
+	@Override
+	public Mono<PaymentResponse> getByOrderId(UUID orderId) {
+		return repository.findByOrderId(orderId)
+			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found for order: " + orderId)))
+			.map(mapper::toResponse);
 	}
 
 	@Override

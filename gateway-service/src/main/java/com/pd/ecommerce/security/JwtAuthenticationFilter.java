@@ -22,8 +22,9 @@ public final class JwtAuthenticationFilter implements GlobalFilter {
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 		String path = exchange.getRequest().getURI().getPath();
 
-		// skip now jwt endpoints
-		if (path.startsWith("/api/v1/users") || path.startsWith("/api/v1/payments/webhooks")) {
+		if (path.startsWith("/api/v1/users") || path.startsWith("/api/v1/payments/webhooks")
+				|| path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs")
+				|| path.endsWith("/v3/api-docs")) {
 			return chain.filter(exchange);
 		}
 

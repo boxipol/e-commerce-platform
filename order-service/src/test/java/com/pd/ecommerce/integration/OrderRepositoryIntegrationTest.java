@@ -53,6 +53,17 @@ class OrderRepositoryIntegrationTest extends AbstractPostgresIntegrationTest {
 			.build();
 	}
 
+	private Order newOrderForUser(String publicOrderId, UUID userId, OrderStatus status) {
+		return Order.builder()
+			.publicOrderId(publicOrderId)
+			.userId(userId)
+			.userMail("buyer@example.com")
+			.status(status)
+			.totalAmount(new BigDecimal("199.99"))
+			.createdAt(Instant.now())
+			.build();
+	}
+
 	private OrderItem newItem(UUID orderId) {
 		return OrderItem.builder()
 			.orderId(orderId)
@@ -143,6 +154,44 @@ class OrderRepositoryIntegrationTest extends AbstractPostgresIntegrationTest {
 
 		StepVerifier.create(orderRepository.findById(saved.getId()))
 			.assertNext(order -> assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED))
+			.verifyComplete();
+	}
+
+	@Test
+	@DisplayName("findByUserId - returns all orders belonging to the given user")
+	void testFindByUserId() {
+		UUID userId = UUID.randomUUID();
+		orderRepository.save(newOrderForUser("ORD-UA1", userId, OrderStatus.CREATED)).block();
+		orderRepository.save(newOrderForUser("ORD-UA2", userId, OrderStatus.PAID)).block();
+
+		StepVerifier.create(orderRepository.findByUserId(userId).collectList())
+			.assertNext(orders -> {
+				assertThat(orders).hasSize(2);
+				assertThat(orders).extracting(Order::getUserId).containsOnly(userId);
+			})
+			.verifyComplete();
+	}
+
+	@Test
+	@DisplayName("findByUserId - returns empty flux when user has no orders")
+	void testFindByUserIdEmpty() {
+		StepVerifier.create(orderRepository.findByUserId(UUID.randomUUID()))
+			.verifyComplete();
+	}
+
+	@Test
+	@DisplayName("findByUserId - does not return orders belonging to a different user")
+	void testFindByUserIdIsolation() {
+		UUID user1 = UUID.randomUUID();
+		UUID user2 = UUID.randomUUID();
+		orderRepository.save(newOrderForUser("ORD-UB1", user1, OrderStatus.CREATED)).block();
+		orderRepository.save(newOrderForUser("ORD-UB2", user2, OrderStatus.CREATED)).block();
+
+		StepVerifier.create(orderRepository.findByUserId(user1).collectList())
+			.assertNext(orders -> {
+				assertThat(orders).hasSize(1);
+				assertThat(orders.get(0).getUserId()).isEqualTo(user1);
+			})
 			.verifyComplete();
 	}
 

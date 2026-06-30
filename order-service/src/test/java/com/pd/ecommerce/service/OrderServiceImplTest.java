@@ -235,6 +235,67 @@ class OrderServiceImplTest {
 			verify(outboxEventRepository, never()).save(any());
 		}
 	}
+	// ── getOrdersByUser ───────────────────────────────────────────────────────
+
+	@Nested
+	@DisplayName("getOrdersByUser")
+	class GetOrdersByUser {
+
+		@Test
+		@DisplayName("returns all orders with items for the given user")
+		void returnsOrdersForUser() {
+			when(orderRepository.findByUserId(USER_ID)).thenReturn(Flux.just(savedOrder));
+			when(orderItemRepository.findByOrderId(ORDER_ID)).thenReturn(Flux.just(savedItem));
+			when(mapper.toItemResponse(savedItem)).thenReturn(new OrderItemResponse("SKU-001", 2, new BigDecimal("99.99"), new BigDecimal("199.98")));
+
+			StepVerifier.create(orderService.getOrdersByUser(USER_ID))
+				.assertNext(response -> {
+					assertThat(response.publicOrderId()).isEqualTo(PUBLIC_ORDER_ID);
+					assertThat(response.status()).isEqualTo(OrderStatus.CREATED);
+					assertThat(response.items()).hasSize(1);
+					assertThat(response.items().get(0).sku()).isEqualTo("SKU-001");
+				})
+				.verifyComplete();
+		}
+
+		@Test
+		@DisplayName("returns empty flux when user has no orders")
+		void returnsEmptyForUserWithNoOrders() {
+			when(orderRepository.findByUserId(USER_ID)).thenReturn(Flux.empty());
+
+			StepVerifier.create(orderService.getOrdersByUser(USER_ID))
+				.verifyComplete();
+
+			verify(orderItemRepository, never()).findByOrderId(any(UUID.class));
+		}
+
+		@Test
+		@DisplayName("returns multiple orders each with their own items")
+		void returnsMultipleOrdersWithItems() {
+			UUID order2Id = UUID.randomUUID();
+			Order order2 = Order.builder().id(order2Id).publicOrderId("ORD-XYZ99999").userId(USER_ID)
+				.userMail(USER_MAIL).status(OrderStatus.PAID).totalAmount(new BigDecimal("49.99"))
+				.createdAt(java.time.Instant.now()).build();
+			OrderItem item2 = OrderItem.builder().id(UUID.randomUUID()).orderId(order2Id)
+				.productId(UUID.randomUUID()).sku("SKU-002").quantity(1)
+				.unitPrice(new BigDecimal("49.99")).subtotal(new BigDecimal("49.99")).build();
+
+			when(orderRepository.findByUserId(USER_ID)).thenReturn(Flux.just(savedOrder, order2));
+			when(orderItemRepository.findByOrderId(ORDER_ID)).thenReturn(Flux.just(savedItem));
+			when(orderItemRepository.findByOrderId(order2Id)).thenReturn(Flux.just(item2));
+			when(mapper.toItemResponse(savedItem)).thenReturn(new OrderItemResponse("SKU-001", 2, new BigDecimal("99.99"), new BigDecimal("199.98")));
+			when(mapper.toItemResponse(item2)).thenReturn(new OrderItemResponse("SKU-002", 1, new BigDecimal("49.99"), new BigDecimal("49.99")));
+
+			StepVerifier.create(orderService.getOrdersByUser(USER_ID))
+				.assertNext(r -> assertThat(r.publicOrderId()).isEqualTo(PUBLIC_ORDER_ID))
+				.assertNext(r -> {
+					assertThat(r.publicOrderId()).isEqualTo("ORD-XYZ99999");
+					assertThat(r.status()).isEqualTo(OrderStatus.PAID);
+				})
+				.verifyComplete();
+		}
+	}
+
 	// ── markAsPaid ────────────────────────────────────────────────────────────
 
 	@Nested

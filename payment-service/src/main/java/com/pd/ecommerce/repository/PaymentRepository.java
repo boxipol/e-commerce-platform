@@ -29,4 +29,6 @@ public interface PaymentRepository extends ReactiveCrudRepository<Payment, UUID>
 		WHERE id = :paymentId
 		""")
 	Mono<Integer> updateStatus(UUID paymentId, PaymentStatus status, Instant updatedAt);
+
+	Mono<Payment> findByOrderId(UUID orderId);
 }
