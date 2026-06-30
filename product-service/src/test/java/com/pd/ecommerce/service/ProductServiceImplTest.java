@@ -119,11 +119,15 @@ class ProductServiceImplTest {
 		}
 
 		@Test
-		@DisplayName("returns empty when product not found in cache or Cassandra")
-		void returnsEmptyWhenNotFound() {
+		@DisplayName("returns 404 when product not found in cache or Cassandra")
+		void returns404WhenNotFound() {
 			when(cacheService.getProduct(CACHE_KEY)).thenReturn(Mono.empty());
 			when(productBySkuRepository.findById(SKU)).thenReturn(Mono.empty());
-			StepVerifier.create(productService.getBySku(SKU)).verifyComplete();
+			StepVerifier.create(productService.getBySku(SKU))
+				.expectErrorMatches(ex -> ex instanceof org.springframework.web.server.ResponseStatusException rse
+					&& rse.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND
+					&& rse.getReason().contains(SKU))
+				.verify();
 		}
 	}
 	// ── getProducts ───────────────────────────────────────────────────────────

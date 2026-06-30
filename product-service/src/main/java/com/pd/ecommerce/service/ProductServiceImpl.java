@@ -15,7 +15,9 @@ import com.pd.ecommerce.repository.ProductBySkuRepository;
 import com.pd.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
@@ -176,7 +178,8 @@ final class ProductServiceImpl implements ProductService {
 								.thenReturn(dto)
 						);
 				})
-			);
+			)
+			.switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + sku)));
 	}
 
 	private String getProductKey(String sku) {
