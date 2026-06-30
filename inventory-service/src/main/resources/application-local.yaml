@@ -12,3 +12,13 @@ spring:
     url: jdbc:postgresql://localhost:5435/inventory_db
     user: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+
+management:
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    logging:
+      endpoint: http://localhost:4318/v1/logs

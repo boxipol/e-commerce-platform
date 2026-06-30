@@ -157,6 +157,26 @@ services:
       retries: 10
 
 
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm
+    restart: unless-stopped
+    ports:
+      - "3000:3000"    # Grafana UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+      - "3200:3200"    # Tempo
+      - "4040:4040"    # Pyroscope
+      - "9090:9090"    # Prometheus
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: [ "CMD-SHELL", "test -f /tmp/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
 volumes:
   products-db-data:
   orders-db-data:

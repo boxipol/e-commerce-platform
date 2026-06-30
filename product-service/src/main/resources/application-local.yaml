@@ -13,3 +13,13 @@ spring:
     contact-points: localhost
     username: ${CASSANDRA_USERNAME}
     password: ${CASSANDRA_PASSWORD}
+
+management:
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    logging:
+      endpoint: http://localhost:4318/v1/logs
