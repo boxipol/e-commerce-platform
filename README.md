@@ -1,5 +1,7 @@
 E-COMMERCE PLATFORM
 
+![System Architecture](images/arch.png)
+
 The platform is used to trade products between customers and/or shops.
 
 System design:

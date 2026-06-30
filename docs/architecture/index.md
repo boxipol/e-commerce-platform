@@ -2,6 +2,8 @@
 
 SmartShop is a **reactive microservices platform** built on Spring Boot 3.5 + WebFlux. Every service is non-blocking end-to-end: controllers return `Mono<T>` or `Flux<T>`, repositories use R2DBC or Spring Data Cassandra reactive, and inter-service messaging is asynchronous via Kafka.
 
+![System Architecture](images/arch.png)
+
 ## Service responsibilities
 
 | Service | Responsibility | Database |
