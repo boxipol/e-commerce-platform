@@ -16,7 +16,7 @@ spec:
       containers:
         - name: gateway-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/gateway-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -66,7 +66,7 @@ spec:
       containers:
         - name: user-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/user-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -127,12 +127,22 @@ spec:
       containers:
         - name: product-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/product-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: kafka-1:9092,kafka-2:9092,kafka-3:9092
+            - name: CASSANDRA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: CASSANDRA_USERNAME
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ecommerce-secrets
+                  key: CASSANDRA_PASSWORD
           readinessProbe:
             httpGet:
               path: /actuator/health
@@ -173,7 +183,7 @@ spec:
       containers:
         - name: order-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/order-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -229,7 +239,7 @@ spec:
       containers:
         - name: payment-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/payment-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -305,7 +315,7 @@ spec:
       containers:
         - name: inventory-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/inventory-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -361,7 +371,7 @@ spec:
       containers:
         - name: notification-service
           image: registry.gitlab.com/portfolio8543146/e-commerce-platform/notification-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:

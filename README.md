@@ -229,10 +229,35 @@ kubectl exec -it users-db-0 -- psql -U ecommerce_user -d users_db
 kubectl exec -it orders-db-0 -- psql -U ecommerce_user -d orders_db
 kubectl exec -it payments-db-0 -- psql -U ecommerce_user -d payments_db
 kubectl exec -it inventory-db-0 -- psql -U ecommerce_user -d inventory_db
-
 kubectl exec -it products-db-0 -n ecommerce -- sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD"'
 
 kubectl port-forward -n ecommerce svc/gateway-service 8081:80
+
+
+kubectl cp product-service/src/main/resources/full_iphone_seed_query_products_by_id.sql \
+ecommerce/products-db-0:/tmp/seed_by_id.cql
+
+kubectl exec -it products-db-0 -n ecommerce -- \
+sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD" -f /tmp/seed_by_id.cql'
+
+kubectl cp product-service/src/main/resources/full_iphone_seed_query_products_by_sku.sql \
+ecommerce/products-db-0:/tmp/seed_by_sku.cql
+
+kubectl exec -it products-db-0 -n ecommerce -- \
+sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD" -f /tmp/seed_by_sku.cql'
+
+kubectl cp product-service/src/main/resources/full_iphone_seed_query_products_by_category.sql \
+ecommerce/products-db-0:/tmp/seed_by_category.cql
+
+kubectl exec -it products-db-0 -n ecommerce -- \
+sh -c 'cqlsh -u "$CASSANDRA_USERNAME" -p "$CASSANDRA_PASSWORD" -f /tmp/seed_by_category.cql'
+
+kubectl cp inventory-service/src/main/resources/full_iphone_inventory_seed.sql \
+ecommerce/inventory-db-0:/tmp/seed_by_id.cql
+
+kubectl exec -it inventory-db-0 -n ecommerce -- \
+sh -c 'psql -U "$POSTGRES_USER" -d inventory_db -f /tmp/seed_by_id.cql'
+
 
 
 K8s manifests:

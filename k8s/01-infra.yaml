@@ -94,23 +94,23 @@ spec:
             - name: CASSANDRA_RACK
               value: rack1
             - name: MAX_HEAP_SIZE
-              value: 256M
+              value: 1G
             - name: HEAP_NEWSIZE
-              value: 64M
+              value: 256M
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "250m"
+              memory: "2Gi"
+              cpu: "500m"
             limits:
-              memory: "1Gi"
-              cpu: "1"
+              memory: "4Gi"
+              cpu: "2"
           volumeMounts:
             - name: data
               mountPath: /var/lib/cassandra
           readinessProbe:
             tcpSocket:
               port: 9042
-            initialDelaySeconds: 40
+            initialDelaySeconds: 120
             periodSeconds: 10
   volumeClaimTemplates:
     - metadata:
@@ -636,6 +636,74 @@ spec:
     - name: controller
       port: 9093
       targetPort: 9093
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-lgtm
+  namespace: ecommerce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-lgtm
+  template:
+    metadata:
+      labels:
+        app: otel-lgtm
+    spec:
+      containers:
+        - name: otel-lgtm
+          image: grafana/otel-lgtm:latest
+          ports:
+            - containerPort: 3000
+            - containerPort: 4317
+            - containerPort: 4318
+            - containerPort: 3200
+            - containerPort: 4040
+            - containerPort: 9090
+          readinessProbe:
+            exec:
+              command: ["test", "-f", "/tmp/ready"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-lgtm
+  namespace: ecommerce
+spec:
+  selector:
+    app: otel-lgtm
+  ports:
+    - name: grafana
+      port: 3000
+      targetPort: 3000
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+    - name: tempo
+      port: 3200
+      targetPort: 3200
+    - name: pyroscope
+      port: 4040
+      targetPort: 4040
+    - name: prometheus
+      port: 9090
+      targetPort: 9090
 
 ---
 

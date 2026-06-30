@@ -42,7 +42,8 @@ management:
     metrics:
       export:
         url: http://otel-lgtm:4318/v1/metrics
-        step: 10s
+        step: 30s
+        read-timeout: 30s
     tracing:
       endpoint: http://otel-lgtm:4318/v1/traces
     logging:
