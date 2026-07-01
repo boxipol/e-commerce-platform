@@ -66,28 +66,28 @@ class InventoryServiceImplTest {
 	}
 
 	@Test
-	@DisplayName("getById - should return inventory when found")
+	@DisplayName("get(UUID) - should return inventory when found")
 	void testGetByIdSuccess() {
 		when(repository.findById(productId)).thenReturn(Mono.just(inventory));
 		when(mapper.toResponse(inventory)).thenReturn(response);
 
-		StepVerifier.create(service.getById(productId))
+		StepVerifier.create(service.get(productId))
 			.assertNext(r -> assertThat(r.productId()).isEqualTo(productId))
 			.verifyComplete();
 	}
 
 	@Test
-	@DisplayName("getById - should error when not found")
+	@DisplayName("get(UUID) - should error when not found")
 	void testGetByIdNotFound() {
 		when(repository.findById(productId)).thenReturn(Mono.empty());
 
-		StepVerifier.create(service.getById(productId))
+		StepVerifier.create(service.get(productId))
 			.expectError(RuntimeException.class)
 			.verify();
 	}
 
 	@Test
-	@DisplayName("getProducts - should map every found inventory")
+	@DisplayName("get(List) - should map every found inventory")
 	void testGetProducts() {
 		UUID secondId = UUID.randomUUID();
 		Inventory second = Inventory.builder().productId(secondId).quantity(5).build();
@@ -98,7 +98,7 @@ class InventoryServiceImplTest {
 		when(mapper.toResponse(inventory)).thenReturn(response);
 		when(mapper.toResponse(second)).thenReturn(secondResponse);
 
-		StepVerifier.create(service.getProducts(List.of(productId, secondId)))
+		StepVerifier.create(service.get(List.of(productId, secondId)))
 			.expectNextCount(2)
 			.verifyComplete();
 	}

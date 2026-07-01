@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
@@ -16,14 +17,14 @@ public final class OrderCreatedConsumer {
 
 
 	@KafkaListener(topics = "order.created", groupId = "payment-group")
-	public void consume(OrderCreatedEvent event) {
-		paymentService.createPayment(event)
+	public Mono<Void> consume(OrderCreatedEvent event) {
+		return paymentService.createPayment(event)
 			.doOnSuccess(response ->
 				log.info("Payment created for order {}", event.orderId())
 			)
 			.doOnError(error ->
 				log.error("Failed creating payment for order {}", event.orderId(), error)
 			)
-			.subscribe();
+			.then();
 	}
 }

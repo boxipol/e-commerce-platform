@@ -1,7 +1,5 @@
 E-COMMERCE PLATFORM
 
-![System Architecture](images/arch.png)
-
 The platform is used to trade products between customers and/or shops.
 
 System design:
@@ -62,7 +60,7 @@ Distributed e-commerce platform built with:
 
 ## Architecture
 
-[Architecture Diagram]
+![Architecture Diagram](images/arch.png)
 
 ## Services
 
@@ -99,19 +97,18 @@ Spring Boot
 - WebFlux for reactive REST
 - R2DBC CRUD repos
 - security
+- actuator for monitoring
 
 
-Gateway service (8081)
+Gateway service
 - entry point
 - JWT validation - Spring Security OAuth2 resource server
 - routing requests - /products, /orders/, /users, inventories
 - rate limiting and throttling 
 - logging and monitoring(OpenTelemetry), providing correlation ID, request start/end
-simple flow:
-- client->gateway->product->cassandra
 
 
-User service (8082)
+User service
 - manages user data
 - CRUD users
 - PostgreSQL
@@ -121,69 +118,29 @@ simple flow:
 - remove->remove account
 
 
-Order service (8083)
+Order service
 - manages customer orders
 - CRUD orders
 - PostgreSQL
-simple flow:
-- client->gateway->order->payment-inventory->kafka event
 
 
-Product service (8084)
+Product service
 - manages the product catalog
 - CRUD products
 - Redis cache
 - CassandraDB - optimize for product lookup by id, products by category, featured_products, products by brand, search/filter support, inventory lookups, recommendations / trending, product variants
 
 
-Payment service (8085)
-- handles payment processing
-
-Order Service
-↓
-order.created
-↓
-Payment Service
-↓
-Create Payment Intent / Order at provider
-↓
-Payment record = PENDING
-↓
-Return payment URL
-
-Customer completes payment
-
-Stripe/PayPal
-↓
-Webhook
-↓
-Payment Service
-↓
-Update payment status = PAID
-↓
-Outbox Event
-↓
-payment.completed / payment.failed
-↓
-Inventory Deduct
-↓
-Success → Order Completed
-or
-Failure → Refund + Order Cancelled
-↓
-Order Service
-↓
-Order status updated
+Payment service
+- handles payment processing with Stripe/PayPal webhooks
 
 
-Notification service (8086)
+Notification service
 - handles notifications
-simple flow:
-- kafka event->notification->mail/push
 
 
-Inventory service (8087)
-- handles stock amounts
+Inventory service
+- handles stock amounts and reservations
 - notify merchants on stock 0
 
 
@@ -200,24 +157,13 @@ Logging and monitoring
 
 
 TODOs:
-- cassandra batch update with outbox for product updates
-- DB Flyway migrations
 - circuit breaker
 - cache warmup
-- cache invalidation on change
 - exception handling
 - AOP
-- monitoring
 - RabbitMQ
 - admin control
 - ElasticSearch for product discovery
-
-
-simple flow
-client logins through gateway service
-gateway service checks customer service for data and logins/singup
-client requests product(product service)
-
 
 
 Postgres:
@@ -289,32 +235,4 @@ ecommerce/inventory-db-0:/tmp/seed_by_id.cql
 
 kubectl exec -it inventory-db-0 -n ecommerce -- \
 sh -c 'psql -U "$POSTGRES_USER" -d inventory_db -f /tmp/seed_by_id.cql'
-
-
-
-K8s manifests:
-- 00-namespace.yaml
-- 01-infra.yaml
-- 02-apps.yaml
-
-Secrets:
-- CI/CD creates `ecommerce-secrets` from GitLab variables via `deploy:k8s-secrets`.
-- For local-only deployment, copy `k8s/03-secrets.template.yaml` to `k8s/01-secrets.yaml`, set values, then apply manually.
-
-# PostgreSQL databases
-kubectl port-forward svc/users-db 5432:5432 -n ecommerce
-kubectl port-forward svc/orders-db 5433:5432 -n ecommerce
-kubectl port-forward svc/payments-db 5434:5432 -n ecommerce
-kubectl port-forward svc/inventory-db 5435:5432 -n ecommerce
-
-# Cassandra
-kubectl port-forward svc/products-db 9042:9042 -n ecommerce
-
-# Redis
-kubectl port-forward svc/redis 6379:6379 -n ecommerce
-
-# Kafka
-kubectl port-forward svc/kafka-1 29092:9092 -n ecommerce
-kubectl port-forward svc/kafka-2 29092:9092 -n ecommerce
-kubectl port-forward svc/kafka-3 29092:9092 -n ecommerce
 

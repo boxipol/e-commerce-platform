@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,23 +42,26 @@ class OrderCreatedConsumerTest {
 	}
 
 	@Test
-	@DisplayName("consume - should trigger payment creation")
+	@DisplayName("consume - should complete when payment creation succeeds")
 	void testConsumeSuccess() {
 		OrderCreatedEvent event = event();
 		when(paymentService.createPayment(event)).thenReturn(Mono.just(PaymentResponse.builder().build()));
 
-		consumer.consume(event);
+		StepVerifier.create(consumer.consume(event))
+			.verifyComplete();
 
 		verify(paymentService).createPayment(event);
 	}
 
 	@Test
-	@DisplayName("consume - should not throw when payment creation errors")
+	@DisplayName("consume - should propagate error so Spring Kafka can route to DLT")
 	void testConsumeError() {
 		OrderCreatedEvent event = event();
 		when(paymentService.createPayment(event)).thenReturn(Mono.error(new RuntimeException("boom")));
 
-		consumer.consume(event);
+		StepVerifier.create(consumer.consume(event))
+			.expectError(RuntimeException.class)
+			.verify();
 
 		verify(paymentService).createPayment(event);
 	}

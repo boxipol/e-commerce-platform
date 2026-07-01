@@ -34,13 +34,13 @@ public final class InventoryController {
 	@Operation(summary = "Get inventory item by ID", description = "Returns stock details for a single inventory record")
 	@GetMapping("/{id}")
 	public Mono<InventoryResponse> getById(@PathVariable UUID id) {
-		return service.getById(id);
+		return service.get(id);
 	}
 
 	@Operation(summary = "Get inventory items by IDs (batch)", description = "Returns stock details for multiple inventory records")
 	@GetMapping("/batch")
 	public Flux<InventoryResponse> getProducts(@RequestParam List<UUID> ids) {
-		return service.getProducts(ids);
+		return service.get(ids);
 	}
 
 	@Operation(summary = "Create inventory record", description = "Registers a new product SKU with initial stock level")

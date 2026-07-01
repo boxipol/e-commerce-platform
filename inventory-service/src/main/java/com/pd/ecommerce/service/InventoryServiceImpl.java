@@ -30,16 +30,14 @@ public class InventoryServiceImpl implements InventoryService {
 
 
 	@Override
-	public Mono<InventoryResponse> getById(UUID productId) {
+	public Mono<InventoryResponse> get(UUID productId) {
 		return repository.findById(productId)
-			.switchIfEmpty(
-				Mono.error(new RuntimeException("Inventory not found"))
-			)
+			.switchIfEmpty(Mono.error(new RuntimeException("Inventory not found")))
 			.map(mapper::toResponse);
 	}
 
 	@Override
-	public Flux<InventoryResponse> getProducts(List<UUID> ids) {
+	public Flux<InventoryResponse> get(List<UUID> ids) {
 		return Flux.fromIterable(ids)
 			.flatMap(repository::findById, 32)
 			.map(mapper::toResponse);

@@ -45,7 +45,7 @@ class InventoryControllerTest {
 	@Test
 	@DisplayName("getById - should delegate to service")
 	void testGetById() {
-		when(service.getById(productId)).thenReturn(Mono.just(response));
+		when(service.get(productId)).thenReturn(Mono.just(response));
 
 		StepVerifier.create(controller.getById(productId))
 			.assertNext(r -> assertThat(r.productId()).isEqualTo(productId))
@@ -56,7 +56,7 @@ class InventoryControllerTest {
 	@DisplayName("getProducts - should delegate batch lookup to service")
 	void testGetProducts() {
 		List<UUID> ids = List.of(productId);
-		when(service.getProducts(ids)).thenReturn(Flux.just(response));
+		when(service.get(ids)).thenReturn(Flux.just(response));
 
 		StepVerifier.create(controller.getProducts(ids))
 			.expectNextCount(1)

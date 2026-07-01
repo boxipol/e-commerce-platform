@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface InventoryService {
 
 	Mono<InventoryResponse> create(InventoryCreateRequest request);
-	Mono<InventoryResponse> getById(UUID productId);
-	Flux<InventoryResponse> getProducts(List<UUID> ids);
+	Mono<InventoryResponse> get(UUID productId);
+	Flux<InventoryResponse> get(List<UUID> ids);
 	Mono<InventoryResponse> update(UUID productId, InventoryUpdateRequest request);
 	Mono<Void> delete(UUID productId);
 
