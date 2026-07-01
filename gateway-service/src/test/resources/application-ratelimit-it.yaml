@@ -1,0 +1,25 @@
+jwt:
+  secret: dGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaC1mb3ItaG1hYy1zaGEyNTY=
+  expiration: 3600000
+
+spring:
+  data:
+    redis:
+      host: placeholder   # overridden by @DynamicPropertySource
+      port: 6379
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: rate-limit-test-route
+              uri: "${test.backend.uri}"   # overridden by @DynamicPropertySource
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 3
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@userOrIpKeyResolver}"
