@@ -28,6 +28,7 @@
 		<stripe.version>29.0.0</stripe.version>
 		<paypal.version>1.0.3</paypal.version>
 		<testcontainers.version>1.20.4</testcontainers.version>
+		<open.telemetry.appender>2.15.0-alpha</open.telemetry.appender>
 	</properties>
 
 	<parent>
@@ -125,6 +126,11 @@
 		<dependency>
 			<groupId>io.opentelemetry</groupId>
 			<artifactId>opentelemetry-exporter-otlp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.opentelemetry.instrumentation</groupId>
+			<artifactId>opentelemetry-logback-appender-1.0</artifactId>
+			<version>${open.telemetry.appender}</version>
 		</dependency>
 
 		<!-- Testing dependencies -->

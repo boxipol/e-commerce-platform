@@ -179,7 +179,7 @@ docker volume rm e-commerce-platform_inventory-db-data
 
 Cassandra:
 cqlsh
-cqlsh -f /Users/user/Downloads/full_iphone_seed_query_products_by_id.sql
+cqlsh -f /e-commerce-platform/product-service/src/main/resources/full_iphone_seed_query_products_by_id.sql
 
 Docker:
 docker volume inspect cassandra_data
